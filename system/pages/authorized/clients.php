@@ -132,7 +132,8 @@ try {
             manager.user_firstname as manager_firstname,
             manager.user_lastname as manager_lastname,
             GROUP_CONCAT(DISTINCT sc.city_id ORDER BY sc.city_id SEPARATOR ',') as client_category_ids,
-            GROUP_CONCAT(DISTINCT CONCAT(sc.city_name, ' – ', sc.city_category) SEPARATOR '<br>') as client_categories
+            GROUP_CONCAT(DISTINCT sc.city_name ORDER BY sc.city_name SEPARATOR ', ') as client_cities_list,
+            GROUP_CONCAT(DISTINCT sc.city_category ORDER BY sc.city_category SEPARATOR ', ') as client_categories_list
         " . $base_sql_from . "
         LEFT JOIN `client_cities` cc ON c.client_id = cc.client_id
         LEFT JOIN `settings_cities` sc ON cc.city_id = sc.city_id
@@ -351,6 +352,8 @@ require_once SYSTEM . '/layouts/head.php';
                                                     <th>ФИО</th>
                                                     <th>Телефон</th>
                                                     <th>Номер паспорта</th>
+                                                    <th>Город</th>
+                                                    <th>Категория</th>
                                                     <?php if (in_array($user_data['user_group'], [1, 2])): ?>
                                                         <th>Менеджер</th>
                                                         <th>Агент</th>
@@ -381,6 +384,8 @@ require_once SYSTEM . '/layouts/head.php';
                                                     <td><?= valid(trim($client['last_name'] . ' ' . $client['first_name'] . ' ' . $client['middle_name'])) ?></td>
                                                     <td><?= valid($client['phone']) ?></td>
                                                     <td><?= valid($client['passport_number']) ?></td>
+                                                    <td><?= valid($client['client_cities_list']) ?></td>
+                                                    <td><?= valid($client['client_categories_list']) ?></td>
                                                     <?php if (in_array($user_data['user_group'], [1, 2])): ?>
                                                         <td><?= valid(($client['manager_firstname'] ?? '') . ' ' . ($client['manager_lastname'] ?? '')) ?></td>
                                                         <td><?= valid(($client['agent_firstname'] ?? '') . ' ' . ($client['agent_lastname'] ?? '')) ?></td>
