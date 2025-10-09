@@ -243,11 +243,54 @@ require_once SYSTEM . '/layouts/head.php';
                             <div class="card">
                                 <div class="card-body">
                                     <div class="row mb-2">
-                                        <div class="col-sm-4">
+                                        <div class="col-sm-5">
                                             <?php if ($user_data['user_group'] != 2 && $can_create_client): // Все, кроме Руководителя, могут добавлять анкеты, если ВЦ и страна активны ?>
                                             <a href="/?page=new-client&center=<?= $center_id ?>" class="btn btn-success"><i class="mdi mdi-plus-circle me-2"></i> Добавить анкету</a>
                                             <?php endif; ?>
                                         </div>
+                                        <div class="col-sm-7">
+                                            <div class="text-sm-end">
+                                                <div class="dropdown btn-group">
+                                                    <button class="btn btn-light mb-2 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Действия</button>
+                                                    <div class="dropdown-menu dropdown-menu-animated">
+                                                        <?php
+                                                        $user_group = (int)$user_data['user_group'];
+                                                        switch ((int)$current_status) {
+                                                            case 1: // В работе
+                                                                if ($user_group === 1) { echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'confirm\')">Записать</a>'; }
+                                                                if (in_array($user_group, [1, 3, 4])) { echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'archive\')">В архив</a>'; }
+                                                                break;
+                                                            case 2: // Записанные
+                                                                if ($user_group === 1) { echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'archive\')">В архив</a>'; }
+                                                                break;
+                                                            case 3: // Черновики
+                                                                if ($user_group === 1) { echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'approve_draft\')">Одобрить</a>'; }
+                                                                if (in_array($user_group, [3, 4])) { echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'review\')">На рассмотрение</a>'; }
+                                                                if (in_array($user_group, [1, 3, 4])) { echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'archive\')">В архив</a>'; }
+                                                                break;
+                                                            case 4: // Архив
+                                                                if (in_array($user_group, [1, 3, 4])) { echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'restore\')">Восстановить</a>'; }
+                                                                break;
+                                                            case 5: // На рассмотрении у Директора
+                                                                if ($user_group === 1) {
+                                                                    echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'approve\')">Одобрить</a>';
+                                                                    echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'decline\')">Отклонить</a>';
+                                                                    echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'archive\')">В архив</a>';
+                                                                }
+                                                                break;
+                                                            case 6: // На рассмотрении у Менеджера
+                                                                if ($user_group === 3) {
+                                                                    echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'approve_manager\')">Одобрить</a>';
+                                                                    echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'decline\')">Отклонить</a>';
+                                                                    echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'archive\')">В архив</a>';
+                                                                }
+                                                                break;
+                                                        }
+                                                        ?>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div><!-- end col-->
                                     </div>
 
                                     <!-- Nav tabs -->
@@ -298,6 +341,12 @@ require_once SYSTEM . '/layouts/head.php';
                                         <table class="table table-centered table-striped dt-responsive nowrap w-100" id="clients-datatable">
                                             <thead>
                                                 <tr>
+                                                    <th style="width: 20px;">
+                                                        <div class="form-check">
+                                                            <input type="checkbox" class="form-check-input" id="customCheck0">
+                                                            <label class="form-check-label" for="customCheck0">&nbsp;</label>
+                                                        </div>
+                                                    </th>
                                                     <th>ID</th>
                                                     <th>ФИО</th>
                                                     <th>Телефон</th>
@@ -315,6 +364,12 @@ require_once SYSTEM . '/layouts/head.php';
                                             <tbody>
                                                 <?php if ($processed_clients): foreach ($processed_clients as $client): ?>
                                                 <tr>
+                                                    <td>
+                                                        <div class="form-check">
+                                                            <input type="checkbox" class="form-check-input" id="customCheck<?= $client['client_id'] ?>">
+                                                            <label class="form-check-label" for="customCheck<?= $client['client_id'] ?>">&nbsp;</label>
+                                                        </div>
+                                                    </td>
                                                     <td>
                                                         <span style="display:none;"><?= $client['sort_id'] ?? $client['client_id'] ?></span>
                                                         <?php if (isset($client['is_duplicate']) && $client['is_duplicate']): ?>
