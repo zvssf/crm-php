@@ -270,7 +270,7 @@ require_once SYSTEM . '/layouts/head.php';
                                                 </div>
                                                 <div class="mb-3">
                                                     <label for="days_until_visit" class="form-label">Дни до визита</label>
-                                                    <input type="number" class="form-control" id="days_until_visit" name="days_until_visit" placeholder="0" data-toggle="touchspin">
+                                                    <input type="text" class="form-control" id="days_until_visit" name="days_until_visit" placeholder="Введите дни до визита" data-toggle="touchspin">
                                                 </div>
                                                 <div class="mb-3">
                                                     <label for="notes" class="form-label">Ваши пометки</label>

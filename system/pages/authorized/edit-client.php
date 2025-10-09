@@ -406,8 +406,8 @@ require_once SYSTEM . '/layouts/head.php';
                                                 <div class="mb-3">
                                                     <label for="days_until_visit" class="form-label">Дни до
                                                         визита</label>
-                                                    <input type="number" class="form-control" id="days_until_visit"
-                                                        name="days_until_visit" placeholder="0"
+                                                    <input type="text" class="form-control" id="days_until_visit"
+                                                        name="days_until_visit" placeholder="Введите дни до визита"
                                                         value="<?= valid($client_data['days_until_visit']) ?>"
                                                         data-toggle="touchspin" <?= $is_readonly ? 'disabled' : '' ?>>
                                                 </div>
