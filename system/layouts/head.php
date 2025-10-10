@@ -53,28 +53,72 @@
         border-color: #fa5c7c !important;
     }
 
-    .duplicate-marker {
+    /* --- СТИЛИ ДЛЯ ЛИНИЙ ДУБЛИКАТОВ (ФИНАЛЬНАЯ ВЕРСИЯ) --- */
+    #clients-datatable tbody td:nth-child(2) { /* 2-я колонка (ID) */
         position: relative;
-        padding-left: 25px; /* Отступ для ID дубля */
     }
 
-    .duplicate-marker::before {
+    /* Горизонтальная линия-отвод для всех дочерних анкет (применяется к TD) */
+    .table-info-light:not(.main-duplicate-row) > td:nth-child(2)::after {
         content: '';
         position: absolute;
-        left: 10px; /* Положение вертикальной части линии */
-        top: -16px; /* Насколько линия уходит вверх */
-        height: 40px; /* Высота строки + небольшой запас */
-        border-left: 1px solid #727cf5; /* Цвет линии */
-    }
-
-    .duplicate-marker::after {
-        content: '';
-        position: absolute;
-        left: 10px; /* Начало горизонтальной линии */
+        left: 15px;
         top: 50%;
+        width: 10px;
+        border-bottom: 1px solid #727cf5;
         transform: translateY(-50%);
-        width: 10px; /* Длина горизонтальной линии */
-        border-bottom: 1px solid #727cf5; /* Цвет линии */
+    }
+
+    /* Сдвиг вправо для ID вложенных анкет */
+    .duplicate-marker {
+        padding-left: 15px;
+    }
+
+    /* Вертикальная линия для ГЛАВНОЙ анкеты */
+    .main-duplicate-row > td:nth-child(2)::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 50%; /* Начинается от середины главной строки */
+        bottom: 0;
+        border-left: 1px solid #727cf5;
+    }
+    
+    /* Вертикальная линия для ПРОМЕЖУТОЧНЫХ дочерних анкет */
+    .table-info-light:not(.main-duplicate-row):not(.is-last-duplicate) > td:nth-child(2)::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 0;
+        bottom: 0; /* Растягивается на всю высоту */
+        border-left: 1px solid #727cf5;
+    }
+
+    /* Вертикальная линия для ПОСЛЕДНЕЙ дочерней анкеты */
+    .is-last-duplicate > td:nth-child(2)::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 0;
+        height: 50%; /* Заканчивается на середине последней строки */
+        border-left: 1px solid #727cf5;
+    }
+
+    /* Убираем верхнюю границу у строк дубликатов, чтобы линия была сплошной */
+    tr.table-info-light + tr.table-info-light > td {
+        border-top: none !important;
+    }
+    /* --- КОНЕЦ СТИЛЕЙ --- */
+
+    .details-control i {
+        cursor: pointer;
+        font-size: 16px;
+    }
+    .table-info-light > td, .table-info-light > th {
+        background-color: #414d5f !important; /* Цвет фона для темной темы */
+    }
+    html[data-theme="light"] .table-info-light > td, html[data-theme="light"] .table-info-light > th {
+        background-color: #e8f0fe !important; /* Цвет фона для светлой темы */
     }
 </style>
 
