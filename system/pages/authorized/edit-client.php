@@ -67,6 +67,11 @@ $is_readonly = false;
 $user_group = $user_data['user_group'];
 $client_status = (int) $client_data['client_status'];
 
+// Анкеты в статусе "Отменён" всегда только для чтения
+if ($client_status === 7) {
+    $is_readonly = true;
+}
+
 // Блокируем форму для всех, кроме Директора, если статус "В работе" или "Записанные"
 if (in_array($client_status, [1, 2]) && $user_group != 1) {
     $is_readonly = true;

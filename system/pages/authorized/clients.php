@@ -54,7 +54,7 @@ switch ($user_data['user_group']) {
         $default_status = 2;
         break;
     case 4: // Агент
-        $allowed_statuses = [1, 2, 3, 4];
+        $allowed_statuses = [1, 2, 3, 4, 7]; // Добавляем статус 7
         $default_status = 2;
         break;
 }
@@ -102,8 +102,8 @@ try {
     }
 
     // Запрос для получения счетчиков
-    $counts = array_fill(1, 6, 0);
-    $sql_counts = "SELECT c.client_status, COUNT(*) as count " . $base_sql_from . $where_conditions . " AND c.client_status IN (1, 2, 3, 4, 5, 6) GROUP BY c.client_status";
+    $counts = array_fill(1, 7, 0);
+    $sql_counts = "SELECT c.client_status, COUNT(*) as count " . $base_sql_from . $where_conditions . " AND c.client_status IN (1, 2, 3, 4, 5, 6, 7) GROUP BY c.client_status";
     $stmt_counts = $pdo->prepare($sql_counts);
     $stmt_counts->execute($params);
     $status_counts = $stmt_counts->fetchAll(PDO::FETCH_KEY_PAIR);
@@ -166,7 +166,7 @@ try {
                     if ((float) $a['sale_price'] != (float) $b['sale_price']) {
                         return (float) $b['sale_price'] <=> (float) $a['sale_price']; // Сначала по убыванию цены
                     }
-                    return $a['client_id'] <=> $b['client_id']; // Затем по возрастанию ID
+                    return $b['client_id'] <=> $a['client_id']; // Затем по убыванию ID
                 });
 
                 // Первая анкета после сортировки - главная
@@ -177,8 +177,8 @@ try {
                 foreach ($current_group as $index => &$member) {
                     // Основной ключ сортировки, чтобы группа держалась вместе
                     $member['sort_group_id'] = $main_client_data['client_id'];
-                    // Вторичный ключ, инвертированный для правильной DESC сортировки
-                    $member['sort_in_group_order'] = $group_size - $index;
+                    // Вторичный ключ для сохранения внутреннего порядка (0 для главной, 1, 2... для дочерних)
+                    $member['sort_in_group_order'] = $index;
 
                     // Поля для сортировки, взятые из главной анкеты
                     $member['sort_client_name'] = trim($main_client_data['last_name'] . ' ' . $main_client_data['first_name'] . ' ' . $main_client_data['middle_name']);
@@ -209,6 +209,7 @@ try {
     } else {
         $processed_clients = $clients;
     }
+    
 
     $pdo = null;
 
@@ -237,7 +238,7 @@ require_once SYSTEM . '/layouts/head.php';
                     <!-- start page title -->
                     <div class="row">
                         <div class="col-12">
-                            <div class="page-title-box">
+                            <div class="page-title-box"> 
                                 <div class="page-title-right">
                                     <ol class="breadcrumb m-0">
                                         <li class="breadcrumb-item"><a href="/?page=dashboard"><i
@@ -372,6 +373,15 @@ require_once SYSTEM . '/layouts/head.php';
                                                 </a>
                                             </li>
                                         <?php endif; ?>
+
+                                        <?php if (in_array(7, $allowed_statuses)): ?>
+                                            <li class="nav-item">
+                                                <a href="/?page=clients&center=<?= $center_id ?>&status=7"
+                                                    class="nav-link <?= ($current_status == 7) ? 'active' : '' ?>">
+                                                    Отменённые <span class="badge bg-secondary ms-1"><?= $counts[7] ?></span>
+                                                </a>
+                                            </li>
+                                        <?php endif; ?>
                                     </ul>
 
                                     <div class="table-responsive">
@@ -435,8 +445,9 @@ require_once SYSTEM . '/layouts/head.php';
                                                         $base_agent = valid($client['sort_agent'] ?? (($client['agent_firstname'] ?? '') . ' ' . ($client['agent_lastname'] ?? '')));
                                                         $base_price = $client['sort_price'] ?? (float) $client['sale_price'];
 
-                                                        // Создаем ключ для стабильной сортировки, который гарантирует порядок внутри группы
-                                                        $stable_sort_key = sprintf('%011d', $base_group_id) . '-' . sprintf('%03d', $base_in_group_order);
+                                                        // Создаем два ключа сортировки для колонки ID, чтобы обеспечить правильный внутренний порядок в группе при любом направлении сортировки.
+                                                        $asc_sort_key = sprintf('%011d', $base_group_id) . '-' . sprintf('%03d', $base_in_group_order);
+                                                        $desc_sort_key = sprintf('%011d', $base_group_id) . '-' . sprintf('%03d', 999 - $base_in_group_order);
                                                         ?>
                                                         <tr class="<?= trim($row_classes) ?>">
                                                             <td>
@@ -448,7 +459,8 @@ require_once SYSTEM . '/layouts/head.php';
                                                                 </div>
                                                             </td>
                                                             <td>
-                                                                <span style="display:none;"><?= $stable_sort_key ?></span>
+                                                                <span class="sort-asc" style="display:none;"><?= $asc_sort_key ?></span>
+                                                                <span class="sort-desc" style="display:none;"><?= $desc_sort_key ?></span>
                                                                 <span
                                                                     class="<?= trim($span_classes) ?>"><?= $client['client_id'] ?></span>
                                                             </td>
@@ -554,6 +566,10 @@ require_once SYSTEM . '/layouts/head.php';
                                                                             echo '<a href="#" class="font-18 text-danger me-2" onclick="modalDeclineClientForm(' . $client['client_id'] . ')" title="Отклонить"><i class="uil uil-times-circle"></i></a>';
                                                                             echo '<a href="#" class="font-18 text-danger" title="В архив" onclick="modalDelClientForm(' . $client['client_id'] . ', \'' . $client_name_js . '\')"><i class="uil uil-trash"></i></a>';
                                                                         }
+                                                                        break;
+
+                                                                    case 7: // Отменённые
+                                                                        echo '<a href="/?page=edit-client&id=' . $client['client_id'] . '" class="font-18 text-info me-2" title="Просмотр"><i class="uil uil-eye"></i></a>';
                                                                         break;
                                                                 }
                                                                 ?>

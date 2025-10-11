@@ -62,10 +62,10 @@
     .table-info-light:not(.main-duplicate-row) > td:nth-child(2)::after {
         content: '';
         position: absolute;
-        left: 15px;
-        top: 50%;
-        width: 10px;
-        border-bottom: 1px solid #727cf5;
+        left: 20px;
+        top: 48%;
+        width: 6px;
+        border-bottom: 2px solid #8391a2;
         transform: translateY(-50%);
     }
 
@@ -78,30 +78,30 @@
     .main-duplicate-row > td:nth-child(2)::before {
         content: '';
         position: absolute;
-        left: 15px;
-        top: 50%; /* Начинается от середины главной строки */
+        left: 18px;
+        top: 68%; /* Начинается от середины главной строки */
         bottom: 0;
-        border-left: 1px solid #727cf5;
+        border-left: 2px solid #8391a2;
     }
     
     /* Вертикальная линия для ПРОМЕЖУТОЧНЫХ дочерних анкет */
     .table-info-light:not(.main-duplicate-row):not(.is-last-duplicate) > td:nth-child(2)::before {
         content: '';
         position: absolute;
-        left: 15px;
+        left: 18px;
         top: 0;
         bottom: 0; /* Растягивается на всю высоту */
-        border-left: 1px solid #727cf5;
+        border-left: 2px solid #8391a2;
     }
 
     /* Вертикальная линия для ПОСЛЕДНЕЙ дочерней анкеты */
     .is-last-duplicate > td:nth-child(2)::before {
         content: '';
         position: absolute;
-        left: 15px;
+        left: 18px;
         top: 0;
         height: 50%; /* Заканчивается на середине последней строки */
-        border-left: 1px solid #727cf5;
+        border-left: 2px solid #8391a2;
     }
 
     /* Убираем верхнюю границу у строк дубликатов, чтобы линия была сплошной */

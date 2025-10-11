@@ -26,8 +26,8 @@ try {
     $stmt_status = $pdo->prepare("UPDATE `clients` SET `client_status` = 2 WHERE `client_id` = :client_id AND `client_status` = 1");
     $stmt_status->execute([':client_id' => $client_id]);
 
-    // 4. Получаем данные анкеты (агент и стоимость)
-    $stmt_client = $pdo->prepare("SELECT `agent_id`, `sale_price` FROM `clients` WHERE `client_id` = :client_id");
+    // 4. Получаем данные анкеты (агент, стоимость и номер паспорта)
+    $stmt_client = $pdo->prepare("SELECT `agent_id`, `sale_price`, `passport_number` FROM `clients` WHERE `client_id` = :client_id");
     $stmt_client->execute([':client_id' => $client_id]);
     $client_info = $stmt_client->fetch(PDO::FETCH_ASSOC);
 
@@ -56,6 +56,21 @@ try {
                 $stmt_update_supplier->execute([':cost' => $cost_price, ':supplier_id' => $supplier_id]);
             }
         }
+    }
+
+    // 7. Отменяем остальные анкеты-дубликаты (статус "В работе")
+    if ($client_info && !empty($client_info['passport_number'])) {
+        $stmt_cancel_duplicates = $pdo->prepare(
+            "UPDATE `clients` 
+             SET `client_status` = 7 
+             WHERE `passport_number` = :passport_number 
+               AND `client_id` != :client_id 
+               AND `client_status` = 1"
+        );
+        $stmt_cancel_duplicates->execute([
+            ':passport_number' => $client_info['passport_number'],
+            ':client_id'       => $client_id
+        ]);
     }
 
     $pdo->commit();
