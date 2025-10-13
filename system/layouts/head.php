@@ -120,6 +120,28 @@
     html[data-theme="light"] .table-info-light > td, html[data-theme="light"] .table-info-light > th {
         background-color: #e8f0fe !important; /* Цвет фона для светлой темы */
     }
+
+    /* --- СТИЛИ ДЛЯ КАЛЕНДАРЯ --- */
+    /* Общие стили для селекторов месяца и года */
+    .daterangepicker .monthselect, .daterangepicker .yearselect {
+        font-size: .8rem;
+        padding: .2rem .4rem;
+        border-radius: .2rem;
+        border: 1px solid #6c757d; /* Серая обводка по умолчанию */
+    }
+
+    /* Стили для темной темы */
+    .daterangepicker .monthselect, .daterangepicker .yearselect {
+        background-color: #414d5f; /* Фон для темной темы */
+        color: #eef2f7; /* Цвет текста для темной темы */
+    }
+    
+    /* Стили для светлой темы */
+    html[data-theme="light"] .daterangepicker .monthselect, html[data-theme="light"] .daterangepicker .yearselect {
+        background-color: #ffffff; /* Фон для светлой темы */
+        color: #6c757d; /* Цвет текста для светлой темы */
+    }
+    /* --- КОНЕЦ СТИЛЕЙ ДЛЯ КАЛЕНДАРЯ --- */
 </style>
 
 </head>

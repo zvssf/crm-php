@@ -196,11 +196,11 @@ require_once SYSTEM . '/layouts/head.php';
                                                 </div>
                                                 <div class="mb-3">
                                                     <label for="birth_date" class="form-label">Дата рождения</label>
-                                                    <input type="text" class="form-control" data-toggle="input-mask" data-mask-format="00.00.0000" id="birth_date" name="birth_date" placeholder="ДД.ММ.ГГГГ">
+                                                    <input type="text" class="form-control" id="birth_date" name="birth_date" placeholder="ДД.ММ.ГГГГ">
                                                 </div>
                                                 <div class="mb-3">
                                                     <label for="passport_expiry_date" class="form-label">Срок действия паспорта</label>
-                                                    <input type="text" class="form-control" data-toggle="input-mask" data-mask-format="00.00.0000" id="passport_expiry_date" name="passport_expiry_date" placeholder="ДД.ММ.ГГГГ">
+                                                    <input type="text" class="form-control" id="passport_expiry_date" name="passport_expiry_date" placeholder="ДД.ММ.ГГГГ">
                                                 </div>
                                                 <div class="mb-3">
                                                     <label for="nationality" class="form-label">Национальность</label>
@@ -436,6 +436,23 @@ require_once SYSTEM . '/layouts/head.php';
 
             $('#nationality').on('select2:open', function(e) {
                 document.querySelector('.select2-container--open .select2-search__field').setAttribute('placeholder', 'Поиск...');
+            });
+
+            const datepickerOptions = {
+                singleDatePicker: true,
+                showDropdowns: true,
+                autoUpdateInput: false,
+                locale: { "format": "DD.MM.YYYY", "applyLabel": "Применить", "cancelLabel": "Отмена", "fromLabel": "С", "toLabel": "По", "weekLabel": "Н", "daysOfWeek": ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"], "monthNames": ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"], "firstDay": 1 }
+            };
+
+            $('#birth_date, #passport_expiry_date').daterangepicker(datepickerOptions);
+
+            $('#birth_date, #passport_expiry_date').on('apply.daterangepicker', function (ev, picker) {
+                $(this).val(picker.startDate.format('DD.MM.YYYY'));
+            });
+
+            $('#birth_date, #passport_expiry_date').on('cancel.daterangepicker', function (ev, picker) {
+                $(this).val('');
             });
 
             $('#select-manager').on('change', function() {
