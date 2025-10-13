@@ -273,7 +273,7 @@ require_once SYSTEM . '/layouts/head.php';
                                                 </div>
                                                 <div class="mb-3">
                                                     <label for="days_until_visit" class="form-label">Дни до визита</label>
-                                                    <input type="text" class="form-control" id="days_until_visit" name="days_until_visit" placeholder="Введите дни до визита" data-toggle="touchspin">
+                                                    <input type="text" class="form-control" id="days_until_visit" name="days_until_visit" placeholder="Введите дни до визита" data-toggle="touchspin" data-max="9999">
                                                 </div>
                                                 <div class="mb-3">
                                                     <label for="notes" class="form-label">Ваши пометки</label>
@@ -430,8 +430,19 @@ require_once SYSTEM . '/layouts/head.php';
                 autoUpdateInput: false,
                 locale: { "format": "DD.MM.YYYY", "separator": " - ", "applyLabel": "Применить", "cancelLabel": "Отмена", "fromLabel": "С", "toLabel": "По", "weekLabel": "Н", "daysOfWeek": ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"], "monthNames": ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"], "firstDay": 1 }
             });
-            $('#visit_dates').on('apply.daterangepicker', function(ev, picker) { $(this).val(picker.startDate.format('DD.MM.YYYY') + ' - ' + picker.endDate.format('DD.MM.YYYY')); });
-            $('#visit_dates').on('cancel.daterangepicker', function(ev, picker) { $(this).val(''); });
+            $('#visit_dates').on('apply.daterangepicker', function(ev, picker) { 
+                $(this).val(picker.startDate.format('DD.MM.YYYY') + ' - ' + picker.endDate.format('DD.MM.YYYY')); 
+                
+                // Автоматический расчет дней
+                const startDate = picker.startDate;
+                const today = moment().startOf('day');
+                const diffDays = startDate.diff(today, 'days');
+                $('#days_until_visit').val(diffDays >= 0 ? diffDays : 0).trigger("change");
+            });
+            $('#visit_dates').on('cancel.daterangepicker', function(ev, picker) { 
+                $(this).val(''); 
+                $('#days_until_visit').val(0).trigger("change");
+            });
             $('#visit_dates').val('');
 
             $('#nationality').on('select2:open', function(e) {
