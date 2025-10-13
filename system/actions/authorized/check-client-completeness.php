@@ -18,7 +18,7 @@ try {
     }
 
     $required_fields = [
-        'first_name', 'last_name', 'middle_name', 'gender', 'phone', 'email',
+        'first_name', 'last_name', 'gender', 'phone', 'email',
         'passport_number', 'birth_date', 'passport_expiry_date', 'nationality',
         'visit_date_start', 'visit_date_end', 'days_until_visit'
     ];
@@ -37,4 +37,5 @@ try {
     error_log('DB Error: ' . $e->getMessage());
     echo json_encode(['is_complete' => false, 'message' => 'Ошибка базы данных.']);
 }
+$pdo = null;
 exit;

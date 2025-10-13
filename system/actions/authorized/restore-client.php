@@ -7,8 +7,11 @@ if (empty($client_id) || !preg_match('/^[0-9]{1,11}$/u', $client_id)) {
 
 try {
     $pdo = db_connect();
-    $stmt = $pdo->prepare("UPDATE `clients` SET `client_status` = 3 WHERE `client_id` = :client_id AND `client_status` = 4");
-    $stmt->execute([':client_id' => $client_id]);
+    $stmt = $pdo->prepare("UPDATE `clients` SET `client_status` = 3, `creator_id` = :creator_id WHERE `client_id` = :client_id AND `client_status` = 4");
+    $stmt->execute([
+        ':creator_id' => $user_data['user_id'],
+        ':client_id' => $client_id
+    ]);
 
     message('Уведомление', 'Анкета восстановлена из архива!', 'success', '');
 

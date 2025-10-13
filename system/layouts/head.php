@@ -64,14 +64,14 @@
         position: absolute;
         left: 20px;
         top: 48%;
-        width: 6px;
+        width: 13px;
         border-bottom: 2px solid #8391a2;
         transform: translateY(-50%);
     }
 
     /* Сдвиг вправо для ID вложенных анкет */
     .duplicate-marker {
-        padding-left: 15px;
+        padding-left: 25px;
     }
 
     /* Вертикальная линия для ГЛАВНОЙ анкеты */

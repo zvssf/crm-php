@@ -32,7 +32,7 @@ return [
         ],
         'forms' => [
             'profile-edit',
-            'profile-new-password',
+            'profile-new-password', 'get-additional-fields'
         ],
     ],
     'manager' => [

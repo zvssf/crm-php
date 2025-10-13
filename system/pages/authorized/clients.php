@@ -74,43 +74,73 @@ try {
         LEFT JOIN `users` manager ON agent.user_supervisor = manager.user_id
     ";
 
-    $where_conditions = "WHERE c.center_id = :center_id";
-    $params = [':center_id' => $center_id];
+    // --- НАЧАЛО БЛОКА ПОДСЧЕТА ---
+    // Сначала создаем базовые условия фильтрации для счетчиков, основанные ИСКЛЮЧИТЕЛЬНО на иерархии ролей.
+    // Этот фильтр НЕ зависит от текущей активной вкладки.
+    $counters_where_conditions = "WHERE c.center_id = :center_id";
+    $counters_params = [':center_id' => $center_id];
 
-    // Формируем базовые WHERE условия для каждой роли
     switch ($user_data['user_group']) {
         case 2: // Руководитель
-            $where_conditions .= " AND manager.user_supervisor = :user_id";
-            $params[':user_id'] = $user_data['user_id'];
+            $counters_where_conditions .= " AND manager.user_supervisor = :user_id";
+            $counters_params[':user_id'] = $user_data['user_id'];
             break;
         case 3: // Менеджер
-            // Для вкладки "Черновики" менеджер видит ТОЛЬКО свои анкеты
-            if ($current_status == 3) {
-                $where_conditions .= " AND c.agent_id = :user_id";
-                $params[':user_id'] = $user_data['user_id'];
-            } else {
-                // Для всех остальных вкладок он видит анкеты своих агентов И свои собственные
-                $where_conditions .= " AND (manager.user_id = :manager_user_id OR c.agent_id = :agent_user_id)";
-                $params[':manager_user_id'] = $user_data['user_id'];
-                $params[':agent_user_id'] = $user_data['user_id'];
-            }
+            $counters_where_conditions .= " AND (manager.user_id = :manager_user_id OR c.agent_id = :agent_user_id)";
+            $counters_params[':manager_user_id'] = $user_data['user_id'];
+            $counters_params[':agent_user_id'] = $user_data['user_id'];
             break;
         case 4: // Агент
-            $where_conditions .= " AND c.agent_id = :user_id";
-            $params[':user_id'] = $user_data['user_id'];
+            $counters_where_conditions .= " AND c.agent_id = :user_id";
+            $counters_params[':user_id'] = $user_data['user_id'];
             break;
     }
 
     // Запрос для получения счетчиков
     $counts = array_fill(1, 7, 0);
-    $sql_counts = "SELECT c.client_status, COUNT(*) as count " . $base_sql_from . $where_conditions . " AND c.client_status IN (1, 2, 3, 4, 5, 6, 7) GROUP BY c.client_status";
-    $stmt_counts = $pdo->prepare($sql_counts);
-    $stmt_counts->execute($params);
-    $status_counts = $stmt_counts->fetchAll(PDO::FETCH_KEY_PAIR);
+    // Получаем счетчики для всех статусов, КРОМЕ черновиков, по правилам иерархии
+    $sql_other_counts = "SELECT c.client_status, COUNT(*) as count " . $base_sql_from . $counters_where_conditions . " AND c.client_status IN (1, 2, 4, 5, 6, 7) GROUP BY c.client_status";
+    $stmt_other_counts = $pdo->prepare($sql_other_counts);
+    $stmt_other_counts->execute($counters_params);
+    $status_counts = $stmt_other_counts->fetchAll(PDO::FETCH_KEY_PAIR);
 
     foreach ($status_counts as $status => $count) {
         if (isset($counts[$status])) {
             $counts[$status] = $count;
+        }
+    }
+
+    // Отдельно и ПРАВИЛЬНО считаем черновики (только созданные текущим пользователем)
+    $sql_draft_count = "SELECT COUNT(*) FROM `clients` c WHERE c.center_id = :center_id AND c.client_status = 3 AND c.creator_id = :user_id";
+    $stmt_draft_count = $pdo->prepare($sql_draft_count);
+    $stmt_draft_count->execute([':center_id' => $center_id, ':user_id' => $user_data['user_id']]);
+    $counts[3] = $stmt_draft_count->fetchColumn();
+    // --- КОНЕЦ БЛОКА ПОДСЧЕТА ---
+
+    // --- НАЧАЛО БЛОКА ФИЛЬТРАЦИИ ДЛЯ ОТОБРАЖЕНИЯ ТАБЛИЦЫ ---
+    // Теперь создаем фильтр для основного запроса, который ЗАВИСИТ от текущей вкладки.
+    $where_conditions = "WHERE c.center_id = :center_id";
+    $params = [':center_id' => $center_id];
+
+    if ($current_status == 3) {
+        $where_conditions .= " AND c.creator_id = :user_id";
+        $params[':user_id'] = $user_data['user_id'];
+    } else {
+        // Для всех остальных вкладок действуют стандартные правила иерархии
+        switch ($user_data['user_group']) {
+            case 2: // Руководитель
+                $where_conditions .= " AND manager.user_supervisor = :user_id";
+                $params[':user_id'] = $user_data['user_id'];
+                break;
+            case 3: // Менеджер
+                $where_conditions .= " AND (manager.user_id = :manager_user_id OR c.agent_id = :agent_user_id)";
+                $params[':manager_user_id'] = $user_data['user_id'];
+                $params[':agent_user_id'] = $user_data['user_id'];
+                break;
+            case 4: // Агент
+                $where_conditions .= " AND c.agent_id = :user_id";
+                $params[':user_id'] = $user_data['user_id'];
+                break;
         }
     }
 
@@ -605,7 +635,7 @@ require_once SYSTEM . '/layouts/head.php';
                     <div class="text-center">
                         <i class="ri-delete-bin-5-line h1"></i>
                         <h4 class="mt-2">Отправка в Архив</h4>
-                        <p class="mt-3">Отправить в архив анкету <span class="span-client-name"></span>?</p>
+                        <p class="mt-3">Отправить в архив анкету<br><span class="span-client-name"></span>?</p>
                         <button type="button" class="btn btn-light my-2" data-bs-dismiss="modal">Отправить</button>
                     </div>
                 </div>
@@ -862,11 +892,19 @@ require_once SYSTEM . '/layouts/head.php';
         $(document).ready(function () {
             $('#clients-datatable').on('click', 'a[title="В архив"]', function (e) {
                 e.preventDefault();
-                let row = $(this).closest('tr');
-                let clientId = row.find('td:first').text().trim();
-                let clientName = row.find('td:nth-child(2)').text().trim().split('\n')[0];
-                modalDelClientForm(clientId, clientName);
-                $('#del-client-modal').modal('show');
+                
+                // Получаем ID и Имя напрямую из атрибута onclick
+                const onclickAttr = $(this).attr('onclick');
+                const matches = onclickAttr.match(/modalDelClientForm\((\d+), '(.*?)'\)/);
+                
+                if (matches && matches.length === 3) {
+                    const clientId = matches[1];
+                    const clientName = matches[2];
+
+                    // Вызываем функцию с правильными данными
+                    modalDelClientForm(clientId, clientName);
+                    $('#del-client-modal').modal('show');
+                }
             });
         });
     </script>

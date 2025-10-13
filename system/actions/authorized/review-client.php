@@ -18,7 +18,7 @@ try {
     }
 
     $required_fields = [
-        'first_name', 'last_name', 'middle_name', 'gender', 'phone', 'email',
+        'first_name', 'last_name', 'gender', 'phone', 'email',
         'passport_number', 'birth_date', 'passport_expiry_date', 'nationality',
         'visit_date_start', 'visit_date_end', 'days_until_visit'
     ];
@@ -28,27 +28,13 @@ try {
         }
     }
 
-    // Шаг 2: Определяем, кто отправляет анкету, по создателю
-    $stmt_get_creator = $pdo->prepare("
-        SELECT u.user_group 
-        FROM `clients` c 
-        JOIN `users` u ON c.agent_id = u.user_id 
-        WHERE c.client_id = :client_id
-    ");
-    $stmt_get_creator->execute([':client_id' => $client_id]);
-    $creator_group = $stmt_get_creator->fetchColumn();
-
-    if (!$creator_group) {
-        message('Ошибка', 'Не удалось найти создателя анкеты.', 'error', '');
-    }
-    
-    // Шаг 3: Определяем следующий статус
-    // Если создатель - Менеджер (группа 3), анкета идет к Директору (статус 5).
-    // Если создатель - Агент (группа 4), анкета идет к Менеджеру (статус 6).
-    $next_status = match ((int)$creator_group) {
+    // Шаг 2: Определяем следующий статус на основе того, КТО выполняет действие
+    // Если действие выполняет Менеджер (группа 3), анкета идет к Директору (статус 5).
+    // Если действие выполняет Агент (группа 4), анкета идет к Менеджеру (статус 6).
+    $next_status = match ((int)$user_data['user_group']) {
         3 => 5, // от Менеджера -> к Директору
         4 => 6, // от Агента -> к Менеджеру
-        default => 6, // По умолчанию
+        default => 5, // По умолчанию (например, если Директор отправляет чужой черновик)
     };
 
     // Шаг 4: Обновляем статус анкеты
@@ -61,3 +47,4 @@ try {
     error_log('DB Error: ' . $e->getMessage());
     message('Ошибка', 'Не удалось отправить анкету на рассмотрение.', 'error', '');
 }
+$pdo = null;

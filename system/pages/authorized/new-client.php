@@ -26,6 +26,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'get_agents_by_manager') {
         error_log('DB Error on get_agents_by_manager: ' . $e->getMessage());
         echo json_encode([]);
     }
+    $pdo = null;
     exit;
 }
 
@@ -111,6 +112,7 @@ try {
 } catch (PDOException $e) {
     error_log('DB Error fetching users for new-client page: ' . $e->getMessage());
 }
+$pdo_users = null;
 
 require_once SYSTEM . '/layouts/head.php';
 ?>
@@ -241,6 +243,7 @@ require_once SYSTEM . '/layouts/head.php';
                                                                 <option value="<?= $agent['user_id'] ?>"><?= valid($agent['user_firstname'] . ' ' . $agent['user_lastname']) ?></option>
                                                             <?php endforeach; ?>
                                                         </select>
+                                                        <div class="invalid-feedback">Выберите агента!</div>
                                                     </div>
                                                 <?php endif; ?>
                                                 <div class="mb-3">

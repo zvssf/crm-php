@@ -108,6 +108,7 @@ function message(msg_title, msg_text, msg_type, msg_url) {
   if(msg_url) {
     sessionStorage.setItem('msg_title', msg_title);
     sessionStorage.setItem('msg_text', msg_text);
+    sessionStorage.setItem('msg_type', msg_type); // Добавили сохранение типа
     redirect(msg_url);
   }
 }
@@ -122,9 +123,11 @@ function sessionStorageMSG() {
   if(sessionStorage.getItem('msg_title')) {
     var msg_title = sessionStorage.getItem('msg_title');
     var msg_text = sessionStorage.getItem('msg_text');
-    message(msg_title, msg_text, 'success', '');
+    var msg_type = sessionStorage.getItem('msg_type') || 'success'; // Считываем тип
+    message(msg_title, msg_text, msg_type, ''); // Используем считанный тип
     sessionStorage.removeItem('msg_title');
     sessionStorage.removeItem('msg_text');
+    sessionStorage.removeItem('msg_type'); // Удаляем тип из хранилища
   }
 }
 $(window).on('load', sessionStorageMSG());

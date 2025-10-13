@@ -96,11 +96,11 @@ try {
 
     $sql = "
         INSERT INTO `clients` (
-            `center_id`, `agent_id`, `client_name`, `client_status`, `first_name`, `last_name`, `middle_name`, 
+            `center_id`, `agent_id`, `creator_id`, `client_name`, `client_status`, `first_name`, `last_name`, `middle_name`, 
             `gender`, `phone`, `email`, `passport_number`, `birth_date`, `passport_expiry_date`, 
             `nationality`, `visit_date_start`, `visit_date_end`, `days_until_visit`, `notes`, `sale_price`
         ) VALUES (
-            :center_id, :agent_id, :client_name, :status, :first_name, :last_name, :middle_name, 
+            :center_id, :agent_id, :creator_id, :client_name, :status, :first_name, :last_name, :middle_name, 
             :gender, :phone, :email, :passport_number, :birth_date, :passport_expiry_date, 
             :nationality, :visit_date_start, :visit_date_end, :days_until_visit, :notes, :sale_price
         )
@@ -111,6 +111,7 @@ try {
     $stmt->execute([
         ':center_id' => $center_id,
         ':agent_id' => $agent_id,
+        ':creator_id' => $user_data['user_id'],
         ':client_name' => $client_name,
         ':status' => $status,
         ':first_name' => $first_name,
