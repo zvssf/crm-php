@@ -563,9 +563,9 @@ require_once SYSTEM . '/layouts/head.php';
                                                                             }
                                                                         } else {
                                                                             echo '<a href="/?page=edit-client&id=' . $client['client_id'] . '" class="font-18 text-info me-2" title="Редактировать"><i class="uil uil-pen"></i></a>';
-                                                                            if ($user_group === 1 && $client['agent_group'] == 1) { // Директор одобряет свой черновик
+                                                                            if ($user_group === 1) { // Директор всегда может одобрить любой черновик
                                                                                 echo '<a href="#" class="font-18 text-success me-2" onclick="sendApproveDraftDirectorForm(' . $client['client_id'] . ')" title="Одобрить"><i class="uil uil-check-circle"></i></a>';
-                                                                            } elseif (in_array($user_group, [3, 4]) || ($user_group === 1 && $client['agent_group'] != 1)) { // Менеджер/Агент/Директор отправляют чужой черновик
+                                                                            } elseif (in_array($user_group, [3, 4])) { // Менеджер и Агент отправляют на рассмотрение
                                                                                 echo '<a href="#" class="font-18 text-primary me-2" onclick="sendReviewClientForm(' . $client['client_id'] . ')" title="На рассмотрение"><i class="uil uil-message"></i></a>';
                                                                             }
                                                                         }
