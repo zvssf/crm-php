@@ -39,6 +39,14 @@ if (empty($center_id) || !preg_match('/^[0-9]{1,11}$/u', $center_id)) {
 
 require_once SYSTEM . '/main-data.php';
 
+$current_center = null;
+foreach ($centers as $center) {
+    if ($center['center_id'] == $center_id) {
+        $current_center = $center;
+        break;
+    }
+}
+
 $current_center_name = $arr_centers[$center_id] ?? null;
 if (!$current_center_name) {
     exit('Визовый центр не найден!');

@@ -408,7 +408,7 @@ require_once SYSTEM . '/layouts/head.php';
                                             <li class="nav-item">
                                                 <a href="/?page=clients&center=<?= $center_id ?>&status=7"
                                                     class="nav-link <?= ($current_status == 7) ? 'active' : '' ?>">
-                                                    Отменённые <span class="badge bg-secondary ms-1"><?= $counts[7] ?></span>
+                                                    Отменённые <span class="badge bg-dark ms-1"><?= $counts[7] ?></span>
                                                 </a>
                                             </li>
                                         <?php endif; ?>

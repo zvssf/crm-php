@@ -37,6 +37,7 @@ if (empty($client_id) || !preg_match('/^[0-9]{1,11}$/u', $client_id)) {
 require_once SYSTEM . '/main-data.php';
 
 try {
+    $current_center = null;
     $pdo = db_connect();
     $stmt = $pdo->prepare("SELECT * FROM `clients` WHERE `client_id` = :client_id");
     $stmt->execute([':client_id' => $client_id]);
@@ -62,6 +63,13 @@ foreach ($centers as $center) {
 $country_name = $arr_countries[$country_id] ?? 'Неизвестная страна';
 
 $page_title = 'Редактирование анкеты';
+$current_center = null;
+foreach ($centers as $center) {
+    if ($center['center_id'] == $center_id) {
+        $current_center = $center;
+        break;
+    }
+}
 
 $is_readonly = false;
 $user_group = $user_data['user_group'];
