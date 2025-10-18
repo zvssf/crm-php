@@ -148,13 +148,13 @@ $active_inputs = array_filter($inputs, function ($input) {
                     </div>
 
                     <div class="row mt-3">
-                      <div class="col-12">
+                      <div class="col-xl-4">
                         <h5 class="mb-4 text-uppercase"><i class="mdi mdi-truck-delivery-outline me-1"></i> Поставщики
                         </h5>
                         <div class="row">
                           <?php if (!empty($suppliers)): ?>
                             <?php foreach ($suppliers as $supplier): ?>
-                              <div class="col-xl-3">
+                              <div class="col-xl-6">
                                 <div class="mb-3 form-check form-switch">
                                   <input type="checkbox" class="form-check-input" id="supplier-<?= $supplier['id'] ?>"
                                     name="suppliers[]" value="<?= $supplier['id'] ?>">
@@ -171,20 +171,20 @@ $active_inputs = array_filter($inputs, function ($input) {
                       </div>
                     </div>
 
-                    <div class="text-end">
-                      <button class="btn btn-success mt-2" type="submit">
-                        <span class="spinner-border spinner-border-sm me-1 btn-loader visually-hidden" role="status"
-                          aria-hidden="true"></span>
-                        <span class="btn-icon"><i class="mdi mdi-content-save me-1"></i> </span>
-                        <span class="loader-text visually-hidden">Отправка...</span>
-                        <span class="btn-text">Добавить</span>
-                      </button>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="text-end mt-3">
+                                <button class="btn btn-success" type="submit">
+                                    <span class="spinner-border spinner-border-sm me-1 btn-loader visually-hidden" role="status"
+                                    aria-hidden="true"></span>
+                                    <span class="btn-icon"><i class="mdi mdi-content-save me-1"></i> </span>
+                                    <span class="loader-text visually-hidden">Отправка...</span>
+                                    <span class="btn-text">Добавить</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                   </form>
-
-                  <!-- end settings content-->
-
-
                 </div> <!-- end card body -->
               </div> <!-- end card -->
 

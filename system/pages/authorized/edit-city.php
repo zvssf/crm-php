@@ -161,7 +161,7 @@ try {
                                         </div>
 
                                         <div class="row mt-3">
-                                            <div class="col-12">
+                                            <div class="col-xl-4">
                                                 <h5 class="mb-4 text-uppercase"><i
                                                         class="mdi mdi-truck-delivery-outline me-1"></i> Поставщики</h5>
                                                 <div class="row">
@@ -169,7 +169,7 @@ try {
                                                         <?php foreach ($suppliers as $supplier):
                                                             $is_checked = in_array($supplier['id'], $saved_supplier_ids);
                                                             ?>
-                                                            <div class="col-xl-3">
+                                                            <div class="col-xl-6">
                                                                 <div class="mb-3 form-check form-switch">
                                                                     <input type="checkbox" class="form-check-input"
                                                                         id="supplier-<?= $supplier['id'] ?>" name="suppliers[]"
@@ -187,14 +187,18 @@ try {
                                             </div>
                                         </div>
 
+                                <div class="row">
+                                            <div class="col-12">
+                                                <div class="text-end mt-3">
+                                                    <button class="btn btn-success" type="submit">
+                                                        <span class="btn-icon"><i class="mdi mdi-content-save me-1"></i> </span>
+                                                        <span class="btn-text">Сохранить</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
                                 </div>
-                                <div class="text-end">
-                                    <button class="btn btn-success mt-2" type="submit">
-                                        <span class="btn-icon"><i class="mdi mdi-content-save me-1"></i> </span>
-                                        <span class="btn-text">Сохранить</span>
-                                    </button>
-                                </div>
-                                </form>
                             </div>
                         </div>
                     </div>
