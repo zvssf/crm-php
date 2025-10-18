@@ -440,6 +440,11 @@ require_once SYSTEM . '/layouts/head.php';
                                                         <th>Агент</th>
                                                     <?php endif; ?>
                                                     <th>Стоимость</th>
+                                                    <?php if ($current_status == 2): ?>
+                                                        <th>Из баланса</th>
+                                                        <th>В кредит</th>
+                                                        <th>Статус</th>
+                                                    <?php endif; ?>
                                                     <th style="width: 120px;">Действия</th>
                                                 </tr>
                                             </thead>
@@ -531,6 +536,28 @@ require_once SYSTEM . '/layouts/head.php';
                                                                     </span>
                                                                 <?php endif; ?>
                                                             </td>
+                                                            <?php if ($current_status == 2): ?>
+                                                            <td>
+                                                                <?php if (!empty($client['paid_from_balance'])): ?>
+                                                                    <span class="text-success fw-semibold"><?= number_format($client['paid_from_balance'], 2, '.', ' ') ?></span>
+                                                                <?php endif; ?>
+                                                            </td>
+                                                            <td>
+                                                                <?php if (!empty($client['paid_from_credit'])): ?>
+                                                                    <span class="text-warning fw-semibold"><?= number_format($client['paid_from_credit'], 2, '.', ' ') ?></span>
+                                                                <?php endif; ?>
+                                                            </td>
+                                                            <td>
+                                                                <?php
+                                                                [$status_css, $status_text] = match ((int) ($client['payment_status'] ?? 0)) {
+                                                                    1 => ['success', 'Оплачено'],
+                                                                    2 => ['warning', 'Кредит'],
+                                                                    default => ['danger', 'Не оплачено'],
+                                                                };
+                                                                ?>
+                                                                <span class="badge badge-<?= $status_css ?>-lighten"><?= $status_text ?></span>
+                                                            </td>
+                                                            <?php endif; ?>
                                                             <td>
                                                                 <?php
                                                                 $client_status = (int) $client['client_status'];
@@ -550,8 +577,13 @@ require_once SYSTEM . '/layouts/head.php';
 
                                                                     case 2: // Записанные
                                                                         echo '<a href="/?page=edit-client&id=' . $client['client_id'] . '" class="font-18 text-info me-2" title="Просмотр"><i class="uil uil-eye"></i></a>';
-                                                                        if ($user_group === 1) { // Только Директор
-                                                                            echo '<a href="#" class="font-18 text-danger" title="В архив" onclick="modalDelClientForm(' . $client['client_id'] . ', \'' . $client_name_js . '\')"><i class="uil uil-trash"></i></a>';
+                                                                        
+                                                                        if (in_array($user_group, [1, 3]) && $client['payment_status'] == 0) { // Директор и Менеджер для неоплаченных
+                                                                            echo '<a href="#" class="font-18 text-warning me-2" onclick="sendPayByCreditForm(' . $client['client_id'] . ')" title="Оплатить в кредит"><i class="mdi mdi-credit-card-plus-outline"></i></a>';
+                                                                        }
+
+                                                                        if ($user_group === 1) { // Только Директор может вернуть в работу
+                                                                            echo '<a href="#" class="font-18 text-primary" title="Вернуть в работу" onclick="sendRevertRecordedForm(' . $client['client_id'] . ')"><i class="mdi mdi-backup-restore"></i></a>';
                                                                         }
                                                                         break;
 
@@ -720,6 +752,10 @@ require_once SYSTEM . '/layouts/head.php';
     <?php require_once SYSTEM . '/layouts/scripts.php'; ?>
 
     <script>
+        const current_status = <?= $current_status ?>;
+    </script>
+
+    <script>
         const userGroup = <?= $user_data['user_group'] ?>;
 
         function createAjaxRequest(formAction, clientId) {
@@ -812,6 +848,41 @@ require_once SYSTEM . '/layouts/head.php';
                 }
             });
         }
+
+        function sendRevertRecordedForm(clientId) {
+            Swal.fire({
+                title: 'Вернуть анкету в работу?',
+                text: "Все финансовые операции по этой анкете будут отменены. Вы уверены?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Да, вернуть!',
+                cancelButtonText: 'Отмена'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    createAjaxRequest('revert-recorded-client', clientId);
+                }
+            })
+        }
+
+        function sendPayByCreditForm(clientId) {
+            Swal.fire({
+                title: 'Оплатить в кредит?',
+                text: "Вы уверены, что хотите использовать кредитный лимит агента для оплаты этой анкеты?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Да, оплатить!',
+                cancelButtonText: 'Отмена'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    createAjaxRequest('pay_client_credit', clientId);
+                }
+            })
+        }
+
         function sendRestoreClientForm(clientId) { createAjaxRequest('restore-client', clientId); }
         function sendApproveClientForm(clientId) { createAjaxRequest('approve-client', clientId); }
         function sendApproveClientManagerForm(clientId) { createAjaxRequest('approve-client-manager', clientId); }

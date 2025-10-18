@@ -18,7 +18,7 @@ return [
             'del-category', 'restore-category', 'confirm-client', 'restore-client', 'new-client', 'del-client',
             'edit-client', 'review-client', 'approve-client', 'decline-client', 'approve-draft-director',
             'check-client-completeness', 'check-client-completeness', 'get-client-categories', 'get-additional-fields',
-            'get-min-sale-price',
+            'get-min-sale-price', 'pay_client_credit', 'revert-recorded-client',
         ],
     ],
     'supervisor' => [
@@ -43,7 +43,7 @@ return [
         'forms' => [
             'profile-edit', 'profile-new-password', 'new-client', 'edit-client', 'del-client', 'restore-client',
             'review-client', 'approve-client-manager', 'decline-client', 'check-client-completeness', 'get-additional-fields',
-            'get-min-sale-price',
+            'get-min-sale-price', 'pay_client_credit.php',
         ],
     ],
     'agent' => [

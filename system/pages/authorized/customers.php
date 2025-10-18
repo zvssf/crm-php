@@ -111,6 +111,7 @@ try {
                                                         <th>Номер телефона</th>
                                                         <th>Должность</th>
                                                         <th>Баланс</th>
+                                                        <th>Кредитный лимит</th>
                                                         <th>Статус</th>
                                                         <th style="width: 75px;">Действия</th>
                                                     </tr>
@@ -154,6 +155,13 @@ try {
                                                         <td>
                                                         <?php if($customer['user_group'] === 4): ?>
                                                             <span class="text-<?= $customer_balance_css ?> fw-semibold"><i class="mdi mdi-currency-usd"></i><?= $customer_balance_plus . number_format($customer['user_balance'], 2, '.', ' ') ?></span>
+                                                            <?php else: ?>
+                                                                -
+                                                                <?php endif; ?>
+                                                        </td>
+                                                        <td>
+                                                        <?php if($customer['user_group'] === 4): ?>
+                                                            <span class="text-warning fw-semibold"><i class="mdi mdi-currency-usd"></i><?= number_format($customer['user_credit_limit'], 2, '.', ' ') ?></span>
                                                             <?php else: ?>
                                                                 -
                                                                 <?php endif; ?>

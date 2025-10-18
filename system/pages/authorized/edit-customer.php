@@ -213,6 +213,12 @@ try {
                                                             <div class="block-managers <?= ($customer_data['user_group'] != '4') ? 'visually-hidden' : '' ?>">
 
                                                                 <?php if($managers): ?>
+
+                                                                <div class="mb-3">
+                                                                    <label for="user-credit-limit" class="form-label">Кредитный лимит</label>
+                                                                    <input type="text" class="form-control" id="user-credit-limit" name="user_credit_limit" value="<?= $customer_data['user_credit_limit'] ?? '0.00' ?>" data-toggle="touchspin" data-step="1" data-min="0" data-max="10000000" data-decimals="2" data-bts-prefix="$">
+                                                                </div>
+                                                                    
                                                                 <div class="mb-3">
                                                                     <label for="select-manager" class="form-label">Менеджер</label>
                                                                     <select id="select-manager" class="form-control select2" data-toggle="select2" name="select-manager">

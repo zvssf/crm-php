@@ -18,6 +18,7 @@ $user_status      = valid($_POST['select-status'] ?? '');
 $user_group       = valid($_POST['select-group'] ?? '');
 $user_supervisor  = valid($_POST['select-supervisor'] ?? '');
 $user_manager     = valid($_POST['select-manager'] ?? '');
+$user_credit_limit = valid($_POST['user_credit_limit'] ?? '0.00');
 
 $cleanTel = preg_replace('/[+\-\s\(\)]+/', '', $user_tel);
 $fullTel  = '+' . ltrim($cleanTel, '+');
@@ -92,7 +93,8 @@ try {
           `user_tel`          = :tel,
           `user_status`       = :status,
           `user_group`        = :group,
-          `user_supervisor`   = :supervisor
+          `user_supervisor`   = :supervisor,
+          `user_credit_limit` = :credit_limit
       WHERE `user_id`         = :user_id
   ");
 
@@ -104,6 +106,7 @@ try {
       ':status'      => $user_status,
       ':group'       => $user_group,
       ':supervisor'  => $supervisor,
+      ':credit_limit'=> ($user_group == 4) ? $user_credit_limit : 0.00,
       ':user_id'     => $user_id
   ]);
 

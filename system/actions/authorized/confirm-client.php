@@ -31,13 +31,26 @@ try {
     $stmt_client->execute([':client_id' => $client_id]);
     $client_info = $stmt_client->fetch(PDO::FETCH_ASSOC);
 
-    // 5. Вычитаем стоимость из баланса агента
+    // 5. Логика списания средств и определения статуса оплаты
     if ($client_info && !empty($client_info['agent_id']) && !empty($client_info['sale_price']) && $client_info['sale_price'] > 0) {
-        $stmt_agent_balance = $pdo->prepare("UPDATE `users` SET `user_balance` = `user_balance` - :sale_price WHERE `user_id` = :agent_id");
-        $stmt_agent_balance->execute([
-            ':sale_price' => $client_info['sale_price'],
-            ':agent_id'   => $client_info['agent_id']
-        ]);
+        $stmt_agent = $pdo->prepare("SELECT `user_balance` FROM `users` WHERE `user_id` = :agent_id");
+        $stmt_agent->execute([':agent_id' => $client_info['agent_id']]);
+        $agent_balance = (float) $stmt_agent->fetchColumn();
+
+        $sale_price = (float) $client_info['sale_price'];
+        
+        if ($agent_balance >= $sale_price) {
+            // Сценарий 1: Денег достаточно
+            $pdo->prepare("UPDATE `users` SET `user_balance` = `user_balance` - :sale_price WHERE `user_id` = :agent_id")
+                ->execute([':sale_price' => $sale_price, ':agent_id' => $client_info['agent_id']]);
+            
+            $pdo->prepare("UPDATE `clients` SET `payment_status` = 1, `paid_from_balance` = :sale_price WHERE `client_id` = :client_id")
+                ->execute([':sale_price' => $sale_price, ':client_id' => $client_id]);
+        } else {
+            // Сценарий 2: Денег недостаточно, анкета становится "Не оплаченной"
+            $pdo->prepare("UPDATE `clients` SET `payment_status` = 0, `paid_from_balance` = 0, `paid_from_credit` = 0 WHERE `client_id` = :client_id")
+                ->execute([':client_id' => $client_id]);
+        }
     }
 
     // 6. Списываем себестоимость с баланса привязанных поставщиков
