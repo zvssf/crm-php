@@ -9,6 +9,24 @@ $user_supervisor  = valid($_POST['select-supervisor'] ?? '');
 $user_manager     = valid($_POST['select-manager'] ?? '');
 $new_password     = valid($_POST['new-password'] ?? '');
 $confirm_password = valid($_POST['confirm-password'] ?? '');
+$user_credit_limit = valid($_POST['user_credit_limit'] ?? '0.00');
+
+$user_address     = valid($_POST['user_address'] ?? '');
+$user_website     = valid($_POST['user_website'] ?? '');
+$user_comment     = valid($_POST['user_comment'] ?? '');
+
+$messengers_post = $_POST['messengers'] ?? [];
+$messenger_parts = [];
+if (is_array($messengers_post)) {
+    foreach ($messengers_post as $key => $value) {
+        $clean_key = valid($key);
+        $clean_value = valid($value);
+        if (!empty($clean_value)) {
+            $messenger_parts[] = $clean_key . ':' . $clean_value;
+        }
+    }
+}
+$user_messengers = implode('|', $messenger_parts);
 
 
 $cleanTel = preg_replace('/[+\-\s\(\)]+/', '', $user_tel);
@@ -91,7 +109,12 @@ try {
             `user_firstname`,
             `user_lastname`,
             `user_tel`,
-            `user_supervisor`
+            `user_supervisor`,
+            `user_address`,
+            `user_website`,
+            `user_messengers`,
+            `user_comment`,
+            `user_credit_limit`
         ) VALUES (
             :login,
             :password,
@@ -101,7 +124,12 @@ try {
             :firstname,
             :lastname,
             :tel,
-            :supervisor
+            :supervisor,
+            :address,
+            :website,
+            :messengers,
+            :comment,
+            :credit_limit
         )
     ");
 
@@ -113,7 +141,12 @@ try {
         ':firstname'   => $user_firstname,
         ':lastname'    => $user_lastname,
         ':tel'         => $fullTel,
-        ':supervisor'  => $supervisor
+        ':supervisor'  => $supervisor,
+        ':address'     => $user_address,
+        ':website'     => $user_website,
+        ':messengers'  => $user_messengers,
+        ':comment'     => $user_comment,
+        ':credit_limit'=> ($user_group == 4) ? $user_credit_limit : 0.00
     ]);
 
     message('Уведомление', 'Добавление выполнено!', 'success', 'customers');
