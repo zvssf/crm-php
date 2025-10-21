@@ -18,7 +18,7 @@ return [
             'del-category', 'restore-category', 'confirm-client', 'restore-client', 'new-client', 'del-client',
             'edit-client', 'review-client', 'approve-client', 'decline-client', 'approve-draft-director',
             'check-client-completeness', 'check-client-completeness', 'get-client-categories', 'get-additional-fields',
-            'get-min-sale-price', 'pay_client_credit', 'revert-recorded-client',
+            'get-min-sale-price', 'pay_client_credit', 'revert-recorded-client', 'get-country-fields',
         ],
     ],
     'supervisor' => [

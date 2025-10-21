@@ -149,99 +149,70 @@ require_once SYSTEM . '/layouts/head.php';
 
 
                 <!-- Danger Alert Modal -->
-<div id="del-country-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-sm">
-        <div class="modal-content modal-filled bg-danger">
-            <div class="modal-body p-4">
-                <div class="text-center">
-                    <i class="ri-delete-bin-5-line h1"></i>
-                    <h4 class="mt-2">Удаление</h4>
-                    <p class="mt-3">Вы уверены что хотите удалить страну "<span class="span-country-name"></span>"?</p>
-                    <button type="button" class="btn btn-light my-2" data-bs-dismiss="modal" attr-country-id="" onclick="sendDelCountryForm()">Удалить</button>
-                </div>
-            </div>
-        </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-</div><!-- /.modal -->
+                <div id="del-country-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog modal-sm">
+                        <div class="modal-content modal-filled bg-danger">
+                            <div class="modal-body p-4">
+                                <div class="text-center">
+                                    <i class="ri-delete-bin-5-line h1"></i>
+                                    <h4 class="mt-2">Удаление</h4>
+                                    <p class="mt-3">Вы уверены что хотите удалить страну "<span class="span-country-name"></span>"?</p>
+                                    <button type="button" class="btn btn-light my-2" data-bs-dismiss="modal" attr-country-id="" onclick="sendDelCountryForm()">Удалить</button>
+                                </div>
+                            </div>
+                        </div><!-- /.modal-content -->
+                    </div><!-- /.modal-dialog -->
+                </div><!-- /.modal -->
 
                           
+                <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRightCountry" aria-labelledby="offcanvasRightLabel">
+                    <div class="offcanvas-header">
+                        <h5 id="offcanvasRightLabel"></h5>
+                        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div> <!-- end offcanvas-header-->
 
+                    <div class="offcanvas-body">
+                        
+                        <form onsubmit="sendCountryForm('#form-country button[type=submit]')" id="form-country" class="needs-validation" novalidate>
 
+                            <input type="hidden" name="country-edit-id" value="">
+                            <input type="hidden" name="field_settings" id="field-settings-json">
 
+                            <div class="mb-3">
+                                <label for="country-name" class="form-label">Название страны</label>
+                                <input type="text" class="form-control" id="country-name" placeholder="Введите название страны" name="country-name" value="" maxlength="25" data-toggle="maxlength" required>
+                                <div class="invalid-feedback">Введите название страны!</div>
+                            </div>
 
+                            <div class="mb-3">
+                                <label for="select-country-status" class="form-label">Статус страны</label>
+                                <select class="form-select" id="select-country-status" name="select-country-status">
+                                    <option value="1">Активен</option>
+                                    <option value="2">Заблокирован</option>
+                                </select>
+                            </div>
 
+                            <div class="mb-3">
+                                <label class="form-label">Настройка полей анкеты</label>
+                                <div>
+                                    <button type="button" class="btn btn-light" id="btn-configure-fields" data-bs-toggle="modal" data-bs-target="#modal-country-fields">
+                                        <i class="mdi mdi-cogs me-1"></i> Настроить поля
+                                    </button>
+                                </div>
+                            </div>
+                    
+                            <div class="text-end">
+                                <button class="btn btn-success mt-2" type="submit">
+                                    <span class="spinner-border spinner-border-sm me-1 btn-loader visually-hidden" role="status" aria-hidden="true"></span>
+                                    <span class="btn-icon"><i class="mdi mdi-content-save me-1"></i> </span>
+                                    <span class="loader-text visually-hidden">Отправка...</span>
+                                    <span class="btn-text"></span>
+                                </button>
+                            </div>
+                        </form>
 
-
-
-
-
-<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRightCountry" aria-labelledby="offcanvasRightLabel">
-                                                        <div class="offcanvas-header">
-                                                            <h5 id="offcanvasRightLabel"></h5>
-                                                            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-                                                        </div> <!-- end offcanvas-header-->
-
-                                                        <div class="offcanvas-body">
-                                                            
-                                                        
-
-
-                                                        <form onsubmit="sendCountryForm('#form-country button[type=submit]')" id="form-country" class="needs-validation" novalidate>
-
-                                                        <input type="text" class="visually-hidden" name="country-edit-id" value="">
-
-                                                            <div class="mb-3">
-                                                                <label for="country-name" class="form-label">Название страны</label>
-                                                                <input type="text" class="form-control" id="country-name" placeholder="Введите название страны" name="country-name" value="" maxlength="25" data-toggle="maxlength" required>
-                                                                <div class="invalid-feedback">Введите название страны!</div>
-                                                            </div>
-
-
-
-
-                                                    
-
-
-
-
-
-
-                                                            <div class="mb-3">
-                                                                <label for="select-country-status" class="form-label">Статус страны</label>
-                                                                <select class="form-select" id="select-country-status" name="select-country-status">
-                                                                    <option value="1">Активен</option>
-                                                                    <option value="2">Заблокирован</option>
-                                                                </select>
-                                                            </div>
-                                                    
-                                                    <div class="text-end">
-                                                        <button class="btn btn-success mt-2" type="submit">
-                                                            <span class="spinner-border spinner-border-sm me-1 btn-loader visually-hidden" role="status" aria-hidden="true"></span>
-                                                            <span class="btn-icon"><i class="mdi mdi-content-save me-1"></i> </span>
-                                                            <span class="loader-text visually-hidden">Отправка...</span>
-                                                            <span class="btn-text"></span>
-                                                        </button>
-                                                    </div>
-                                                </form>
-
-
-
-
-
-                                                        </div> <!-- end offcanvas-body-->
-                                                    </div> <!-- end offcanvas-->
-
-
-
-
-
-
-
-
-
-
-
-                
+                    </div> <!-- end offcanvas-body-->
+                </div> <!-- end offcanvas-->
 
             </div>
 
@@ -254,40 +225,90 @@ require_once SYSTEM . '/layouts/head.php';
 
 
         <script>
+            function modalOnCountry(type, id, name, status) {
+                let modalTitle = $('#offcanvasRightCountry .offcanvas-header h5');
+                let countryId = $('#form-country input[name="country-edit-id"]');
+                let countryName = $('#form-country #country-name');
+                let btn = $('#form-country button[type=submit] .btn-text');
+                $('#form-country #select-country-status option').prop('selected', false);
+                
+                // Общие сбросы
+                modalTitle.text('');
+                countryId.val('');
+                countryName.val('');
+                $('#field-settings-json').val('');
+                const configureBtn = document.getElementById('btn-configure-fields');
+                const icon = configureBtn ? configureBtn.querySelector('i.text-success') : null;
+                if (icon) {
+                    icon.remove();
+                }
 
-function modalOnCountry(type, id, name, status) {
-    let modalTitle = $('#offcanvasRightCountry .offcanvas-header h5');
-    let countryId = $('#form-country input[name="country-edit-id"]');
-    let countryName = $('#form-country #country-name');
-    let btn = $('#form-country button[type=submit] .btn-text');
-    $('#form-country #select-country-status option').prop('selected', false);
-    
-
-    modalTitle.text('');
-    countryId.val('');
-    countryName.val('');
-    
                 if(type == 'new') {
                     modalTitle.text('Добавление страны');
                     $('#form-country #select-country-status option[value="1"]').prop('selected', true);
                     btn.text('Добавить');
+
+                    // Сбрасываем все переключатели в модальном окне настроек в состояние по умолчанию
+                    const fieldsModal = document.getElementById('modal-country-fields');
+                    if (fieldsModal) {
+                        const switches = fieldsModal.querySelectorAll('.field-switch');
+                        switches.forEach(s => {
+                            if (s.dataset.type === 'visible') {
+                                s.checked = true;
+                                const event = new Event('change', { bubbles: true });
+                                s.dispatchEvent(event);
+                            } else if (s.dataset.type === 'required') {
+                                s.checked = false;
+                            }
+                        });
+                    }
+
                 } else if(type == 'edit') {
                     modalTitle.text('Редактирование страны');
                     countryId.val(id);
                     countryName.val(name);
                     $('#form-country #select-country-status option[value="' + status + '"]').prop('selected', true);
-
-
-
-
-
-
                     btn.text('Сохранить');
+
+                    // Загружаем настройки полей для этой страны
+                    $.ajax({
+                        url:      '/?form=get-country-fields',
+                        type:     'POST',
+                        dataType: 'json',
+                        data:     { 'country_id': id },
+                        success:  function(settings) {
+                            if (settings && Object.keys(settings).length > 0) {
+                                // Применяем загруженные настройки к переключателям
+                                const fieldsModal = document.getElementById('modal-country-fields');
+                                const switches = fieldsModal.querySelectorAll('.form-check-input');
+                                switches.forEach(s => {
+                                    const fieldName = s.dataset.field;
+                                    const type = s.dataset.type;
+                                    if (settings[fieldName]) {
+                                        s.checked = settings[fieldName][type === 'visible' ? 'is_visible' : 'is_required'];
+                                        // Принудительно вызываем событие, чтобы обновить состояние зависимых свитчей
+                                        const event = new Event('change', { bubbles: true });
+                                        s.dispatchEvent(event);
+                                    }
+                                });
+                                // Добавляем иконку, что настройки загружены
+                                let icon = configureBtn.querySelector('i.text-success');
+                                if (!icon) {
+                                    icon = document.createElement('i');
+                                    icon.classList.add('mdi', 'mdi-check-circle', 'text-success', 'ms-1');
+                                    configureBtn.appendChild(icon);
+                                }
+                            }
+                        },
+                        error: function() {
+                            message('Ошибка', 'Не удалось загрузить настройки полей.', 'error', '');
+                        }
+                    });
                 }
             }
 
 
-function sendCountryForm(btn) {
+            function sendCountryForm(btn) {
                 event.preventDefault();
                 loaderBTN(btn, 'true');
                 let countryId = $('#form-country input[name="country-edit-id"]').val();
@@ -317,7 +338,6 @@ function sendCountryForm(btn) {
                     }
                 });
             }
-
 
             
             function modalDelCountryForm(countryid, countryname) {
@@ -363,33 +383,327 @@ function sendCountryForm(btn) {
                     }
                 });
             }
-            // function sendProfileNewPassForm(btn) {
-            //     loaderBTN(btn, 'true');
-            //     jQuery.ajax({
-            //         url:      'form',
-            //         type:     'POST',
-            //         dataType: 'html',
-            //         data:     jQuery('#form-profile-new-password').serialize(),
-            //         success:  function(response) {
-            //             loaderBTN(btn, 'false');
-            //             result = jQuery.parseJSON(response);
-            //             if(result.success_type == 'message') {
-            //                 message(result.msg_title, result.msg_text, result.msg_type, result.msg_url);
-            //             } else if(result.success_type == 'redirect') {
-            //                 redirect(result.url);
-            //             }
-            //         },
-            //         error:  function() {
-            //             loaderBTN(btn, 'false');
-            //             message('Ошибка', 'Ошибка отправки формы!', 'error');
-            //         }
-            //     });
-            // }
         </script>
 
 
         <?php
         require_once SYSTEM . '/layouts/scripts.php';
         ?>
+
+        <div class="modal fade" id="modal-country-fields" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modal-country-fields-label" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modal-country-fields-label">Настройка полей для анкеты</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-xl-4">
+                                <h5 class="mb-3 text-uppercase"><i class="mdi mdi-account-circle me-1"></i> Основная информация</h5>
+                                
+                                <div class="d-flex justify-content-between align-items-center mb-3 p-2 bg-light rounded">
+                                    <label class="form-label mb-0 fw-bold">Имя</label>
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="switch-visible-first_name" data-field="first_name" data-type="visible" checked disabled>
+                                            <label class="form-check-label" for="switch-visible-first_name">Наличие</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="switch-required-first_name" data-field="first_name" data-type="required" checked disabled>
+                                            <label class="form-check-label" for="switch-required-first_name">Обязательность</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mb-3 p-2 bg-light rounded">
+                                    <label class="form-label mb-0 fw-bold">Фамилия</label>
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="switch-visible-last_name" data-field="last_name" data-type="visible" checked disabled>
+                                            <label class="form-check-label" for="switch-visible-last_name">Наличие</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="switch-required-last_name" data-field="last_name" data-type="required" checked disabled>
+                                            <label class="form-check-label" for="switch-required-last_name">Обязательность</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <label class="form-label mb-0">Отчество</label>
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input field-switch" type="checkbox" id="switch-visible-middle_name" data-field="middle_name" data-type="visible" checked>
+                                            <label class="form-check-label" for="switch-visible-middle_name">Наличие</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input field-switch" type="checkbox" id="switch-required-middle_name" data-field="middle_name" data-type="required">
+                                            <label class="form-check-label" for="switch-required-middle_name">Обязательность</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <label class="form-label mb-0">Мобильный телефон</label>
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input field-switch" type="checkbox" id="switch-visible-phone" data-field="phone" data-type="visible" checked>
+                                            <label class="form-check-label" for="switch-visible-phone">Наличие</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input field-switch" type="checkbox" id="switch-required-phone" data-field="phone" data-type="required">
+                                            <label class="form-check-label" for="switch-required-phone">Обязательность</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <label class="form-label mb-0">Пол</label>
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input field-switch" type="checkbox" id="switch-visible-gender" data-field="gender" data-type="visible" checked>
+                                            <label class="form-check-label" for="switch-visible-gender">Наличие</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input field-switch" type="checkbox" id="switch-required-gender" data-field="gender" data-type="required">
+                                            <label class="form-check-label" for="switch-required-gender">Обязательность</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <label class="form-label mb-0">Email</label>
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input field-switch" type="checkbox" id="switch-visible-email" data-field="email" data-type="visible" checked>
+                                            <label class="form-check-label" for="switch-visible-email">Наличие</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input field-switch" type="checkbox" id="switch-required-email" data-field="email" data-type="required">
+                                            <label class="form-check-label" for="switch-required-email">Обязательность</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-4">
+                                <h5 class="mb-3 text-uppercase"><i class="mdi mdi-card-account-details-outline me-1"></i> Документы</h5>
+
+                                <div class="d-flex justify-content-between align-items-center mb-3 p-2 bg-light rounded">
+                                    <label class="form-label mb-0 fw-bold">Номер паспорта</label>
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="switch-visible-passport_number" data-field="passport_number" data-type="visible" checked disabled>
+                                            <label class="form-check-label" for="switch-visible-passport_number">Наличие</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="switch-required-passport_number" data-field="passport_number" data-type="required" checked disabled>
+                                            <label class="form-check-label" for="switch-required-passport_number">Обязательность</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <label class="form-label mb-0">Дата рождения</label>
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input field-switch" type="checkbox" id="switch-visible-birth_date" data-field="birth_date" data-type="visible" checked>
+                                            <label class="form-check-label" for="switch-visible-birth_date">Наличие</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input field-switch" type="checkbox" id="switch-required-birth_date" data-field="birth_date" data-type="required">
+                                            <label class="form-check-label" for="switch-required-birth_date">Обязательность</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <label class="form-label mb-0">Срок действия паспорта</label>
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input field-switch" type="checkbox" id="switch-visible-passport_expiry_date" data-field="passport_expiry_date" data-type="visible" checked>
+                                            <label class="form-check-label" for="switch-visible-passport_expiry_date">Наличие</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input field-switch" type="checkbox" id="switch-required-passport_expiry_date" data-field="passport_expiry_date" data-type="required">
+                                            <label class="form-check-label" for="switch-required-passport_expiry_date">Обязательность</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <label class="form-label mb-0">Национальность</label>
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input field-switch" type="checkbox" id="switch-visible-nationality" data-field="nationality" data-type="visible" checked>
+                                            <label class="form-check-label" for="switch-visible-nationality">Наличие</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input field-switch" type="checkbox" id="switch-required-nationality" data-field="nationality" data-type="required">
+                                            <label class="form-check-label" for="switch-required-nationality">Обязательность</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-4">
+                                <h5 class="mb-3 text-uppercase"><i class="mdi mdi-information-outline me-1"></i> Информация</h5>
+                                
+                                <div class="d-flex justify-content-between align-items-center mb-3 p-2 bg-light rounded">
+                                    <label class="form-label mb-0 fw-bold">Агент</label>
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="switch-visible-agent_id" data-field="agent_id" data-type="visible" checked disabled>
+                                            <label class="form-check-label" for="switch-visible-agent_id">Наличие</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="switch-required-agent_id" data-field="agent_id" data-type="required" checked disabled>
+                                            <label class="form-check-label" for="switch-required-agent_id">Обязательность</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mb-3 p-2 bg-light rounded">
+                                    <label class="form-label mb-0 fw-bold">Категории</label>
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="switch-visible-city_ids" data-field="city_ids" data-type="visible" checked disabled>
+                                            <label class="form-check-label" for="switch-visible-city_ids">Наличие</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="switch-required-city_ids" data-field="city_ids" data-type="required" checked disabled>
+                                            <label class="form-check-label" for="switch-required-city_ids">Обязательность</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mb-3 p-2 bg-light rounded">
+                                    <label class="form-label mb-0 fw-bold">Стоимость</label>
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="switch-visible-sale_price" data-field="sale_price" data-type="visible" checked disabled>
+                                            <label class="form-check-label" for="switch-visible-sale_price">Наличие</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="switch-required-sale_price" data-field="sale_price" data-type="required" checked disabled>
+                                            <label class="form-check-label" for="switch-required-sale_price">Обязательность</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <label class="form-label mb-0">Даты визита</label>
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input field-switch" type="checkbox" id="switch-visible-visit_dates" data-field="visit_dates" data-type="visible" checked>
+                                            <label class="form-check-label" for="switch-visible-visit_dates">Наличие</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input field-switch" type="checkbox" id="switch-required-visit_dates" data-field="visit_dates" data-type="required">
+                                            <label class="form-check-label" for="switch-required-visit_dates">Обязательность</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <label class="form-label mb-0">Дни до визита</label>
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input field-switch" type="checkbox" id="switch-visible-days_until_visit" data-field="days_until_visit" data-type="visible" checked>
+                                            <label class="form-check-label" for="switch-visible-days_until_visit">Наличие</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input field-switch" type="checkbox" id="switch-required-days_until_visit" data-field="days_until_visit" data-type="required">
+                                            <label class="form-check-label" for="switch-required-days_until_visit">Обязательность</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <label class="form-label mb-0">Ваши пометки</label>
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input field-switch" type="checkbox" id="switch-visible-notes" data-field="notes" data-type="visible" checked>
+                                            <label class="form-check-label" for="switch-visible-notes">Наличие</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input field-switch" type="checkbox" id="switch-required-notes" data-field="notes" data-type="required">
+                                            <label class="form-check-label" for="switch-required-notes">Обязательность</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Отмена</button>
+                        <button type="button" class="btn btn-primary" id="save-field-settings-btn">Сохранить настройки</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const fieldsModal = document.getElementById('modal-country-fields');
+                const saveSettingsBtn = document.getElementById('save-field-settings-btn');
+                const settingsJsonInput = document.getElementById('field-settings-json');
+                
+                fieldsModal.addEventListener('change', function(e) {
+                    // Эта логика должна применяться ТОЛЬКО к изменяемым полям
+                    if (e.target.classList.contains('field-switch') && e.target.dataset.type === 'visible') {
+                        const fieldName = e.target.dataset.field;
+                        const requiredSwitch = document.getElementById('switch-required-' + fieldName);
+                        
+                        if (requiredSwitch) {
+                            if (!e.target.checked) {
+                                // Если "Наличие" ВЫКЛЮЧЕНО, деактивируем и снимаем галочку с "Обязательность"
+                                requiredSwitch.checked = false;
+                                requiredSwitch.disabled = true;
+                            } else {
+                                // Если "Наличие" ВКЛЮЧЕНО, снова делаем "Обязательность" доступным
+                                requiredSwitch.disabled = false;
+                            }
+                        }
+                    }
+                });
+
+                saveSettingsBtn.addEventListener('click', function() {
+                    const settings = {};
+                    const switches = fieldsModal.querySelectorAll('.form-check-input');
+                    
+                    switches.forEach(s => {
+                        const field = s.dataset.field;
+                        const type = s.dataset.type;
+
+                        if (!settings[field]) {
+                            settings[field] = { is_visible: false, is_required: false };
+                        }
+
+                        if (type === 'visible') {
+                            settings[field].is_visible = s.checked;
+                        } else if (type === 'required') {
+                            settings[field].is_required = s.checked;
+                        }
+                    });
+
+                    settingsJsonInput.value = JSON.stringify(settings);
+                    
+                    const configureBtn = document.getElementById('btn-configure-fields');
+                    if (configureBtn) {
+                        let icon = configureBtn.querySelector('i.text-success');
+                        if (!icon) {
+                            icon = document.createElement('i');
+                            icon.classList.add('mdi', 'mdi-check-circle', 'text-success', 'ms-1');
+                            configureBtn.appendChild(icon);
+                        }
+                    }
+
+                    const modal = bootstrap.Modal.getInstance(fieldsModal);
+                    modal.hide();
+                });
+            });
+        </script>
         </body>
 </html>

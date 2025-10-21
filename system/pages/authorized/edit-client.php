@@ -63,6 +63,57 @@ foreach ($centers as $center) {
 $country_name = $arr_countries[$country_id] ?? 'Неизвестная страна';
 
 $page_title = 'Редактирование анкеты';
+
+// --- НАЧАЛО БЛОКА ЗАГРУЗКИ НАСТРОЕК ПОЛЕЙ ---
+
+// Настройки по умолчанию (все поля видимы, но не обязательны, кроме ключевых)
+$field_settings = [
+    'first_name' => ['is_visible' => true, 'is_required' => true],
+    'last_name' => ['is_visible' => true, 'is_required' => true],
+    'middle_name' => ['is_visible' => true, 'is_required' => false],
+    'phone' => ['is_visible' => true, 'is_required' => true],
+    'gender' => ['is_visible' => true, 'is_required' => false],
+    'email' => ['is_visible' => true, 'is_required' => false],
+    'passport_number' => ['is_visible' => true, 'is_required' => true],
+    'birth_date' => ['is_visible' => true, 'is_required' => false],
+    'passport_expiry_date' => ['is_visible' => true, 'is_required' => false],
+    'nationality' => ['is_visible' => true, 'is_required' => false],
+    'agent_id' => ['is_visible' => true, 'is_required' => true],
+    'city_ids' => ['is_visible' => true, 'is_required' => true],
+    'sale_price' => ['is_visible' => true, 'is_required' => true],
+    'visit_dates' => ['is_visible' => true, 'is_required' => false],
+    'days_until_visit' => ['is_visible' => true, 'is_required' => false],
+    'notes' => ['is_visible' => true, 'is_required' => false],
+];
+
+try {
+    // $pdo уже был создан ранее в этом файле
+    $stmt_fields = $pdo->prepare("
+        SELECT `field_name`, `is_visible`, `is_required` 
+        FROM `settings_country_fields` 
+        WHERE `country_id` = :country_id
+    ");
+    $stmt_fields->execute([':country_id' => $country_id]);
+    $db_settings = $stmt_fields->fetchAll(PDO::FETCH_ASSOC);
+    
+    if ($db_settings) {
+        foreach ($db_settings as $row) {
+            if (isset($field_settings[$row['field_name']])) {
+                // Не позволяем переопределять видимость и обязательность для жестко заданных полей
+                if (!in_array($row['field_name'], ['first_name', 'last_name', 'passport_number', 'agent_id', 'city_ids', 'sale_price', 'phone'])) {
+                     $field_settings[$row['field_name']]['is_visible'] = (bool)$row['is_visible'];
+                     $field_settings[$row['field_name']]['is_required'] = (bool)$row['is_required'];
+                }
+            }
+        }
+    }
+
+} catch (PDOException $e) {
+    error_log('DB Error fetching field settings: ' . $e->getMessage());
+}
+
+// --- КОНЕЦ БЛОКА ЗАГРУЗКИ НАСТРОЕК ПОЛЕЙ ---
+
 $current_center = null;
 foreach ($centers as $center) {
     if ($center['center_id'] == $center_id) {
@@ -249,13 +300,19 @@ require_once SYSTEM . '/layouts/head.php';
                                                         value="<?= valid($client_data['last_name']) ?>" required
                                                         <?= $is_readonly ? 'disabled' : '' ?>>
                                                 </div>
+
+                                                <?php if ($field_settings['middle_name']['is_visible']): ?>
                                                 <div class="mb-3">
                                                     <label for="middle_name" class="form-label">Отчество</label>
                                                     <input type="text" class="form-control" id="middle_name"
                                                         name="middle_name" placeholder="Введите отчество"
                                                         value="<?= valid($client_data['middle_name']) ?>"
+                                                        <?php if ($field_settings['middle_name']['is_required'] && !$is_readonly): ?>required<?php endif; ?>
                                                         <?= $is_readonly ? 'disabled' : '' ?>>
                                                 </div>
+                                                <?php endif; ?>
+
+                                                <?php if ($field_settings['phone']['is_visible']): ?>
                                                 <div class="mb-3">
                                                     <label for="phone_number" class="form-label">Мобильный
                                                         телефон</label>
@@ -263,27 +320,34 @@ require_once SYSTEM . '/layouts/head.php';
                                                         <span class="input-group-text">+</span>
                                                         <input type="text" class="form-control" placeholder="Код"
                                                             name="phone_code" id="phone_code" value="<?= $phone_code ?>"
-                                                            required style="max-width: 80px;" <?= $is_readonly ? 'disabled' : '' ?>>
+                                                            style="max-width: 80px;" <?php if ($field_settings['phone']['is_required'] && !$is_readonly): ?>required<?php endif; ?> <?= $is_readonly ? 'disabled' : '' ?>>
                                                         <input type="text" class="form-control"
                                                             placeholder="Номер телефона" name="phone_number"
-                                                            id="phone_number" value="<?= $phone_number ?>" required
+                                                            id="phone_number" value="<?= $phone_number ?>" <?php if ($field_settings['phone']['is_required'] && !$is_readonly): ?>required<?php endif; ?>
                                                             <?= $is_readonly ? 'disabled' : '' ?>>
                                                     </div>
                                                 </div>
+                                                <?php endif; ?>
+
+                                                <?php if ($field_settings['gender']['is_visible']): ?>
                                                 <div class="mb-3">
                                                     <label for="gender" class="form-label">Пол</label>
                                                     <select class="form-select" id="gender" name="gender"
-                                                        <?= $is_readonly ? 'disabled' : '' ?>>
+                                                        <?php if ($field_settings['gender']['is_required'] && !$is_readonly): ?>required<?php endif; ?> <?= $is_readonly ? 'disabled' : '' ?>>
                                                         <option value="male" <?= ($client_data['gender'] == 'male') ? 'selected' : '' ?>>Мужской</option>
                                                         <option value="female" <?= ($client_data['gender'] == 'female') ? 'selected' : '' ?>>Женский</option>
                                                     </select>
                                                 </div>
+                                                <?php endif; ?>
+
+                                                <?php if ($field_settings['email']['is_visible']): ?>
                                                 <div class="mb-3">
                                                     <label for="email" class="form-label">Email</label>
                                                     <input type="email" class="form-control" id="email" name="email"
                                                         placeholder="Введите email"
-                                                        value="<?= valid($client_data['email']) ?>" <?= $is_readonly ? 'disabled' : '' ?>>
+                                                        value="<?= valid($client_data['email']) ?>" <?php if ($field_settings['email']['is_required'] && !$is_readonly): ?>required<?php endif; ?> <?= $is_readonly ? 'disabled' : '' ?>>
                                                 </div>
+                                                <?php endif; ?>
 
                                                 <div id="additional-fields-container">
                                                     <hr>
@@ -308,24 +372,32 @@ require_once SYSTEM . '/layouts/head.php';
                                                         value="<?= valid($client_data['passport_number']) ?>" required
                                                         <?= $is_readonly ? 'disabled' : '' ?>>
                                                 </div>
+
+                                                <?php if ($field_settings['birth_date']['is_visible']): ?>
                                                 <div class="mb-3">
                                                     <label for="birth_date" class="form-label">Дата рождения</label>
                                                     <input type="text" class="form-control" id="birth_date" name="birth_date"
                                                         value="<?= !empty($client_data['birth_date']) ? date('d.m.Y', strtotime($client_data['birth_date'])) : '' ?>"
-                                                        placeholder="ДД.ММ.ГГГГ" <?= $is_readonly ? 'disabled' : '' ?>>
+                                                        placeholder="ДД.ММ.ГГГГ" <?php if ($field_settings['birth_date']['is_required'] && !$is_readonly): ?>required<?php endif; ?> <?= $is_readonly ? 'disabled' : '' ?>>
                                                 </div>
+                                                <?php endif; ?>
+
+                                                <?php if ($field_settings['passport_expiry_date']['is_visible']): ?>
                                                 <div class="mb-3">
                                                     <label for="passport_expiry_date" class="form-label">Срок действия
                                                         паспорта</label>
                                                     <input type="text" class="form-control" id="passport_expiry_date"
                                                         name="passport_expiry_date"
                                                         value="<?= !empty($client_data['passport_expiry_date']) ? date('d.m.Y', strtotime($client_data['passport_expiry_date'])) : '' ?>"
-                                                        placeholder="ДД.ММ.ГГГГ" <?= $is_readonly ? 'disabled' : '' ?>>
+                                                        placeholder="ДД.ММ.ГГГГ" <?php if ($field_settings['passport_expiry_date']['is_required'] && !$is_readonly): ?>required<?php endif; ?> <?= $is_readonly ? 'disabled' : '' ?>>
                                                 </div>
+                                                <?php endif; ?>
+
+                                                <?php if ($field_settings['nationality']['is_visible']): ?>
                                                 <div class="mb-3">
                                                     <label for="nationality" class="form-label">Национальность</label>
                                                     <select id="nationality" class="form-control select2"
-                                                        data-toggle="select2" name="nationality" <?= $is_readonly ? 'disabled' : '' ?>>
+                                                        data-toggle="select2" name="nationality" <?php if ($field_settings['nationality']['is_required'] && !$is_readonly): ?>required<?php endif; ?> <?= $is_readonly ? 'disabled' : '' ?>>
                                                         <option value="">Выберите национальность...</option>
                                                         <?php foreach ($nationalities_list as $nationality): ?>
                                                             <option value="<?= $nationality ?>"
@@ -333,6 +405,7 @@ require_once SYSTEM . '/layouts/head.php';
                                                         <?php endforeach; ?>
                                                     </select>
                                                 </div>
+                                                <?php endif; ?>
                                             </div>
 
                                             <!-- Блок Информация -->
@@ -379,6 +452,7 @@ require_once SYSTEM . '/layouts/head.php';
                                                         <div class="invalid-feedback">Выберите агента!</div>
                                                     </div>
                                                 <?php endif; ?>
+
                                                 <div class="mb-3">
                                                     <label class="form-label">Категории</label>
                                                     <div>
@@ -398,10 +472,11 @@ require_once SYSTEM . '/layouts/head.php';
 
                                                 <div class="mb-3" id="sale-price-wrapper">
                                                     <label for="sale_price" class="form-label">Стоимость</label>
-                                                    <input type="text" class="form-control" id="sale_price" name="sale_price" value="<?= valid($client_data['sale_price'] ?? '') ?>" placeholder="Введите стоимость" data-toggle="touchspin" data-step="0.01" data-min="0" data-max="10000000" data-decimals="2" data-bts-prefix="$" <?= $is_readonly ? 'disabled' : '' ?>>
+                                                    <input type="text" class="form-control" id="sale_price" name="sale_price" value="<?= valid($client_data['sale_price'] ?? '') ?>" placeholder="Введите стоимость" data-toggle="touchspin" data-step="0.01" data-min="0" data-max="10000000" data-decimals="2" data-bts-prefix="$" <?= $is_readonly ? 'disabled' : '' ?> required>
                                                     <div class="invalid-feedback">Некорректная стоимость</div>
                                                 </div>
                                                 
+                                                <?php if ($field_settings['visit_dates']['is_visible']): ?>
                                                 <div class="mb-3">
                                                     <label for="visit_dates" class="form-label">Даты визита</label>
                                                     <?php
@@ -412,21 +487,28 @@ require_once SYSTEM . '/layouts/head.php';
                                                     ?>
                                                     <input type="text" class="form-control" id="visit_dates"
                                                         name="visit_dates" placeholder="Выберите даты"
-                                                        value="<?= $visit_dates_value ?>" <?= $is_readonly ? 'disabled' : '' ?>>
+                                                        value="<?= $visit_dates_value ?>" <?php if ($field_settings['visit_dates']['is_required'] && !$is_readonly): ?>required<?php endif; ?> <?= $is_readonly ? 'disabled' : '' ?>>
                                                 </div>
+                                                <?php endif; ?>
+                                                
+                                                <?php if ($field_settings['days_until_visit']['is_visible']): ?>
                                                 <div class="mb-3">
                                                     <label for="days_until_visit" class="form-label">Дни до
                                                         визита</label>
                                                     <input type="text" class="form-control" id="days_until_visit"
                                                         name="days_until_visit" placeholder="Введите дни до визита"
                                                         value="<?= valid($client_data['days_until_visit']) ?>"
-                                                        data-toggle="touchspin" data-max="9999" <?= $is_readonly ? 'disabled' : '' ?>>
+                                                        data-toggle="touchspin" data-max="9999" <?php if ($field_settings['days_until_visit']['is_required'] && !$is_readonly): ?>required<?php endif; ?> <?= $is_readonly ? 'disabled' : '' ?>>
                                                 </div>
+                                                <?php endif; ?>
+
+                                                <?php if ($field_settings['notes']['is_visible']): ?>
                                                 <div class="mb-3">
                                                     <label for="notes" class="form-label">Ваши пометки</label>
                                                     <textarea class="form-control" id="notes" name="notes" rows="3"
-                                                        <?= $is_readonly ? 'disabled' : '' ?>><?= valid($client_data['notes']) ?></textarea>
+                                                        <?php if ($field_settings['notes']['is_required'] && !$is_readonly): ?>required<?php endif; ?> <?= $is_readonly ? 'disabled' : '' ?>><?= valid($client_data['notes']) ?></textarea>
                                                 </div>
+                                                <?php endif; ?>
                                             </div>
                                         </div>
 
