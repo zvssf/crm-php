@@ -391,7 +391,7 @@ require_once SYSTEM . '/layouts/head.php';
         ?>
 
         <div class="modal fade" id="modal-country-fields" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modal-country-fields-label" aria-hidden="true">
-            <div class="modal-dialog modal-xl">
+            <div class="modal-dialog modal-full-width">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="modal-country-fields-label">Настройка полей для анкеты</h5>
