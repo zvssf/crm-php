@@ -17,7 +17,7 @@ return [
             'new-supplier', 'edit-supplier', 'del-supplier', 'restore-supplier', 'confirm-client', 'restore-client', 
             'new-client', 'del-client', 'edit-client', 'review-client', 'approve-client', 'decline-client', 'approve-draft-director',
             'check-client-completeness', 'get-client-categories', 'get-additional-fields',
-            'get-min-sale-price', 'pay_client_credit', 'revert-recorded-client', 'get-country-fields',
+            'get-min-sale-price', 'pay_client_credit', 'revert-recorded-client', 'get-country-fields', 'get_export_fields', 'export_clients_excel',
         ],
     ],
     'supervisor' => [
@@ -26,7 +26,7 @@ return [
             'notfound', 'profile', 'dashboard', 'finance', 'clients', 'customers', 'edit-client',
         ],
         'forms' => [
-            'profile-edit', 'profile-new-password', 'get-additional-fields'
+            'profile-edit', 'profile-new-password', 'get-additional-fields', 'get_export_fields', 'export_clients_excel',
         ],
     ],
     'manager' => [
@@ -37,7 +37,7 @@ return [
         'forms' => [
             'profile-edit', 'profile-new-password', 'new-client', 'edit-client', 'del-client', 'restore-client',
             'review-client', 'approve-client-manager', 'decline-client', 'check-client-completeness', 
-            'get-additional-fields', 'get-min-sale-price', 'pay_client_credit',
+            'get-additional-fields', 'get-min-sale-price', 'pay_client_credit', 'get_export_fields', 'export_clients_excel',
         ],
     ],
     'agent' => [
@@ -48,7 +48,7 @@ return [
         'forms' => [
             'profile-edit', 'profile-new-password', 'new-client', 'edit-client', 'del-client', 'restore-client',
             'review-client', 'revert-rejection-client', 'check-client-completeness', 
-            'get-additional-fields', 'get-min-sale-price',
+            'get-additional-fields', 'get-min-sale-price', 'get_export_fields', 'export_clients_excel',
         ],
     ],
 ];

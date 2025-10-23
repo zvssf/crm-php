@@ -296,6 +296,7 @@ require_once SYSTEM . '/layouts/head.php';
                                         </div>
                                         <div class="col-sm-7">
                                             <div class="text-sm-end">
+                                                <button type="button" class="btn btn-light mb-2 me-1" data-bs-toggle="modal" data-bs-target="#export-excel-modal">Экспорт в Excel</button>
                                                 <?php if ($user_data['user_group'] != 2): // Руководитель не видит массовые действия ?>
                                                 <div class="dropdown btn-group">
                                                     <button class="btn btn-light mb-2 dropdown-toggle" type="button"
@@ -769,12 +770,153 @@ require_once SYSTEM . '/layouts/head.php';
 
     <?php require_once SYSTEM . '/layouts/scripts.php'; ?>
 
+    <!-- ... существующие модальные окна ... -->
+
+    <!-- Modal Export to Excel -->
+    <div id="export-excel-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="export-excel-modal-label" aria-hidden="true">
+        <div class="modal-dialog modal-full-width">
+            <div class="modal-content">
+                <form action="/?form=export_clients_excel" method="POST" target="_blank" id="form-export-excel">
+                    <input type="hidden" name="center_id" value="<?= $center_id ?>">
+                    <input type="hidden" name="status_id" value="<?= $current_status ?>">
+
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="export-excel-modal-label">Экспорт анкет в Excel</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-12">
+                                <h5 class="mb-3 text-uppercase"><i class="mdi mdi-filter-variant me-1"></i> Фильтры</h5>
+                                <div class="row">
+                                    <?php if (in_array($user_data['user_group'], [1, 2])): // Директор и Руководитель видят фильтр по менеджерам ?>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="export-select-manager" class="form-label">Менеджер (необязательно)</label>
+                                                <select id="export-select-manager" class="form-control select2" data-toggle="select2" name="manager_id" data-dropdown-parent="#export-excel-modal">
+                                                    <option value="">Все менеджеры</option>
+                                                    <?php // Опции будут загружены динамически ?>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    <?php endif; ?>
+                                    <?php if (in_array($user_data['user_group'], [1, 2, 3])): // Директор, Руководитель и Менеджер видят фильтр по агентам ?>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="export-select-agent" class="form-label">Агент (необязательно)</label>
+                                                <select id="export-select-agent" class="form-control select2" data-toggle="select2" name="agent_id" data-dropdown-parent="#export-excel-modal" disabled>
+                                                    <option value="">Все агенты</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                                <hr/>
+                                <div id="export-fields-container">
+                                    <p class="text-muted">Загрузка полей для экспорта...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-success"><i class="mdi mdi-download me-1"></i> Скачать</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div><!-- /.modal -->
+
+    <?php require_once SYSTEM . '/layouts/scripts.php'; ?>
+
     <script>
         const current_status = <?= $current_status ?>;
     </script>
 
     <script>
         const userGroup = <?= $user_data['user_group'] ?>;
+
+        // --- ЛОГИКА ЭКСПОРТА В EXCEL ---
+
+        // Загрузка полей при открытии модального окна
+        $('#export-excel-modal').on('show.bs.modal', function () {
+            const fieldsContainer = $('#export-fields-container');
+            fieldsContainer.html('<p class="text-muted">Загрузка полей для экспорта...</p>');
+
+            $.ajax({
+                url: '/?form=get_export_fields',
+                type: 'POST',
+                data: { country_id: '<?= $current_center['country_id'] ?>' },
+                success: function(response) {
+                    fieldsContainer.html(response);
+                },
+                error: function() {
+                    fieldsContainer.html('<p class="text-danger">Ошибка загрузки полей.</p>');
+                }
+            });
+        });
+
+        <?php if (in_array($user_data['user_group'], [1, 2])): // Логика для Директора и Руководителя ?>
+        // Зависимые селекторы Менеджер -> Агент
+        const exportManagerSelect = $('#export-select-manager');
+        const exportAgentSelect = $('#export-select-agent');
+
+        // Заполняем менеджеров
+        <?php
+        $pdo_users = db_connect();
+        $managers = [];
+        if ($user_data['user_group'] == 1) { // Директор видит всех
+            $stmt = $pdo_users->query("SELECT user_id, user_firstname, user_lastname FROM users WHERE user_group = 3 AND user_status = 1 ORDER BY user_lastname ASC");
+            $managers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } elseif ($user_data['user_group'] == 2) { // Руководитель видит своих
+            $stmt = $pdo_users->prepare("SELECT user_id, user_firstname, user_lastname FROM users WHERE user_group = 3 AND user_status = 1 AND user_supervisor = :supervisor_id ORDER BY user_lastname ASC");
+            $stmt->execute([':supervisor_id' => $user_data['user_id']]);
+            $managers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        }
+        foreach($managers as $manager) {
+            echo "exportManagerSelect.append(new Option('" . valid($manager['user_firstname'] . ' ' . $manager['user_lastname']) . "', '" . $manager['user_id'] . "'));\n";
+        }
+        ?>
+
+        exportManagerSelect.on('change', function() {
+            const managerId = $(this).val();
+            exportAgentSelect.empty().append(new Option('Все агенты', '')).prop('disabled', true).trigger('change');
+
+            if (managerId) {
+                exportAgentSelect.prop('disabled', true).empty().append(new Option('Загрузка...', '')).trigger('change');
+                $.ajax({
+                    url: '/?page=new-client', // Используем существующий action
+                    type: 'POST',
+                    dataType: 'json',
+                    data: { action: 'get_agents_by_manager', manager_id: managerId },
+                    success: function(agents) {
+                        exportAgentSelect.empty().append(new Option('Все агенты', ''));
+                        if (agents.length > 0) {
+                            agents.forEach(agent => {
+                                exportAgentSelect.append(new Option(agent.user_firstname + ' ' + agent.user_lastname, agent.user_id));
+                            });
+                        }
+                        exportAgentSelect.prop('disabled', false).trigger('change');
+                    }
+                });
+            }
+        });
+        <?php endif; ?>
+
+        <?php if ($user_data['user_group'] == 3): // Логика для Менеджера ?>
+        // Менеджер видит только своих агентов
+        const exportAgentSelect = $('#export-select-agent');
+        exportAgentSelect.prop('disabled', false);
+        <?php
+        $pdo_users = db_connect();
+        $stmt = $pdo_users->prepare("SELECT user_id, user_firstname, user_lastname FROM users WHERE user_group = 4 AND user_status = 1 AND user_supervisor = :manager_id ORDER BY user_lastname ASC");
+        $stmt->execute([':manager_id' => $user_data['user_id']]);
+        $agents = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach($agents as $agent) {
+            echo "exportAgentSelect.append(new Option('" . valid($agent['user_firstname'] . ' ' . $agent['user_lastname']) . "', '" . $agent['user_id'] . "'));\n";
+        }
+        ?>
+        <?php endif; ?>
 
         function createAjaxRequest(formAction, clientId) {
             $.ajax({

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 127.0.0.1:3306
--- Время создания: Окт 23 2025 г., 00:08
+-- Время создания: Окт 24 2025 г., 02:53
 -- Версия сервера: 8.0.30
 -- Версия PHP: 8.1.9
 
@@ -84,9 +84,9 @@ INSERT INTO `clients` (`client_id`, `center_id`, `agent_id`, `creator_id`, `clie
 (18, 1, 33, 1, 'Функциональный за Агента Тест', 'Тест', 'Функциональный за Агента', NULL, 'male', '+123312', 'a@a.a', '123', NULL, NULL, NULL, NULL, NULL, NULL, 100, NULL, '4324.00', '0.00', '0.00', 0, 1, NULL),
 (19, 1, 33, 1, 'анкетовна анкета', 'анкета', 'анкетовна', NULL, 'male', '+543345345', 'a@adsds.d', '657', '2008-03-04', '2025-10-16', 'AMERICAN', NULL, '2025-11-20', '2025-11-30', 38, NULL, '2000.00', '0.00', '0.00', 1, 3, NULL),
 (20, 1, 33, 1, 'тест тест', 'тест', 'тест', NULL, 'male', '+453654456', 'a@a.a', '12657897800', '2025-10-22', '2025-10-31', 'ALGERIAN', NULL, '2025-10-09', '2025-11-21', 0, NULL, '1000.00', '0.00', '0.00', 1, 4, NULL),
-(21, 1, 33, 1, '1 1', '1', '1', NULL, 'male', '+654243234', 'a@a.a', '234564243132', '2025-10-24', '2025-10-25', 'ALBANIAN', NULL, '2025-10-08', '2025-11-20', 2, NULL, '1000.00', '0.00', '1000.00', 2, 2, NULL),
-(22, 1, 33, 1, '2 2', '2', '2', NULL, 'male', '+345745867', 'a@a.a', '5687945326', '2025-10-08', '2025-10-25', 'ALBANIAN', NULL, '2025-10-15', '2025-11-21', 1, NULL, '100.00', '0.00', '0.00', 0, 2, NULL),
-(23, 1, 33, 1, '3 3', '3', '3', NULL, 'male', '+7864558769', 'agA@a.a', '678955243', '2025-10-08', '2025-10-16', 'ALGERIAN', NULL, '2025-10-22', '2025-11-28', 8, NULL, '10001.00', '0.00', '0.00', 0, 1, NULL),
+(21, 1, 33, 1, '1 1', '1', '1', NULL, 'male', '+654243234', 'a@a.a', '234564243132', '2025-10-24', '2025-10-25', 'ALBANIAN', NULL, '2025-10-08', '2025-11-20', 2, NULL, '1000.00', '0.00', '0.00', 0, 1, NULL),
+(22, 1, 33, 1, '2 2', '2', '2', NULL, 'male', '+345745867', 'a@a.a', '5687945326', '2025-10-08', '2025-10-25', 'ALBANIAN', NULL, '2025-10-15', '2025-11-21', 1, NULL, '100.00', '100.00', '0.00', 1, 1, NULL),
+(23, 1, 33, 1, '3 3', '3', '3', NULL, 'male', '+7864558769', 'agA@a.a', '678955243', '2025-10-08', '2025-10-16', 'ALGERIAN', NULL, '2025-10-22', '2025-11-28', 8, NULL, '1000.00', '0.00', '0.00', 0, 1, NULL),
 (24, 1, 19, 1, '5 5', '5', '5', NULL, 'male', '+47564576', 'agA@a.a', '679802346523145', '2025-10-16', '2025-10-19', 'AMERICAN', NULL, '2025-10-17', '2025-11-28', 3, NULL, '1.00', '0.00', '0.00', 1, 1, NULL),
 (25, 7, 33, 1, 'Тест Тест', 'Тест', 'Тест', NULL, '', '+12314532435453', NULL, '1231233245543', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2000.00', '0.00', '0.00', 0, 3, NULL);
 
@@ -132,10 +132,10 @@ INSERT INTO `client_cities` (`id`, `client_id`, `city_id`) VALUES
 (92, 19, 1),
 (96, 20, 1),
 (131, 24, 2),
-(136, 23, 1),
 (158, 25, 1),
-(163, 21, 1),
-(164, 22, 1);
+(194, 23, 1),
+(195, 21, 1),
+(196, 22, 1);
 
 -- --------------------------------------------------------
 
@@ -157,7 +157,9 @@ CREATE TABLE `client_input_values` (
 INSERT INTO `client_input_values` (`id`, `client_id`, `input_id`, `value`) VALUES
 (60, 25, 11, '123'),
 (61, 25, 12, '2'),
-(62, 25, 13, 'Нет');
+(62, 25, 13, 'Нет'),
+(65, 22, 13, 'Да'),
+(68, 23, 13, 'Да');
 
 -- --------------------------------------------------------
 
@@ -177,7 +179,7 @@ CREATE TABLE `fin_cashes` (
 --
 
 INSERT INTO `fin_cashes` (`id`, `name`, `balance`, `status`) VALUES
-(1, 'Касса 1', '2548380.70', 1),
+(1, 'Касса 1', '2561570.70', 1),
 (2, 'Касса 2', '21836.00', 2),
 (3, 'Касса 3', '14605.00', 1),
 (4, 'Касса 4', '5004.00', 1),
@@ -202,7 +204,7 @@ CREATE TABLE `fin_suppliers` (
 
 INSERT INTO `fin_suppliers` (`id`, `name`, `balance`, `status`) VALUES
 (1, 'Занебесное', '1002033.00', 1),
-(2, 'Даб', '-39109.90', 1),
+(2, 'Даб', '-37109.90', 1),
 (3, 'Название 3', '0.00', 2),
 (4, 'Название 4', '0.00', 1);
 
@@ -308,7 +310,19 @@ INSERT INTO `fin_transactions` (`id`, `transaction_date`, `operation_type`, `amo
 (96, '2025-10-22 22:07:45', 1, '1100.00', 1, 33, NULL, ''),
 (97, '2025-10-22 23:38:25', 2, '-1100.00', 1, NULL, NULL, ''),
 (98, '2025-10-22 23:38:46', 1, '0.00', 1, 33, NULL, ''),
-(99, '2025-10-22 23:39:07', 2, '0.00', 1, NULL, 1, '');
+(99, '2025-10-22 23:39:07', 2, '0.00', 1, NULL, 1, ''),
+(100, '2025-10-23 16:59:22', 1, '1100.00', 1, 33, NULL, ''),
+(101, '2025-10-23 17:00:15', 1, '1100.00', 1, 33, NULL, ''),
+(102, '2025-10-23 17:00:23', 1, '1100.00', 1, 33, NULL, ''),
+(103, '2025-10-23 17:01:01', 1, '1100.00', 1, 33, NULL, ''),
+(104, '2025-10-23 17:23:52', 1, '1100.00', 1, 33, NULL, ''),
+(105, '2025-10-23 17:30:00', 1, '1100.00', 1, 33, NULL, ''),
+(106, '2025-10-23 17:35:16', 1, '1100.00', 1, 33, NULL, ''),
+(107, '2025-10-23 17:46:10', 1, '1100.00', 1, 33, NULL, ''),
+(108, '2025-10-23 17:53:16', 1, '1100.00', 1, 33, NULL, ''),
+(109, '2025-10-23 21:52:38', 1, '1100.00', 1, 33, NULL, ''),
+(110, '2025-10-23 21:54:46', 1, '1100.00', 1, 33, NULL, ''),
+(111, '2025-10-23 21:57:29', 1, '1090.00', 1, 33, NULL, '');
 
 -- --------------------------------------------------------
 
@@ -495,38 +509,70 @@ INSERT INTO `settings_country_fields` (`id`, `country_id`, `field_name`, `is_vis
 (62, 20, 'visit_dates', 0, 0),
 (63, 20, 'days_until_visit', 0, 0),
 (64, 20, 'notes', 0, 0),
-(65, 21, 'first_name', 0, 0),
-(66, 21, 'last_name', 0, 0),
-(67, 21, 'middle_name', 0, 0),
-(68, 21, 'phone', 0, 0),
-(69, 21, 'gender', 0, 0),
-(70, 21, 'email', 0, 0),
-(71, 21, 'passport_number', 0, 0),
-(72, 21, 'birth_date', 0, 0),
-(73, 21, 'passport_expiry_date', 0, 0),
-(74, 21, 'nationality', 0, 0),
-(75, 21, 'agent_id', 0, 0),
-(76, 21, 'city_ids', 0, 0),
-(77, 21, 'sale_price', 0, 0),
-(78, 21, 'visit_dates', 0, 0),
-(79, 21, 'days_until_visit', 0, 0),
-(80, 21, 'notes', 0, 0),
-(161, 22, 'first_name', 1, 1),
-(162, 22, 'last_name', 1, 1),
-(163, 22, 'middle_name', 0, 0),
-(164, 22, 'phone', 1, 1),
-(165, 22, 'gender', 0, 0),
-(166, 22, 'email', 0, 0),
-(167, 22, 'passport_number', 1, 1),
-(168, 22, 'birth_date', 0, 0),
-(169, 22, 'passport_expiry_date', 0, 0),
-(170, 22, 'nationality', 0, 0),
-(171, 22, 'agent_id', 1, 1),
-(172, 22, 'city_ids', 1, 1),
-(173, 22, 'sale_price', 1, 1),
-(174, 22, 'visit_dates', 0, 0),
-(175, 22, 'days_until_visit', 0, 0),
-(176, 22, 'notes', 0, 0);
+(321, 21, 'first_name', 1, 1),
+(322, 21, 'last_name', 1, 1),
+(323, 21, 'middle_name', 0, 0),
+(324, 21, 'phone', 0, 0),
+(325, 21, 'gender', 0, 0),
+(326, 21, 'email', 0, 0),
+(327, 21, 'passport_number', 1, 1),
+(328, 21, 'birth_date', 0, 0),
+(329, 21, 'passport_expiry_date', 0, 0),
+(330, 21, 'nationality', 0, 0),
+(331, 21, 'agent_id', 1, 1),
+(332, 21, 'city_ids', 1, 1),
+(333, 21, 'sale_price', 1, 1),
+(334, 21, 'visit_dates', 0, 0),
+(335, 21, 'days_until_visit', 0, 0),
+(336, 21, 'notes', 0, 0),
+(481, 2, 'first_name', 1, 1),
+(482, 2, 'last_name', 1, 1),
+(483, 2, 'middle_name', 1, 0),
+(484, 2, 'phone', 1, 0),
+(485, 2, 'gender', 1, 0),
+(486, 2, 'email', 1, 0),
+(487, 2, 'passport_number', 1, 1),
+(488, 2, 'birth_date', 0, 0),
+(489, 2, 'passport_expiry_date', 0, 0),
+(490, 2, 'nationality', 0, 0),
+(491, 2, 'agent_id', 1, 1),
+(492, 2, 'city_ids', 1, 1),
+(493, 2, 'sale_price', 1, 1),
+(494, 2, 'visit_dates', 1, 0),
+(495, 2, 'days_until_visit', 1, 0),
+(496, 2, 'notes', 1, 0),
+(529, 17, 'first_name', 1, 1),
+(530, 17, 'last_name', 1, 1),
+(531, 17, 'middle_name', 1, 0),
+(532, 17, 'phone', 1, 0),
+(533, 17, 'gender', 1, 0),
+(534, 17, 'email', 1, 0),
+(535, 17, 'passport_number', 1, 1),
+(536, 17, 'birth_date', 0, 0),
+(537, 17, 'passport_expiry_date', 0, 0),
+(538, 17, 'nationality', 0, 0),
+(539, 17, 'agent_id', 1, 1),
+(540, 17, 'city_ids', 1, 1),
+(541, 17, 'sale_price', 1, 1),
+(542, 17, 'visit_dates', 0, 0),
+(543, 17, 'days_until_visit', 0, 0),
+(544, 17, 'notes', 0, 0),
+(561, 1, 'first_name', 1, 1),
+(562, 1, 'last_name', 1, 1),
+(563, 1, 'middle_name', 1, 0),
+(564, 1, 'phone', 1, 0),
+(565, 1, 'gender', 1, 0),
+(566, 1, 'email', 1, 0),
+(567, 1, 'passport_number', 1, 1),
+(568, 1, 'birth_date', 1, 0),
+(569, 1, 'passport_expiry_date', 1, 0),
+(570, 1, 'nationality', 1, 0),
+(571, 1, 'agent_id', 1, 1),
+(572, 1, 'city_ids', 1, 1),
+(573, 1, 'sale_price', 1, 1),
+(574, 1, 'visit_dates', 1, 0),
+(575, 1, 'days_until_visit', 1, 0),
+(576, 1, 'notes', 1, 0);
 
 -- --------------------------------------------------------
 
@@ -570,6 +616,7 @@ CREATE TABLE `users` (
   `user_firstname` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
   `user_lastname` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
   `user_tel` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `user_tel_2` varchar(25) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
   `user_balance` decimal(15,2) NOT NULL DEFAULT '0.00',
   `user_credit_limit` decimal(15,2) NOT NULL DEFAULT '0.00',
   `user_supervisor` int NOT NULL DEFAULT '0',
@@ -583,22 +630,41 @@ CREATE TABLE `users` (
 -- Дамп данных таблицы `users`
 --
 
-INSERT INTO `users` (`user_id`, `user_login`, `user_password`, `user_group`, `user_status`, `user_session_key`, `user_firstname`, `user_lastname`, `user_tel`, `user_balance`, `user_credit_limit`, `user_supervisor`, `user_address`, `user_website`, `user_messengers`, `user_comment`) VALUES
-(1, 'a@a.a', 'e10adc3949ba59abbe56e057f20f883e', 1, 1, 'fetLi0VrOPmmMC6jygNNewaEqjzReWQ47dpL9+gVnN2KcuSfKe9/ngx7Fy32wyKCc+wEjtveP4pD86iO2+dl4O5Q22FWeZgSFqWulDkbW6F2JwJrIDYUrdMEdFg5KcJU', 'Сергей', 'Фамилия', '+79009009090', '0.00', '0.00', 0, NULL, NULL, NULL, NULL),
-(2, 'a@a.aa', '74b87337454200d4d33f80c4663dc5e5', 1, 0, '', 'Сергей', 'Фамилия', '+79009009091', '0.00', '0.00', 0, NULL, NULL, NULL, NULL),
-(3, 'd@d.d', '74b87337454200d4d33f80c4663dc5e5', 2, 0, '', 'Имя', 'Фамилия', '+79009009092', '0.00', '0.00', 0, NULL, NULL, NULL, NULL),
-(12, 's@s.ss', '74b87337454200d4d33f80c4663dc5e5', 3, 0, '', 'Олег', 'Фамилия', '+79009009093', '0.00', '0.00', 3, NULL, NULL, NULL, NULL),
-(19, 'asd@asd.sadwwww', '74b87337454200d4d33f80c4663dc5e5', 4, 1, '', 'Ирина', 'Фамилия', '+79009009094', '1017252.50', '0.00', 32, NULL, NULL, NULL, NULL),
-(21, 's@s.ssw', '74b87337454200d4d33f80c4663dc5e5', 4, 0, '', 'Роман', 'Фамилия', '+79009009098', '-11111.48', '0.00', 12, NULL, NULL, NULL, NULL),
-(22, 's@s.sss', '74b87337454200d4d33f80c4663dc5e5', 3, 0, '', 'Вадим', 'Фамилия', '+79009009097', '0.00', '0.00', 3, NULL, NULL, NULL, NULL),
-(27, 'a@a.aasdd', '74b87337454200d4d33f80c4663dc5e5', 4, 0, '', 'Сергей', 'Фамилия', '+234324234234234', '0.00', '0.00', 12, NULL, NULL, NULL, NULL),
-(28, 'a@a.aeee', '74b87337454200d4d33f80c4663dc5e5', 1, 0, '', 'Анатолий', 'Фамилия', '+79009009096', '0.00', '0.00', 0, NULL, NULL, NULL, NULL),
-(29, 'asd@asd.sf', '202cb962ac59075b964b07152d234b70', 2, 0, '', 'пвпа', 'вапва', '+899444444444', '0.00', '0.00', 0, NULL, NULL, NULL, NULL),
-(30, 'rukA@a.a', '202cb962ac59075b964b07152d234b70', 2, 1, '', 'Руководитель', 'тип-А', '+213123123', '0.00', '0.00', 0, '', '', '', ''),
-(31, 'rukB@a.a', '202cb962ac59075b964b07152d234b70', 2, 1, '', 'Руководитель', 'тип-Б', '+12394352', '0.00', '0.00', 0, NULL, NULL, NULL, NULL),
-(32, 'menA@a.a', '202cb962ac59075b964b07152d234b70', 3, 1, '', 'Менежер', 'тип-А-1', '+123123453', '0.00', '0.00', 30, NULL, NULL, NULL, NULL),
-(33, 'agA@a.a', '202cb962ac59075b964b07152d234b70', 4, 1, '', 'Агент', 'тип-А-1', '+3234546657', '-1000.00', '1000.00', 32, NULL, NULL, NULL, NULL),
-(34, 'agA@aasdasd.a', '202cb962ac59075b964b07152d234b70', 1, 1, '', 'test', 'test', '+98543739845', '0.00', '0.00', 0, 'Тихонравова, 6, 38 Владимир 600037', 'site.ru', 'telegram:test_user|viber:89959606801', 'dsfsdfsdfsdfsdf');
+INSERT INTO `users` (`user_id`, `user_login`, `user_password`, `user_group`, `user_status`, `user_session_key`, `user_firstname`, `user_lastname`, `user_tel`, `user_tel_2`, `user_balance`, `user_credit_limit`, `user_supervisor`, `user_address`, `user_website`, `user_messengers`, `user_comment`) VALUES
+(1, 'a@a.a', 'e10adc3949ba59abbe56e057f20f883e', 1, 1, 'Ej0SOHBjw0ss/iKATqAdw7XQ1ira++txN8CqPMoQf8jq3w7kPFSDm8sjS6vKbhxWMKteRk2vMVuvMeEHAUIgY3QiphXEkb97xtecHFULby4vlgSsfEzZ66Awkh0EFcch', 'Сергей', 'Фамилия', '+79009009090', NULL, '0.00', '0.00', 0, NULL, NULL, NULL, NULL),
+(2, 'a@a.aa', '74b87337454200d4d33f80c4663dc5e5', 1, 0, '', 'Сергей', 'Фамилия', '+79009009091', NULL, '0.00', '0.00', 0, NULL, NULL, NULL, NULL),
+(3, 'd@d.d', '74b87337454200d4d33f80c4663dc5e5', 2, 0, '', 'Имя', 'Фамилия', '+79009009092', NULL, '0.00', '0.00', 0, NULL, NULL, NULL, NULL),
+(12, 's@s.ss', '74b87337454200d4d33f80c4663dc5e5', 3, 0, '', 'Олег', 'Фамилия', '+79009009093', NULL, '0.00', '0.00', 3, NULL, NULL, NULL, NULL),
+(19, 'asd@asd.sadwwww', '74b87337454200d4d33f80c4663dc5e5', 4, 1, '', 'Ирина', 'Фамилия', '+79009009094', NULL, '1017252.50', '0.00', 32, NULL, NULL, NULL, NULL),
+(21, 's@s.ssw', '74b87337454200d4d33f80c4663dc5e5', 4, 0, '', 'Роман', 'Фамилия', '+79009009098', NULL, '-11111.48', '0.00', 12, NULL, NULL, NULL, NULL),
+(22, 's@s.sss', '74b87337454200d4d33f80c4663dc5e5', 3, 0, '', 'Вадим', 'Фамилия', '+79009009097', NULL, '0.00', '0.00', 3, NULL, NULL, NULL, NULL),
+(27, 'a@a.aasdd', '74b87337454200d4d33f80c4663dc5e5', 4, 0, '', 'Сергей', 'Фамилия', '+234324234234234', NULL, '0.00', '0.00', 12, NULL, NULL, NULL, NULL),
+(28, 'a@a.aeee', '74b87337454200d4d33f80c4663dc5e5', 1, 0, '', 'Анатолий', 'Фамилия', '+79009009096', NULL, '0.00', '0.00', 0, NULL, NULL, NULL, NULL),
+(29, 'asd@asd.sf', '202cb962ac59075b964b07152d234b70', 2, 0, '', 'пвпа', 'вапва', '+899444444444', NULL, '0.00', '0.00', 0, NULL, NULL, NULL, NULL),
+(30, 'rukA@a.a', '202cb962ac59075b964b07152d234b70', 2, 1, '', 'Руководитель', 'тип-А', '+213123123', NULL, '0.00', '0.00', 0, '', '', '', ''),
+(31, 'rukB@a.a', '202cb962ac59075b964b07152d234b70', 2, 1, '', 'Руководитель', 'тип-Б', '+12394352', NULL, '0.00', '0.00', 0, NULL, NULL, NULL, NULL),
+(32, 'menA@a.a', '202cb962ac59075b964b07152d234b70', 3, 1, '', 'Менежер', 'тип-А-1', '+123123453', NULL, '0.00', '0.00', 30, NULL, NULL, NULL, NULL),
+(33, 'agA@a.a', '202cb962ac59075b964b07152d234b70', 4, 1, '', 'Агент', 'тип-А-1', '+3234546657', NULL, '990.00', '1500.00', 32, '', '', '', ''),
+(34, 'agA@aasdasd.a', '202cb962ac59075b964b07152d234b70', 1, 1, '', 'test', 'test', '+98543739845', NULL, '0.00', '0.00', 0, 'Тихонравова, 6, 38 Владимир 600037', 'site.ru', 'telegram:test_user|viber:89959606801', 'dsfsdfsdfsdfsdf');
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `user_countries`
+--
+
+CREATE TABLE `user_countries` (
+  `id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `country_id` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+--
+-- Дамп данных таблицы `user_countries`
+--
+
+INSERT INTO `user_countries` (`id`, `user_id`, `country_id`) VALUES
+(3, 33, 1);
 
 --
 -- Индексы сохранённых таблиц
@@ -709,6 +775,14 @@ ALTER TABLE `users`
   ADD KEY `idx_user_lastname` (`user_lastname`);
 
 --
+-- Индексы таблицы `user_countries`
+--
+ALTER TABLE `user_countries`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `country_id` (`country_id`);
+
+--
 -- AUTO_INCREMENT для сохранённых таблиц
 --
 
@@ -728,13 +802,13 @@ ALTER TABLE `clients`
 -- AUTO_INCREMENT для таблицы `client_cities`
 --
 ALTER TABLE `client_cities`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=165;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=197;
 
 --
 -- AUTO_INCREMENT для таблицы `client_input_values`
 --
 ALTER TABLE `client_input_values`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
 
 --
 -- AUTO_INCREMENT для таблицы `fin_cashes`
@@ -752,13 +826,13 @@ ALTER TABLE `fin_suppliers`
 -- AUTO_INCREMENT для таблицы `fin_transactions`
 --
 ALTER TABLE `fin_transactions`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=100;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=112;
 
 --
 -- AUTO_INCREMENT для таблицы `login_attempts`
 --
 ALTER TABLE `login_attempts`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT для таблицы `settings_centers`
@@ -788,7 +862,7 @@ ALTER TABLE `settings_countries`
 -- AUTO_INCREMENT для таблицы `settings_country_fields`
 --
 ALTER TABLE `settings_country_fields`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=177;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=577;
 
 --
 -- AUTO_INCREMENT для таблицы `settings_inputs`
@@ -801,6 +875,12 @@ ALTER TABLE `settings_inputs`
 --
 ALTER TABLE `users`
   MODIFY `user_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+
+--
+-- AUTO_INCREMENT для таблицы `user_countries`
+--
+ALTER TABLE `user_countries`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Ограничения внешнего ключа сохраненных таблиц
