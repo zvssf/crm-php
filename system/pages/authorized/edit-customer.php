@@ -141,6 +141,11 @@ try {
                                                 </div>
 
                                                 <div class="mb-3">
+                                                    <label for="usertel2" class="form-label">Второй номер (опционально)</label>
+                                                    <input type="text" class="form-control" id="usertel2" placeholder="Введите второй номер" name="user-tel-2" value="<?= $customer_data['user_tel_2'] ?? '' ?>" data-toggle="input-mask" data-mask-format="+#">
+                                                </div>
+
+                                                <div class="mb-3">
                                                     <label for="user_address" class="form-label">Адрес проживания</label>
                                                     <input type="text" class="form-control" id="user_address" placeholder="Введите адрес" name="user_address" value="<?= valid($customer_data['user_address'] ?? '') ?>" maxlength="255">
                                                 </div>

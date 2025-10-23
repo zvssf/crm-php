@@ -3,6 +3,7 @@ $user_firstname   = valid($_POST['user-firstname'] ?? '');
 $user_lastname    = valid($_POST['user-lastname'] ?? '');
 $user_login       = valid($_POST['user-login'] ?? '');
 $user_tel         = valid($_POST['user-tel'] ?? '');
+$user_tel_2       = valid($_POST['user-tel-2'] ?? '');
 $user_status      = valid($_POST['select-status'] ?? '');
 $user_group       = valid($_POST['select-group'] ?? '');
 $user_supervisor  = valid($_POST['select-supervisor'] ?? '');
@@ -31,6 +32,13 @@ $user_messengers = implode('|', $messenger_parts);
 
 $cleanTel = preg_replace('/[+\-\s\(\)]+/', '', $user_tel);
 $fullTel  = '+' . ltrim($cleanTel, '+');
+$fullTel2 = null;
+if (!empty($user_tel_2)) {
+    $cleanTel2 = preg_replace('/[+\-\s\(\)]+/', '', $user_tel_2);
+    if (!empty($cleanTel2)) {
+        $fullTel2 = '+' . ltrim($cleanTel2, '+');
+    }
+}
 
 $validate = function($value, $pattern, $emptyMsg, $invalidMsg) {
     if (empty($value)) {
@@ -109,6 +117,7 @@ try {
             `user_firstname`,
             `user_lastname`,
             `user_tel`,
+            `user_tel_2`,
             `user_supervisor`,
             `user_address`,
             `user_website`,
@@ -124,6 +133,7 @@ try {
             :firstname,
             :lastname,
             :tel,
+            :tel_2,
             :supervisor,
             :address,
             :website,
@@ -141,6 +151,7 @@ try {
         ':firstname'   => $user_firstname,
         ':lastname'    => $user_lastname,
         ':tel'         => $fullTel,
+        ':tel_2'       => $fullTel2,
         ':supervisor'  => $supervisor,
         ':address'     => $user_address,
         ':website'     => $user_website,

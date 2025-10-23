@@ -131,11 +131,10 @@ try {
                                                     <div class="invalid-feedback">Введите email!</div>
                                                 </div>
                                                 <div class="mb-3">
-                                                    <label for="usertel" class="form-label">Номер телефона</label>
-                                                    <input type="text" class="form-control" id="usertel"
-                                                        placeholder="Введите номер телефона" name="user-tel"
-                                                        data-toggle="input-mask" data-mask-format="+#" required>
-                                                    <div class="invalid-feedback">Введите номер телефона!</div>
+                                                    <label for="usertel2" class="form-label">Второй номер (опционально)</label>
+                                                    <input type="text" class="form-control" id="usertel2"
+                                                        placeholder="Введите второй номер" name="user-tel-2"
+                                                        data-toggle="input-mask" data-mask-format="+#">
                                                 </div>
 
                                                 <div class="mb-3">
