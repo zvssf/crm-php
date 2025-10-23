@@ -1,6 +1,9 @@
 <?php
 header('Content-Type: text/html; charset=utf-8');
 
+$is_readonly = isset($_POST['is_readonly']) && $_POST['is_readonly'] === 'true';
+$disabled_attr = $is_readonly ? 'disabled' : '';
+
 $city_ids = $_POST['city_ids'] ?? [];
 $client_id = valid($_POST['client_id'] ?? null);
 
@@ -57,7 +60,7 @@ try {
 
             switch ($input['input_type']) {
                 case 2: // Выпадающий список
-                    echo '<select class="form-select" id="'.$field_id.'" name="'.$field_name.'" '.$required_attr.'>';
+                    echo '<select class="form-select" id="'.$field_id.'" name="'.$field_name.'" '.$required_attr.' '.$disabled_attr.'>';
                     echo '<option value="">Выберите...</option>';
                     $options = explode('|', $input['input_select_data']);
                     foreach ($options as $option) {
@@ -78,7 +81,7 @@ try {
                         $checked = ($option == $value) ? 'checked' : '';
                         
                         echo '<div class="form-check form-check-inline">';
-                        echo '<input class="form-check-input" type="radio" name="'.$field_name.'" id="'.$option_id.'" value="'.valid($option).'" '.$checked.' '.$required_attr.'>';
+                        echo '<input class="form-check-input" type="radio" name="'.$field_name.'" id="'.$option_id.'" value="'.valid($option).'" '.$checked.' '.$required_attr.' '.$disabled_attr.'>';
                         echo '<label class="form-check-label" for="'.$option_id.'">'.valid($option).'</label>';
                         echo '</div>';
                     }
@@ -87,7 +90,7 @@ try {
 
                 case 1: // Текстовое поле
                 default:
-                    echo '<input type="text" class="form-control" id="'.$field_id.'" name="'.$field_name.'" placeholder="'.valid($input['input_name']).'" value="'.valid($value).'" '.$required_attr.'>';
+                    echo '<input type="text" class="form-control" id="'.$field_id.'" name="'.$field_name.'" placeholder="'.valid($input['input_name']).'" value="'.valid($value).'" '.$required_attr.' '.$disabled_attr.'>';
                     break;
             }
             echo '</div>';

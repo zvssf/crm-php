@@ -7,19 +7,49 @@ require_once SYSTEM . '/layouts/head.php';
 
 try {
     $pdo = db_connect();
+    $customers = [];
+    $params = [':current_user_id' => $user_data['user_id']];
 
-    $stmt = $pdo->prepare("
-        SELECT * 
-        FROM `users` 
-        WHERE `user_id` != :current_user_id 
-        ORDER BY `user_id` ASC
-    ");
-    
-    $stmt->execute([
-        ':current_user_id' => $user_data['user_id']
-    ]);
+    switch ($user_data['user_group']) {
+        case 2: // Руководитель
+            // 1. Находим ID менеджеров, подчиненных руководителю
+            $stmt_managers = $pdo->prepare("SELECT `user_id` FROM `users` WHERE `user_group` = 3 AND `user_supervisor` = :current_user_id");
+            $stmt_managers->execute([':current_user_id' => $user_data['user_id']]);
+            $manager_ids = $stmt_managers->fetchAll(PDO::FETCH_COLUMN);
 
-    $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            // 2. Находим ID агентов, подчиненных этим менеджерам
+            $agent_ids = [];
+            if (!empty($manager_ids)) {
+                $placeholders = implode(',', array_fill(0, count($manager_ids), '?'));
+                $stmt_agents = $pdo->prepare("SELECT `user_id` FROM `users` WHERE `user_group` = 4 AND `user_supervisor` IN ($placeholders)");
+                $stmt_agents->execute($manager_ids);
+                $agent_ids = $stmt_agents->fetchAll(PDO::FETCH_COLUMN);
+            }
+
+            // 3. Объединяем ID менеджеров и агентов
+            $all_ids = array_merge($manager_ids, $agent_ids);
+
+            // 4. Если есть кого показывать, делаем финальный запрос
+            if (!empty($all_ids)) {
+                $placeholders = implode(',', array_fill(0, count($all_ids), '?'));
+                $stmt = $pdo->prepare("SELECT * FROM `users` WHERE `user_id` IN ($placeholders) ORDER BY `user_id` ASC");
+                $stmt->execute($all_ids);
+                $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            }
+            break;
+
+        case 3: // Менеджер
+            $stmt = $pdo->prepare("SELECT * FROM `users` WHERE `user_group` = 4 AND `user_supervisor` = :current_user_id ORDER BY `user_id` ASC");
+            $stmt->execute($params);
+            $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            break;
+
+        default: // Директор
+            $stmt = $pdo->prepare("SELECT * FROM `users` WHERE `user_id` != :current_user_id ORDER BY `user_id` ASC");
+            $stmt->execute($params);
+            $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            break;
+    }
 
 } catch (PDOException $e) {
     error_log('DB Error: ' . $e->getMessage());
@@ -73,10 +103,13 @@ try {
                                     <div class="card-body">
                                         <div class="row">
                                             <div class="col-sm-5">
-                                                <a href="/?page=new-customer" class="btn btn-success mb-2 me-1"><i class="mdi mdi-plus-circle me-2"></i> Добавить сотрудника</a>
+                                                <?php if ($user_data['user_group'] == 1): // Только Директор может добавлять сотрудников ?>
+                                                    <a href="/?page=new-customer" class="btn btn-success mb-2 me-1"><i class="mdi mdi-plus-circle me-2"></i> Добавить сотрудника</a>
+                                                <?php endif; ?>
                                             </div>
                                             <div class="col-sm-7">
                                                 <div class="text-sm-end">
+                                                <?php if ($user_data['user_group'] == 1): // Только Директор может выполнять массовые действия ?>
                                                 <div class="dropdown btn-group">
                                                     <button class="btn btn-light mb-2 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Действия</button>
                                                     <div class="dropdown-menu dropdown-menu-animated">
@@ -85,6 +118,7 @@ try {
                                                     <a class="dropdown-item" href="#">Удалить</a>
                                                     </div>
                                                 </div>
+                                                <?php endif; ?>
                                                 <!-- <div class="dropdown btn-group">
                                                     <button class="btn btn-info mb-2 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Фильтр</button>
                                                     <div class="dropdown-menu dropdown-menu-animated">
@@ -170,10 +204,16 @@ try {
                     
                                                         <td>
                                                             <?php if($customer['user_status'] === 0): ?>
-                                                                <a href="#" class="font-18 text-warning" onclick="sendRestoreCustomerForm('<?= $customer['user_id'] ?>')"><i class="mdi mdi-cached"></i></a>
+                                                                <?php if ($user_data['user_group'] == 1): // Только Директор может восстанавливать ?>
+                                                                    <a href="#" class="font-18 text-warning" onclick="sendRestoreCustomerForm('<?= $customer['user_id'] ?>')"><i class="mdi mdi-cached"></i></a>
+                                                                <?php endif; ?>
                                                             <?php else: ?>
-                                                            <a href="/?page=edit-customer&id=<?= $customer['user_id'] ?>" class="font-18 text-info me-2"><i class="uil uil-pen"></i></a>
-                                                            <a href="#" class="font-18 text-danger" data-bs-toggle="modal" data-bs-target="#del-customer-modal" onclick="modalDelCustomerForm('<?= $customer['user_id'] ?>', '<?= $customer['user_firstname'] ?> <?= $customer['user_lastname'] ?>')"><i class="uil uil-trash"></i></a>
+                                                                <?php if ($user_data['user_group'] == 1): // Только Директор может редактировать и удалять ?>
+                                                                    <a href="/?page=edit-customer&id=<?= $customer['user_id'] ?>" class="font-18 text-info me-2"><i class="uil uil-pen"></i></a>
+                                                                    <a href="#" class="font-18 text-danger" data-bs-toggle="modal" data-bs-target="#del-customer-modal" onclick="modalDelCustomerForm('<?= $customer['user_id'] ?>', '<?= $customer['user_firstname'] ?> <?= $customer['user_lastname'] ?>')"><i class="uil uil-trash"></i></a>
+                                                                <?php else: ?>
+                                                                    <span class="text-muted">Нет действий</span>
+                                                                <?php endif; ?>
                                                             <?php endif; ?>
                                                         </td>
                                                     </tr>

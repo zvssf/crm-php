@@ -29,6 +29,30 @@ try {
 
     $grouped_menu_data = [];
 
+    // --- НАЧАЛО БЛОКА ФИЛЬТРАЦИИ ДЛЯ АГЕНТА ---
+    if ($sessionStatus && $user_data['user_group'] == 4) {
+        $stmt_agent_countries = $pdo->prepare("SELECT `country_id` FROM `user_countries` WHERE `user_id` = :user_id");
+        $stmt_agent_countries->execute([':user_id' => $user_data['user_id']]);
+        $agent_country_ids = array_column($stmt_agent_countries->fetchAll(PDO::FETCH_ASSOC), 'country_id');
+
+        if (!empty($agent_country_ids)) {
+            // Фильтруем массив стран, оставляя только разрешенные
+            $countries = array_filter($countries, function($country) use ($agent_country_ids) {
+                return in_array($country['country_id'], $agent_country_ids);
+            });
+
+            // Фильтруем массив ВЦ, оставляя только те, которые принадлежат разрешенным странам
+            $centers = array_filter($centers, function($center) use ($agent_country_ids) {
+                return in_array($center['country_id'], $agent_country_ids);
+            });
+        } else {
+            // Если агенту не назначено ни одной страны, полностью очищаем массивы
+            $countries = [];
+            $centers = [];
+        }
+    }
+    // --- КОНЕЦ БЛОКА ФИЛЬТРАЦИИ ДЛЯ АГЕНТА ---
+
     foreach ($countries as $country) {
         if ($country['country_status'] > 0) {
             $grouped_menu_data[$country['country_id']] = [

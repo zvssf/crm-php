@@ -25,39 +25,63 @@ try {
   $fin_suppliers = $stmt->fetchAll(PDO::FETCH_ASSOC);
   
   
-  $stmt = $pdo->query("
-  SELECT
-  t.id,
-  t.transaction_date,
-  t.operation_type,
-  t.amount,
-  t.cash_id,
-  t.agent_id,
-  t.supplier_id,
-  t.comment,
-  c.name AS cash_name,
-  s.name AS supplier_name,
-  u.user_id,
-  u.user_firstname AS agent_firstname,
-  u.user_lastname AS agent_lastname
-  FROM fin_transactions t
-  JOIN fin_cashes c ON t.cash_id = c.id
-  LEFT JOIN users u ON t.agent_id = u.user_id
-  LEFT JOIN fin_suppliers s ON t.supplier_id = s.id
-  ORDER BY t.id ASC
-  ");
+  $sql_transactions = "
+    SELECT
+      t.id,
+      t.transaction_date,
+      t.operation_type,
+      t.amount,
+      t.cash_id,
+      t.agent_id,
+      t.supplier_id,
+      t.comment,
+      c.name AS cash_name,
+      s.name AS supplier_name,
+      u.user_id,
+      u.user_firstname AS agent_firstname,
+      u.user_lastname AS agent_lastname
+    FROM `fin_transactions` t
+    JOIN `fin_cashes` c ON t.cash_id = c.id
+    LEFT JOIN `users` u ON t.agent_id = u.user_id
+    LEFT JOIN `fin_suppliers` s ON t.supplier_id = s.id
+  ";
+  
+  $params = [];
+  
+  if ($user_data['user_group'] == 2) { // Если пользователь - Руководитель
+      $sql_transactions .= "
+        LEFT JOIN `users` agent_user ON t.agent_id = agent_user.user_id
+        LEFT JOIN `users` manager ON agent_user.user_supervisor = manager.user_id
+        WHERE t.operation_type != 1 OR (t.operation_type = 1 AND manager.user_supervisor = :current_user_id)
+      ";
+      $params[':current_user_id'] = $user_data['user_id'];
+  }
+  
+  $sql_transactions .= " ORDER BY t.id ASC";
+  
+  $stmt = $pdo->prepare($sql_transactions);
+  $stmt->execute($params);
   
   $fin_transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
   
   
-  $stmt = $pdo->query("
-  SELECT * 
-  FROM `users` 
-  WHERE `user_group` = '4' 
-  AND `user_status` = '1' 
-  ORDER BY `user_id` ASC
-  ");
-  
+  $sql_agents = "
+    SELECT `user_id`, `user_firstname`, `user_lastname` 
+    FROM `users` 
+    WHERE `user_group` = '4' AND `user_status` = '1'
+  ";
+  $params_agents = [];
+
+  if ($user_data['user_group'] == 2) { // Если пользователь - Руководитель
+      $sql_agents .= " AND `user_supervisor` IN (SELECT `user_id` FROM `users` WHERE `user_supervisor` = :current_user_id)";
+      $params_agents[':current_user_id'] = $user_data['user_id'];
+  }
+
+  $sql_agents .= " ORDER BY `user_id` ASC";
+
+  $stmt = $pdo->prepare($sql_agents);
+  $stmt->execute($params_agents);
+
   $agents = $stmt->fetchAll(PDO::FETCH_ASSOC);
   
 } catch (PDOException $e) {

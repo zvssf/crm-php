@@ -296,6 +296,7 @@ require_once SYSTEM . '/layouts/head.php';
                                         </div>
                                         <div class="col-sm-7">
                                             <div class="text-sm-end">
+                                                <?php if ($user_data['user_group'] != 2): // Руководитель не видит массовые действия ?>
                                                 <div class="dropdown btn-group">
                                                     <button class="btn btn-light mb-2 dropdown-toggle" type="button"
                                                         data-bs-toggle="dropdown" aria-haspopup="true"
@@ -351,6 +352,7 @@ require_once SYSTEM . '/layouts/head.php';
                                                         ?>
                                                     </div>
                                                 </div>
+                                                <?php endif; ?>
                                             </div>
                                         </div><!-- end col-->
                                     </div>
@@ -408,7 +410,7 @@ require_once SYSTEM . '/layouts/head.php';
                                             <li class="nav-item">
                                                 <a href="/?page=clients&center=<?= $center_id ?>&status=7"
                                                     class="nav-link <?= ($current_status == 7) ? 'active' : '' ?>">
-                                                    Отменённые <span class="badge bg-dark ms-1"><?= $counts[7] ?></span>
+                                                    Отменённые <span class="badge badge-secondary-lighten ms-1"><?= $counts[7] ?></span>
                                                 </a>
                                             </li>
                                         <?php endif; ?>
@@ -566,23 +568,35 @@ require_once SYSTEM . '/layouts/head.php';
 
                                                                 switch ($client_status) {
                                                                     case 1: // В работе
-                                                                        echo '<a href="/?page=edit-client&id=' . $client['client_id'] . '" class="font-18 text-info me-2" title="Редактировать"><i class="uil uil-pen"></i></a>';
-                                                                        if ($user_group === 1) { // Только Директор
+                                                                        // Для Руководителя и Менеджера - только просмотр
+                                                                        if (in_array($user_group, [2, 3])) {
+                                                                            echo '<a href="/?page=edit-client&id=' . $client['client_id'] . '" class="font-18 text-info me-2" title="Просмотр"><i class="uil uil-eye"></i></a>';
+                                                                        } 
+                                                                        // Для остальных (Директор, Агент) - редактирование
+                                                                        else {
+                                                                            echo '<a href="/?page=edit-client&id=' . $client['client_id'] . '" class="font-18 text-info me-2" title="Редактировать"><i class="uil uil-pen"></i></a>';
+                                                                        }
+
+                                                                        // "Записать" - только для Директора
+                                                                        if ($user_group === 1) {
                                                                             echo '<a href="#" class="font-18 text-success me-2" onclick="sendConfirmClientForm(' . $client['client_id'] . ')" title="Записать"><i class="uil uil-check-circle"></i></a>';
                                                                         }
-                                                                        if (in_array($user_group, [1, 3, 4])) { // Директор, Менеджер, Агент
+                                                                        
+                                                                        // "В архив" - для Директора и Агента (но не для Менеджера)
+                                                                        if (in_array($user_group, [1, 4])) {
                                                                             echo '<a href="#" class="font-18 text-danger" title="В архив" onclick="modalDelClientForm(' . $client['client_id'] . ', \'' . $client_name_js . '\')"><i class="uil uil-trash"></i></a>';
                                                                         }
                                                                         break;
 
                                                                     case 2: // Записанные
-                                                                        echo '<a href="/?page=edit-client&id=' . $client['client_id'] . '" class="font-18 text-info me-2" title="Просмотр"><i class="uil uil-eye"></i></a>';
+                                                                        $action_title = ($user_group === 1) ? 'Редактировать' : 'Просмотр';
+                                                                        $action_icon = ($user_group === 1) ? 'uil uil-pen' : 'uil uil-eye';
+                                                                        echo '<a href="/?page=edit-client&id=' . $client['client_id'] . '" class="font-18 text-info me-2" title="' . $action_title . '"><i class="' . $action_icon . '"></i></a>';
                                                                         
-                                                                        if (in_array($user_group, [1, 3]) && $client['payment_status'] == 0) { // Директор и Менеджер для неоплаченных
+                                                                        if (in_array($user_group, [1, 3]) && $client['payment_status'] == 0) {
                                                                             echo '<a href="#" class="font-18 text-warning me-2" onclick="sendPayByCreditForm(' . $client['client_id'] . ')" title="Оплатить в кредит"><i class="mdi mdi-credit-card-plus-outline"></i></a>';
                                                                         }
-
-                                                                        if ($user_group === 1) { // Только Директор может вернуть в работу
+                                                                        if ($user_group === 1) {
                                                                             echo '<a href="#" class="font-18 text-primary" title="Вернуть в работу" onclick="sendRevertRecordedForm(' . $client['client_id'] . ')"><i class="mdi mdi-backup-restore"></i></a>';
                                                                         }
                                                                         break;
@@ -590,14 +604,18 @@ require_once SYSTEM . '/layouts/head.php';
                                                                     case 3: // Черновики
                                                                         if (!empty($client['rejection_reason'])) {
                                                                             echo '<a href="#" class="font-18 text-danger me-2" onclick="showRejectionReason(\'' . htmlspecialchars(valid($client['rejection_reason']), ENT_QUOTES) . '\')" title="Причина отказа"><i class="uil uil-comment-info"></i></a>';
-                                                                            if (in_array($user_group, [3, 4])) { // Менеджер и Агент
+                                                                            if (in_array($user_group, [3, 4])) {
                                                                                 echo '<a href="#" class="font-18 text-warning me-2" onclick="sendRevertRejectionForm(' . $client['client_id'] . ')" title="Вернуть в работу"><i class="uil uil-redo"></i></a>';
                                                                             }
                                                                         } else {
-                                                                            echo '<a href="/?page=edit-client&id=' . $client['client_id'] . '" class="font-18 text-info me-2" title="Редактировать"><i class="uil uil-pen"></i></a>';
-                                                                            if ($user_group === 1) { // Директор всегда может одобрить любой черновик
+                                                                            if ($user_group === 2) {
+                                                                                echo '<a href="/?page=edit-client&id=' . $client['client_id'] . '" class="font-18 text-info me-2" title="Просмотр"><i class="uil uil-eye"></i></a>';
+                                                                            } else {
+                                                                                echo '<a href="/?page=edit-client&id=' . $client['client_id'] . '" class="font-18 text-info me-2" title="Редактировать"><i class="uil uil-pen"></i></a>';
+                                                                            }
+                                                                            if ($user_group === 1) {
                                                                                 echo '<a href="#" class="font-18 text-success me-2" onclick="sendApproveDraftDirectorForm(' . $client['client_id'] . ')" title="Одобрить"><i class="uil uil-check-circle"></i></a>';
-                                                                            } elseif (in_array($user_group, [3, 4])) { // Менеджер и Агент отправляют на рассмотрение
+                                                                            } elseif (in_array($user_group, [3, 4])) {
                                                                                 echo '<a href="#" class="font-18 text-primary me-2" onclick="sendReviewClientForm(' . $client['client_id'] . ')" title="На рассмотрение"><i class="uil uil-message"></i></a>';
                                                                             }
                                                                         }

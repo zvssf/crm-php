@@ -577,6 +577,7 @@ require_once SYSTEM . '/layouts/head.php';
 
     <script>
         $(document).ready(function () {
+            const isReadonly = <?= $is_readonly ? 'true' : 'false' ?>;
             "use strict";
 
             function updateCategoryOptions() {
@@ -713,7 +714,9 @@ require_once SYSTEM . '/layouts/head.php';
                                         text: agent.user_firstname + ' ' + agent.user_lastname
                                     }));
                                 });
-                                agentSelect.prop('disabled', false);
+                                if (!isReadonly) {
+                                    agentSelect.prop('disabled', false);
+                                }
                                 if (selectedAgentId) {
                                     agentSelect.val(selectedAgentId);
                                 }
@@ -951,7 +954,8 @@ require_once SYSTEM . '/layouts/head.php';
                     type: 'POST',
                     data: {
                         city_ids: cityIds,
-                        client_id: clientId
+                        client_id: clientId,
+                        is_readonly: isReadonly
                     },
                     success: function (response) {
                         if (response.trim() !== '') {

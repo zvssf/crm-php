@@ -349,6 +349,7 @@
         </li>
 
 
+        <?php if (in_array($user_data['user_group'], [1, 2, 3])): // Только Директор, Руководитель и Менеджер видят сотрудников ?>
         <li class="side-nav-item <?= ($page == 'customers' or $page == 'new-customer' or $page == 'edit-customer') ? 'menuitem-active' : '' ?>">
             <a href="/?page=customers" class="side-nav-link <?= ($page == 'customers' or $page == 'new-customer' or $page == 'edit-customer') ? 'active' : '' ?>">
                 <i class="uil-users-alt"></i>
@@ -356,7 +357,9 @@
                 <span>Сотрудники</span>
             </a>
         </li>
+        <?php endif; ?>
 
+        <?php if (in_array($user_data['user_group'], [1, 2])): // Только Директор и Руководитель видят финансы ?>
         <li class="side-nav-item <?= ($page == 'finance') ? 'menuitem-active' : '' ?>">
             <a href="/?page=finance" class="side-nav-link <?= ($page == 'finance') ? 'active' : '' ?>">
                 <i class="uil-dollar-alt"></i>
@@ -364,7 +367,9 @@
                 <span>Финансы</span>
             </a>
         </li>
+        <?php endif; ?>
 
+        <?php if ($user_data['user_group'] == 1): // Только Директор видит настройки ?>
         <li class="side-nav-item <?= ($page == 'settings-centers' or $page == 'settings-countries' or $page == 'settings-cities' or $page == 'settings-inputs' or $page == 'settings-categories' or $page == 'new-cities' or $page == 'edit-cities') ? 'menuitem-active' : '' ?>">
             <a data-bs-toggle="collapse" href="#sidebar-1" aria-expanded="false" aria-controls="sidebarPages" class="side-nav-link"><i class="uil-bright"></i><span>Настройки</span><span class="menu-arrow"></span></a>
             <div class="collapse <?= ($page == 'settings-centers' or $page == 'settings-countries' or $page == 'settings-cities' or $page == 'settings-inputs' or $page == 'settings-categories' or $page == 'new-city' or $page == 'edit-city') ? 'show' : '' ?>" id="sidebar-1">
@@ -376,6 +381,7 @@
                 </ul>
             </div>
         </li>
+        <?php endif; ?>
 
         <?php if (!empty($grouped_menu_data)): ?>
             <li class="side-nav-title">Направления</li>
