@@ -36,8 +36,8 @@ try {
 
     // 4. Финансовая Корректировка — Агент
     if ($agent_id && $sale_price > 0 && in_array($payment_status, [1, 2])) {
-        $pdo->prepare("UPDATE `users` SET `user_balance` = `user_balance` + :sale_price WHERE `user_id` = :agent_id")
-            ->execute([':sale_price' => $sale_price, ':agent_id' => $agent_id]);
+        // Вызываем новую глобальную функцию. Сумма пополнения - это возвращаемая стоимость анкеты.
+        process_agent_repayments($pdo, $agent_id, $sale_price);
     }
 
     // 5. Финансовая Корректировка — Поставщик

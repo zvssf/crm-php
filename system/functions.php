@@ -179,3 +179,90 @@ function getIP() {
   }
   return '127.0.0.1';
 }
+
+function process_agent_repayments($pdo, $agent_id, $transaction_amount) {
+    // Шаг 1: Получаем текущий баланс агента (до транзакции)
+    $stmt_agent = $pdo->prepare("SELECT `user_balance` FROM `users` WHERE `user_id` = :agent_id FOR UPDATE");
+    $stmt_agent->execute([':agent_id' => $agent_id]);
+    $current_balance = (float) $stmt_agent->fetchColumn();
+
+    // Шаг 2: Рассчитываем "Пул для погашения"
+    $repayment_pool = (float) $transaction_amount;
+    if ($current_balance > 0) {
+        $repayment_pool += $current_balance;
+    }
+
+    // Шаг 3: Фаза 1 — Расходование "Пула" на Кредитные анкеты (payment_status = 2)
+    $stmt_credits = $pdo->prepare(
+        "SELECT `client_id`, `paid_from_credit` FROM `clients` 
+            WHERE `agent_id` = :agent_id AND `payment_status` = 2 
+            ORDER BY `client_id` ASC FOR UPDATE"
+    );
+    $stmt_credits->execute([':agent_id' => $agent_id]);
+    $credit_clients = $stmt_credits->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($credit_clients as $client) {
+        if ($repayment_pool <= 0) break;
+
+        $credit_amount = (float) $client['paid_from_credit'];
+        $payment_amount = min($repayment_pool, $credit_amount);
+
+        $stmt_update_credit = $pdo->prepare(
+            "UPDATE `clients` SET 
+                `paid_from_balance` = IFNULL(`paid_from_balance`, 0) + :payment_add, 
+                `paid_from_credit` = IFNULL(`paid_from_credit`, 0) - :payment_subtract
+                WHERE `client_id` = :client_id"
+        );
+        $stmt_update_credit->execute([
+            ':payment_add'      => $payment_amount, 
+            ':payment_subtract' => $payment_amount, 
+            ':client_id'        => $client['client_id']
+        ]);
+        
+        $repayment_pool -= $payment_amount;
+
+        if (abs($credit_amount - $payment_amount) < 0.01) {
+            $stmt_update_status = $pdo->prepare("UPDATE `clients` SET `payment_status` = 1 WHERE `client_id` = :client_id");
+            $stmt_update_status->execute([':client_id' => $client['client_id']]);
+        }
+    }
+
+    // Шаг 4: Фаза 2 — Расходование остатка "Пула" на Неоплаченные анкеты (payment_status = 0)
+    $spent_on_unpaid = 0;
+    if ($repayment_pool > 0) {
+        $stmt_unpaid = $pdo->prepare(
+            "SELECT `client_id`, `sale_price` FROM `clients` 
+                WHERE `agent_id` = :agent_id AND `payment_status` = 0 
+                ORDER BY `client_id` ASC FOR UPDATE"
+        );
+        $stmt_unpaid->execute([':agent_id' => $agent_id]);
+        $unpaid_clients = $stmt_unpaid->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($unpaid_clients as $client) {
+            if ($repayment_pool <= 0) break;
+
+            $sale_price = (float) $client['sale_price'];
+            if (round($repayment_pool, 2) >= round($sale_price, 2)) {
+                $repayment_pool -= $sale_price;
+                $spent_on_unpaid += $sale_price;
+                
+                $stmt_update_unpaid = $pdo->prepare(
+                    "UPDATE `clients` SET 
+                        `payment_status` = 1, 
+                        `paid_from_balance` = :sale_price,
+                        `paid_from_credit` = 0
+                        WHERE `client_id` = :client_id"
+                );
+                $stmt_update_unpaid->execute([':sale_price' => $sale_price, ':client_id' => $client['client_id']]);
+            } else {
+                // Если на текущую анкету не хватает, просто пропускаем ее и ищем следующую, более дешевую
+                continue; 
+            }
+        }
+    }
+
+    // Шаг 5: Финальное обновление баланса агента
+    $final_balance = $current_balance + $transaction_amount - $spent_on_unpaid;
+    $stmt_update_balance = $pdo->prepare("UPDATE `users` SET `user_balance` = :final_balance WHERE `user_id` = :agent_id");
+    $stmt_update_balance->execute([':final_balance' => $final_balance, ':agent_id' => $agent_id]);
+}
