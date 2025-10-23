@@ -20,6 +20,7 @@ $user_group       = valid($_POST['select-group'] ?? '');
 $user_supervisor  = valid($_POST['select-supervisor'] ?? '');
 $user_manager     = valid($_POST['select-manager'] ?? '');
 $user_credit_limit = valid($_POST['user_credit_limit'] ?? '0.00');
+$countries_post   = $_POST['countries'] ?? [];
 
 $user_address     = valid($_POST['user_address'] ?? '');
 $user_website     = valid($_POST['user_website'] ?? '');
@@ -145,6 +146,26 @@ try {
       ':credit_limit'=> ($user_group == 4) ? $user_credit_limit : 0.00,
       ':user_id'     => $user_id
   ]);
+
+  // Сначала удаляем все старые привязки стран для этого пользователя
+  $stmt_delete_countries = $pdo->prepare("DELETE FROM `user_countries` WHERE `user_id` = :user_id");
+  $stmt_delete_countries->execute([':user_id' => $user_id]);
+
+  // Если новая группа - "Агент" и выбраны страны, добавляем новые привязки
+  if ($user_group === '4' && !empty($countries_post)) {
+      $stmt_insert_country = $pdo->prepare(
+          "INSERT INTO `user_countries` (`user_id`, `country_id`) VALUES (:user_id, :country_id)"
+      );
+
+      foreach ($countries_post as $country_id) {
+          if (is_numeric($country_id)) {
+              $stmt_insert_country->execute([
+                  ':user_id'    => $user_id,
+                  ':country_id' => $country_id
+              ]);
+          }
+      }
+  }
 
   message('Уведомление', 'Сохранение выполнено!', 'success', 'customers');
 

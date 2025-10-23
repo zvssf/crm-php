@@ -11,6 +11,7 @@ $user_manager     = valid($_POST['select-manager'] ?? '');
 $new_password     = valid($_POST['new-password'] ?? '');
 $confirm_password = valid($_POST['confirm-password'] ?? '');
 $user_credit_limit = valid($_POST['user_credit_limit'] ?? '0.00');
+$countries_post   = $_POST['countries'] ?? [];
 
 $user_address     = valid($_POST['user_address'] ?? '');
 $user_website     = valid($_POST['user_website'] ?? '');
@@ -159,6 +160,23 @@ try {
         ':comment'     => $user_comment,
         ':credit_limit'=> ($user_group == 4) ? $user_credit_limit : 0.00
     ]);
+
+    $new_user_id = $pdo->lastInsertId();
+
+    if ($user_group === '4' && !empty($countries_post) && $new_user_id > 0) {
+        $stmt_insert_country = $pdo->prepare(
+            "INSERT INTO `user_countries` (`user_id`, `country_id`) VALUES (:user_id, :country_id)"
+        );
+
+        foreach ($countries_post as $country_id) {
+            if (is_numeric($country_id)) {
+                $stmt_insert_country->execute([
+                    ':user_id'    => $new_user_id,
+                    ':country_id' => $country_id
+                ]);
+            }
+        }
+    }
 
     message('Уведомление', 'Добавление выполнено!', 'success', 'customers');
 

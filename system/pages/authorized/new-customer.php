@@ -252,6 +252,18 @@ try {
 
                                                 </div>
 
+                                                <div class="block-agent-countries visually-hidden">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Доступные направления</label>
+                                                        <div>
+                                                            <button type="button" class="btn btn-light" id="btn-configure-countries" data-bs-toggle="modal" data-bs-target="#countries-modal">
+                                                                <i class="mdi mdi-cogs me-1"></i> Настроить
+                                                            </button>
+                                                        </div>
+                                                        <div id="hidden-countries-inputs"></div>
+                                                    </div>
+                                                </div>
+
 
                                                 <div class="block-managers visually-hidden">
 
@@ -372,6 +384,46 @@ try {
         <!-- ============================================================== -->
 
     </div>
+
+    <!-- Countries Modal -->
+    <div id="countries-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="countries-modal-label" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="countries-modal-label">Настройка доступных направлений</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <?php
+                        $active_countries = array_filter($countries, function ($country) {
+                            return $country['country_status'] == 1;
+                        });
+
+                        if (!empty($active_countries)):
+                            foreach ($active_countries as $country):
+                        ?>
+                                <div class="col-lg-6">
+                                    <div class="mb-2 form-check form-switch">
+                                        <input type="checkbox" class="form-check-input" id="country-<?= $country['country_id'] ?>" name="countries[]" value="<?= $country['country_id'] ?>">
+                                        <label class="form-check-label" for="country-<?= $country['country_id'] ?>"><?= $country['country_name'] ?></label>
+                                    </div>
+                                </div>
+                        <?php
+                            endforeach;
+                        else:
+                        ?>
+                            <p class="text-muted">Активных стран не найдено.</p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-success" id="save-countries-btn">Сохранить</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
     <!-- END wrapper -->
 
 
@@ -409,22 +461,20 @@ try {
             let el = $(this).val();
             let blockSupervisors = $('.block-supervisors');
             let blockManagers = $('.block-managers');
+            let blockAgentCountries = $('.block-agent-countries');
             let cssClass = 'visually-hidden';
-            if (el == '3') {
-                blockSupervisors.removeClass(cssClass);
-                blockManagers.addClass(cssClass);
-            } else if (el == '4') {
-                blockManagers.removeClass(cssClass);
-                blockSupervisors.addClass(cssClass);
-            } else {
-                if (!blockSupervisors.hasClass(cssClass)) {
-                    blockSupervisors.addClass(cssClass);
-                }
-                if (!blockManagers.hasClass(cssClass)) {
-                    blockManagers.addClass(cssClass);
-                }
-            }
 
+            // Сначала сбрасываем все зависимые блоки
+            blockSupervisors.addClass(cssClass);
+            blockManagers.addClass(cssClass);
+            blockAgentCountries.addClass(cssClass);
+
+            if (el == '3') { // Менеджер
+                blockSupervisors.removeClass(cssClass);
+            } else if (el == '4') { // Агент
+                blockManagers.removeClass(cssClass);
+                blockAgentCountries.removeClass(cssClass);
+            }
         });
     </script>
     
@@ -437,6 +487,28 @@ try {
 
     <script>
         $(document).ready(function() {
+
+            // Логика для модального окна стран
+            $('#save-countries-btn').on('click', function() {
+                const hiddenContainer = $('#hidden-countries-inputs');
+                hiddenContainer.empty(); // Очищаем старые значения
+
+                // Находим все отмеченные чекбоксы и создаем для них скрытые инпуты
+                $('#countries-modal input[name="countries[]"]:checked').each(function() {
+                    const countryId = $(this).val();
+                    hiddenContainer.append(`<input type="hidden" name="countries[]" value="${countryId}">`);
+                });
+
+                // Добавляем галочку к кнопке
+                const configureBtn = $('#btn-configure-countries');
+                if (!configureBtn.find('i.text-success').length) {
+                    configureBtn.append(' <i class="mdi mdi-check-circle text-success"></i>');
+                }
+
+                $('#countries-modal').modal('hide');
+            });
+
+
             // Функция для обработки клика по кнопке
             $('#messenger-buttons .btn').on('click', function() {
                 $(this).toggleClass('active');

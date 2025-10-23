@@ -37,6 +37,13 @@ try {
         exit('Аккаунт удален!');
     }
 
+    $assigned_countries = [];
+    if ($customer_data['user_group'] == 4) {
+        $stmt_countries = $pdo->prepare("SELECT `country_id` FROM `user_countries` WHERE `user_id` = :user_id");
+        $stmt_countries->execute([':user_id' => $edit_user_id]);
+        $assigned_countries = array_column($stmt_countries->fetchAll(PDO::FETCH_ASSOC), 'country_id');
+    }
+
     $stmt = $pdo->prepare("
         SELECT * 
         FROM `users` 
@@ -288,6 +295,18 @@ try {
                                                     <?php endif; ?>
                                                 </div>
 
+                                                <div class="block-agent-countries <?= ($customer_data['user_group'] != '4') ? 'visually-hidden' : '' ?>">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Доступные направления</label>
+                                                        <div>
+                                                            <button type="button" class="btn btn-light" id="btn-configure-countries" data-bs-toggle="modal" data-bs-target="#countries-modal">
+                                                                <i class="mdi mdi-cogs me-1"></i> Настроить
+                                                            </button>
+                                                        </div>
+                                                        <div id="hidden-countries-inputs"></div>
+                                                    </div>
+                                                </div>
+
                                             </div>
 
                                         </div>
@@ -370,6 +389,48 @@ try {
         <!-- ============================================================== -->
 
     </div>
+
+    <!-- Countries Modal -->
+    <div id="countries-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="countries-modal-label" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="countries-modal-label">Настройка доступных направлений</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <?php
+                        $active_countries = array_filter($countries, function ($country) {
+                            return $country['country_status'] == 1;
+                        });
+
+                        if (!empty($active_countries)):
+                            foreach ($active_countries as $country):
+                                $is_checked = in_array($country['country_id'], $assigned_countries);
+                        ?>
+                                <div class="col-lg-6">
+                                    <div class="mb-2 form-check form-switch">
+                                        <input type="checkbox" class="form-check-input" id="country-<?= $country['country_id'] ?>" name="countries[]" value="<?= $country['country_id'] ?>" <?= $is_checked ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="country-<?= $country['country_id'] ?>"><?= $country['country_name'] ?></label>
+                                    </div>
+                                </div>
+                        <?php
+                            endforeach;
+                        else:
+                        ?>
+                            <p class="text-muted">Активных стран не найдено.</p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-success" id="save-countries-btn">Сохранить</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
     <!-- END wrapper -->
 
     <script>
@@ -435,25 +496,50 @@ try {
             let el = $(this).val();
             let blockSupervisors = $('.block-supervisors');
             let blockManagers = $('.block-managers');
+            let blockAgentCountries = $('.block-agent-countries');
             let cssClass = 'visually-hidden';
-            if(el == '3') {
+
+            // Сначала сбрасываем все зависимые блоки
+            blockSupervisors.addClass(cssClass);
+            blockManagers.addClass(cssClass);
+            blockAgentCountries.addClass(cssClass);
+
+            if(el == '3') { // Менеджер
                 blockSupervisors.removeClass(cssClass);
-                blockManagers.addClass(cssClass);
-            } else if(el == '4') {
+            } else if(el == '4') { // Агент
                 blockManagers.removeClass(cssClass);
-                blockSupervisors.addClass(cssClass);
-            } else {
-                if(!blockSupervisors.hasClass(cssClass)) {
-                    blockSupervisors.addClass(cssClass);
-                }
-                if(!blockManagers.hasClass(cssClass)) {
-                    blockManagers.addClass(cssClass);
-                }
+                blockAgentCountries.removeClass(cssClass);
             }
         });
     </script>
     <script>
         $(document).ready(function() {
+
+            // Логика для модального окна стран
+            $('#save-countries-btn').on('click', function() {
+                const hiddenContainer = $('#hidden-countries-inputs');
+                hiddenContainer.empty(); // Очищаем старые значения
+
+                // Находим все отмеченные чекбоксы и создаем для них скрытые инпуты
+                $('#countries-modal input[name="countries[]"]:checked').each(function() {
+                    const countryId = $(this).val();
+                    hiddenContainer.append(`<input type="hidden" name="countries[]" value="${countryId}">`);
+                });
+
+                // Добавляем галочку к кнопке
+                const configureBtn = $('#btn-configure-countries');
+                if (!configureBtn.find('i.text-success').length) {
+                    configureBtn.append(' <i class="mdi mdi-check-circle text-success"></i>');
+                }
+
+                $('#countries-modal').modal('hide');
+            });
+
+            // Показываем галочку при загрузке страницы, если страны уже были назначены
+            if ($('#countries-modal input[name="countries[]"]:checked').length > 0) {
+                $('#btn-configure-countries').append(' <i class="mdi mdi-check-circle text-success"></i>');
+            }
+
             // Функция для обработки клика по кнопке
             $('#messenger-buttons .btn').on('click', function() {
                 $(this).toggleClass('active');
