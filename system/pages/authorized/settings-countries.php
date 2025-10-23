@@ -230,39 +230,42 @@ require_once SYSTEM . '/layouts/head.php';
                 let countryId = $('#form-country input[name="country-edit-id"]');
                 let countryName = $('#form-country #country-name');
                 let btn = $('#form-country button[type=submit] .btn-text');
-                $('#form-country #select-country-status option').prop('selected', false);
-                
-                // Общие сбросы
+                let fieldSettingsInput = $('#field-settings-json');
+                const configureBtn = document.getElementById('btn-configure-fields');
+                const fieldsModal = document.getElementById('modal-country-fields');
+
+                // --- НАЧАЛО БЛОКА ПОЛНОГО СБРОСА ---
                 modalTitle.text('');
                 countryId.val('');
                 countryName.val('');
-                $('#field-settings-json').val('');
-                const configureBtn = document.getElementById('btn-configure-fields');
+                fieldSettingsInput.val('');
+                $('#form-country #select-country-status option').prop('selected', false);
+                
                 const icon = configureBtn ? configureBtn.querySelector('i.text-success') : null;
                 if (icon) {
                     icon.remove();
                 }
 
+                // Принудительно сбрасываем все переключатели в модальном окне к состоянию по умолчанию
+                if (fieldsModal) {
+                    const switches = fieldsModal.querySelectorAll('.form-check-input');
+                    switches.forEach(s => {
+                        if (s.disabled) return;
+                        const requiredSwitch = document.getElementById('switch-required-' + s.dataset.field);
+                        if (s.dataset.type === 'visible') {
+                            s.checked = true;
+                            if (requiredSwitch) requiredSwitch.disabled = false;
+                        } else if (s.dataset.type === 'required') {
+                            s.checked = false;
+                        }
+                    });
+                }
+                // --- КОНЕЦ БЛОКА ПОЛНОГО СБРОСА ---
+
                 if(type == 'new') {
                     modalTitle.text('Добавление страны');
                     $('#form-country #select-country-status option[value="1"]').prop('selected', true);
                     btn.text('Добавить');
-
-                    // Сбрасываем все переключатели в модальном окне настроек в состояние по умолчанию
-                    const fieldsModal = document.getElementById('modal-country-fields');
-                    if (fieldsModal) {
-                        const switches = fieldsModal.querySelectorAll('.field-switch');
-                        switches.forEach(s => {
-                            if (s.dataset.type === 'visible') {
-                                s.checked = true;
-                                const event = new Event('change', { bubbles: true });
-                                s.dispatchEvent(event);
-                            } else if (s.dataset.type === 'required') {
-                                s.checked = false;
-                            }
-                        });
-                    }
-
                 } else if(type == 'edit') {
                     modalTitle.text('Редактирование страны');
                     countryId.val(id);
@@ -270,33 +273,28 @@ require_once SYSTEM . '/layouts/head.php';
                     $('#form-country #select-country-status option[value="' + status + '"]').prop('selected', true);
                     btn.text('Сохранить');
 
-                    // Загружаем настройки полей для этой страны
+                    // Загружаем и применяем настройки полей для этой страны
                     $.ajax({
                         url:      '/?form=get-country-fields',
                         type:     'POST',
                         dataType: 'json',
                         data:     { 'country_id': id },
                         success:  function(settings) {
-                            if (settings && Object.keys(settings).length > 0) {
-                                // Применяем загруженные настройки к переключателям
-                                const fieldsModal = document.getElementById('modal-country-fields');
+                            if (fieldsModal && settings && Object.keys(settings).length > 0) {
                                 const switches = fieldsModal.querySelectorAll('.form-check-input');
                                 switches.forEach(s => {
                                     const fieldName = s.dataset.field;
                                     const type = s.dataset.type;
-                                    if (settings[fieldName]) {
+                                    if (settings[fieldName] && !s.disabled) {
                                         s.checked = settings[fieldName][type === 'visible' ? 'is_visible' : 'is_required'];
-                                        // Принудительно вызываем событие, чтобы обновить состояние зависимых свитчей
                                         const event = new Event('change', { bubbles: true });
                                         s.dispatchEvent(event);
                                     }
                                 });
-                                // Добавляем иконку, что настройки загружены
-                                let icon = configureBtn.querySelector('i.text-success');
-                                if (!icon) {
-                                    icon = document.createElement('i');
-                                    icon.classList.add('mdi', 'mdi-check-circle', 'text-success', 'ms-1');
-                                    configureBtn.appendChild(icon);
+                                if (configureBtn && !configureBtn.querySelector('i.text-success')) {
+                                    const checkIcon = document.createElement('i');
+                                    checkIcon.className = 'mdi mdi-check-circle text-success ms-1';
+                                    configureBtn.appendChild(checkIcon);
                                 }
                             }
                         },
@@ -310,6 +308,31 @@ require_once SYSTEM . '/layouts/head.php';
 
             function sendCountryForm(btn) {
                 event.preventDefault();
+                
+                // --- НАЧАЛО НОВОГО БЛОКА СБОРА ДАННЫХ ---
+                const settings = {};
+                const fieldsModal = document.getElementById('modal-country-fields');
+                if (fieldsModal) {
+                    const switches = fieldsModal.querySelectorAll('.form-check-input');
+                    switches.forEach(s => {
+                        const field = s.dataset.field;
+                        const type = s.dataset.type;
+
+                        if (!settings[field]) {
+                            settings[field] = { is_visible: false, is_required: false };
+                        }
+
+                        if (type === 'visible') {
+                            settings[field].is_visible = s.checked;
+                        } else if (type === 'required') {
+                            settings[field].is_required = s.checked;
+                        }
+                    });
+                }
+                // Записываем собранные данные в скрытое поле перед отправкой
+                document.getElementById('field-settings-json').value = JSON.stringify(settings);
+                // --- КОНЕЦ НОВОГО БЛОКА СБОРА ДАННЫХ ---
+
                 loaderBTN(btn, 'true');
                 let countryId = $('#form-country input[name="country-edit-id"]').val();
                 let typeForm;
@@ -637,8 +660,7 @@ require_once SYSTEM . '/layouts/head.php';
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Отмена</button>
-                        <button type="button" class="btn btn-primary" id="save-field-settings-btn">Сохранить настройки</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
                     </div>
                 </div>
             </div>
@@ -667,41 +689,6 @@ require_once SYSTEM . '/layouts/head.php';
                             }
                         }
                     }
-                });
-
-                saveSettingsBtn.addEventListener('click', function() {
-                    const settings = {};
-                    const switches = fieldsModal.querySelectorAll('.form-check-input');
-                    
-                    switches.forEach(s => {
-                        const field = s.dataset.field;
-                        const type = s.dataset.type;
-
-                        if (!settings[field]) {
-                            settings[field] = { is_visible: false, is_required: false };
-                        }
-
-                        if (type === 'visible') {
-                            settings[field].is_visible = s.checked;
-                        } else if (type === 'required') {
-                            settings[field].is_required = s.checked;
-                        }
-                    });
-
-                    settingsJsonInput.value = JSON.stringify(settings);
-                    
-                    const configureBtn = document.getElementById('btn-configure-fields');
-                    if (configureBtn) {
-                        let icon = configureBtn.querySelector('i.text-success');
-                        if (!icon) {
-                            icon = document.createElement('i');
-                            icon.classList.add('mdi', 'mdi-check-circle', 'text-success', 'ms-1');
-                            configureBtn.appendChild(icon);
-                        }
-                    }
-
-                    const modal = bootstrap.Modal.getInstance(fieldsModal);
-                    modal.hide();
                 });
             });
         </script>
