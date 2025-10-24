@@ -144,4 +144,26 @@
     /* --- КОНЕЦ СТИЛЕЙ ДЛЯ КАЛЕНДАРЯ --- */
 </style>
 
+<style>
+    /* 
+     * Глобальное исправление для "залипания" подсветки в Select2.
+     * Когда к контейнеру .select2-results__options добавляется класс .scrolling-with-wheel,
+     * все дочерние элементы перестают реагировать на курсор мыши.
+     */
+    .select2-results__options.scrolling-with-wheel .select2-results__option {
+        pointer-events: none;
+    }
+</style>
+
+<style>
+    /* 
+     * Убираем иконку валидации Bootstrap для полей сортировки в модальном окне экспорта,
+     * чтобы избежать смещения верстки.
+     */
+    .export-order-input.is-invalid {
+        background-image: none !important;
+        padding-right: 0.5rem;
+    }
+</style>
+
 </head>

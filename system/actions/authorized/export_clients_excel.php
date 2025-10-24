@@ -8,6 +8,12 @@ $status_id = valid($_POST['status_id'] ?? '');
 $manager_id = valid($_POST['manager_id'] ?? '');
 $agent_id = valid($_POST['agent_id'] ?? '');
 $fields = $_POST['fields'] ?? [];
+$field_order = $_POST['field_order'] ?? [];
+
+// Вручную добавляем поля, которые всегда включены, но не отправляются формой, так как они disabled
+$always_on_fields = ['c.client_id', 'c.first_name', 'c.last_name', 'c.passport_number'];
+$fields = array_merge($always_on_fields, $fields);
+$fields = array_unique($fields); // На случай, если что-то пойдет не так
 
 if (empty($center_id) || empty($status_id) || empty($fields)) {
     exit('Ошибка: Недостаточно данных для экспорта.');
@@ -16,32 +22,12 @@ if (empty($center_id) || empty($status_id) || empty($fields)) {
 // Словарь для перевода ключей полей в человекочитаемые названия
 $field_labels = [
     'c.client_id' => 'ID', 'c.client_name' => 'ФИО', 'c.first_name' => 'Имя', 'c.last_name' => 'Фамилия', 'c.middle_name' => 'Отчество',
-    'c.phone' => 'Телефон', 'c.email' => 'Email', 'c.gender' => 'Пол', 'c.passport_number' => 'Номер паспорта',
+    'phone_combined' => 'Телефон', 'c.email' => 'Email', 'c.gender' => 'Пол', 'c.passport_number' => 'Номер паспорта',
     'c.birth_date' => 'Дата рождения', 'c.passport_expiry_date' => 'Срок действия паспорта', 'c.nationality' => 'Национальность',
     'c.visit_date_start' => 'Дата визита (начало)', 'c.visit_date_end' => 'Дата визита (конец)', 'c.days_until_visit' => 'Дней до визита',
     'c.sale_price' => 'Стоимость', 'manager_name' => 'Менеджер', 'agent_name' => 'Агент', 'client_cities_list' => 'Города',
     'client_categories_list' => 'Категории', 'c.notes' => 'Пометки'
 ];
-
-// Динамические поля
-$select_fields = [];
-$header_row = [];
-$additional_input_ids = [];
-
-foreach ($fields as $field_key) {
-    if (strpos($field_key, 'input_') === 0) {
-        $input_id = (int)str_replace('input_', '', $field_key);
-        if ($input_id > 0) {
-            $additional_input_ids[] = $input_id;
-        }
-    } else {
-        $select_fields[] = $field_key;
-        if (isset($field_labels[$field_key])) {
-            $header_row[] = $field_labels[$field_key];
-        }
-    }
-}
-
 
 try {
     $pdo = db_connect();
@@ -58,11 +44,10 @@ try {
     }
 
     // --- ФОРМИРОВАНИЕ ОСНОВНОГО ЗАПРОСА ---
-    $sql_select = implode(', ', $select_fields);
 
     $sql = "
         SELECT 
-            {$sql_select},
+            c.*,
             CONCAT(manager.user_firstname, ' ', manager.user_lastname) as manager_name,
             CONCAT(agent.user_firstname, ' ', agent.user_lastname) as agent_name,
             GROUP_CONCAT(DISTINCT sc.city_name SEPARATOR ', ') as client_cities_list,
@@ -148,6 +133,60 @@ try {
     exit("Ошибка базы данных при экспорте.");
 }
 
+// --- ОБРАБОТКА И СОРТИРОВКА ПОЛЕЙ ДЛЯ ЭКСПОРТА ---
+
+// Полный список полей в порядке их отображения в модальном окне.
+// Это нужно для правильной сортировки "непронумерованных" колонок.
+$all_possible_fields = [
+    // Основная информация
+    'c.client_id', 'c.first_name', 'c.last_name', 'c.middle_name', 'phone_combined', 'c.gender', 'c.email',
+    // Документы
+    'c.passport_number', 'c.birth_date', 'c.passport_expiry_date', 'c.nationality',
+    // Информация
+    'manager_name', 'agent_name', 'client_cities_list', 'client_categories_list', 'c.sale_price',
+    'c.visit_date_start', 'c.visit_date_end', 'c.days_until_visit', 'c.notes'
+];
+// Добавляем доп. поля в конец списка
+if (!empty($additional_input_ids)) {
+    foreach ($additional_input_ids as $id) {
+        $all_possible_fields[] = 'input_' . $id;
+    }
+}
+
+$final_fields = [];
+$numbered_fields = [];
+$unnumbered_fields_keys = [];
+
+// Шаг 1: Собираем все поля с номерами
+foreach ($fields as $field_key) {
+    $order = $field_order[$field_key] ?? '';
+    if ($order !== '' && is_numeric($order)) {
+        $order_num = (int)$order;
+        // Чтобы избежать перезаписи, добавляем небольшой десятичный сдвиг
+        while(isset($numbered_fields[$order_num])) {
+            $order_num += 0.01;
+        }
+        $numbered_fields[$order_num] = $field_key;
+    } else {
+        $unnumbered_fields_keys[] = $field_key;
+    }
+}
+// Сортируем пронумерованные поля по их номерам
+ksort($numbered_fields);
+
+// Шаг 2: Собираем финальный массив, сначала пронумерованные
+foreach ($numbered_fields as $field_key) {
+    $final_fields[] = $field_key;
+}
+
+// Шаг 3: Добавляем непронумерованные поля в порядке их отображения
+foreach ($all_possible_fields as $possible_key) {
+    if (in_array($possible_key, $unnumbered_fields_keys)) {
+        $final_fields[] = $possible_key;
+    }
+}
+
+
 // --- ГЕНЕРАЦИЯ CSV ФАЙЛА ---
 $filename = "export_clients_" . date('Y-m-d') . ".csv";
 
@@ -159,22 +198,53 @@ $output = fopen('php://output', 'w');
 // Добавляем BOM для корректного отображения UTF-8 в Excel
 fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
 
-// Записываем заголовки
-fputcsv($output, $header_row);
+// Формируем и записываем заголовки на основе отсортированного массива $final_fields
+$header_row = [];
+foreach ($final_fields as $field_key) {
+    if (isset($field_labels[$field_key])) {
+        $header_row[] = $field_labels[$field_key];
+    } elseif (strpos($field_key, 'input_') === 0) {
+        $input_id = (int)str_replace('input_', '', $field_key);
+        $header_row[] = $input_names[$input_id] ?? 'Доп. поле #' . $input_id;
+    }
+}
+fputcsv($output, $header_row, ';');
 
-// Записываем данные
+// Записываем данные в правильном порядке
 foreach ($clients as $client) {
     $row_data = [];
-    foreach($fields as $field_key) {
-         // Сопоставляем ключ поля с данными из запроса
+    foreach ($final_fields as $field_key) {
         $db_key = str_replace('c.', '', $field_key);
-        if (isset($client[$db_key])) {
-            $row_data[] = $client[$db_key];
-        } else {
-            $row_data[] = ''; // Пустая ячейка, если ключ не найден
+        $value = $client[$db_key] ?? '';
+
+        // --- Специальная обработка для отдельных полей ---
+
+        // 1. Форматируем даты
+        $date_fields = ['birth_date', 'passport_expiry_date', 'visit_date_start', 'visit_date_end'];
+        if (in_array($db_key, $date_fields) && !empty($value)) {
+            try {
+                $date = new DateTime($value);
+                $value = $date->format('d.m.Y');
+            } catch (Exception $e) {
+                // Оставляем как есть, если формат даты некорректный
+            }
         }
+
+        // 2. Собираем телефон и форматируем его как текст для Excel
+        if ($field_key === 'phone_combined') {
+            $phone_text = (!empty($client['phone_code'])) ? '+' . $client['phone_code'] . ' ' . $client['phone_number'] : '';
+            $value = '="' . $phone_text . '"';
+        }
+
+        // 3. Преобразуем пол
+        if ($db_key === 'gender') {
+            if ($value === 'male') $value = 'Мужской';
+            if ($value === 'female') $value = 'Женский';
+        }
+
+        $row_data[] = $value;
     }
-    fputcsv($output, $row_data);
+    fputcsv($output, $row_data, ';');
 }
 
 fclose($output);

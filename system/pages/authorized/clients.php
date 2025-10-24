@@ -64,6 +64,17 @@ if (!in_array($current_status, $allowed_statuses)) {
     $current_status = $default_status;
 }
 
+// Массив для названий статусов
+$status_labels = [
+    1 => 'В работе',
+    2 => 'Записанные',
+    3 => 'Черновики',
+    4 => 'Архив',
+    5 => 'На рассмотрении',
+    6 => 'На рассмотрении у Менеджера', // Технический статус
+    7 => 'Отменённые'
+];
+
 
 try {
     $pdo = db_connect();
@@ -296,7 +307,9 @@ require_once SYSTEM . '/layouts/head.php';
                                         </div>
                                         <div class="col-sm-7">
                                             <div class="text-sm-end">
-                                                <button type="button" class="btn btn-light mb-2 me-1" data-bs-toggle="modal" data-bs-target="#export-excel-modal">Экспорт в Excel</button>
+                                                <?php if ($user_data['user_group'] == 1 || $user_data['can_export'] == 1): ?>
+                                                    <button type="button" class="btn btn-light mb-2 me-1" data-bs-toggle="modal" data-bs-target="#export-excel-modal">Экспорт в Excel</button>
+                                                <?php endif; ?>
                                                 <?php if ($user_data['user_group'] != 2): // Руководитель не видит массовые действия ?>
                                                 <div class="dropdown btn-group">
                                                     <button class="btn btn-light mb-2 dropdown-toggle" type="button"
@@ -778,7 +791,6 @@ require_once SYSTEM . '/layouts/head.php';
             <div class="modal-content">
                 <form action="/?form=export_clients_excel" method="POST" target="_blank" id="form-export-excel">
                     <input type="hidden" name="center_id" value="<?= $center_id ?>">
-                    <input type="hidden" name="status_id" value="<?= $current_status ?>">
 
                     <div class="modal-header">
                         <h4 class="modal-title" id="export-excel-modal-label">Экспорт анкет в Excel</h4>
@@ -786,32 +798,46 @@ require_once SYSTEM . '/layouts/head.php';
                     </div>
                     <div class="modal-body">
                         <div class="row">
-                            <div class="col-12">
+                            <!-- Левая колонка для фильтров -->
+                            <div class="col-lg-5">
                                 <h5 class="mb-3 text-uppercase"><i class="mdi mdi-filter-variant me-1"></i> Фильтры</h5>
-                                <div class="row">
-                                    <?php if (in_array($user_data['user_group'], [1, 2])): // Директор и Руководитель видят фильтр по менеджерам ?>
-                                        <div class="col-md-4">
-                                            <div class="mb-3">
-                                                <label for="export-select-manager" class="form-label">Менеджер (необязательно)</label>
-                                                <select id="export-select-manager" class="form-control select2" data-toggle="select2" name="manager_id" data-dropdown-parent="#export-excel-modal">
-                                                    <option value="">Все менеджеры</option>
-                                                    <?php // Опции будут загружены динамически ?>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    <?php endif; ?>
-                                    <?php if (in_array($user_data['user_group'], [1, 2, 3])): // Директор, Руководитель и Менеджер видят фильтр по агентам ?>
-                                        <div class="col-md-4">
-                                            <div class="mb-3">
-                                                <label for="export-select-agent" class="form-label">Агент (необязательно)</label>
-                                                <select id="export-select-agent" class="form-control select2" data-toggle="select2" name="agent_id" data-dropdown-parent="#export-excel-modal" disabled>
-                                                    <option value="">Все агенты</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    <?php endif; ?>
+
+                                <div class="mb-3">
+                                    <label for="export-select-status" class="form-label">Этап анкеты</label>
+                                    <select id="export-select-status" class="form-control select2" data-toggle="select2" name="status_id" data-dropdown-parent="#export-excel-modal">
+                                        <option value="<?= $current_status ?>" selected><?= $status_labels[$current_status] ?? 'Текущий' ?></option>
+                                        <option value="all">Все доступные</option>
+                                        <?php foreach ($allowed_statuses as $status): ?>
+                                            <?php if ($status != $current_status): ?>
+                                                <option value="<?= $status ?>"><?= $status_labels[$status] ?? 'Статус ' . $status ?></option>
+                                            <?php endif; ?>
+                                        <?php endforeach; ?>
+                                    </select>
                                 </div>
-                                <hr/>
+                                
+                                <?php if (in_array($user_data['user_group'], [1, 2])): // Директор и Руководитель видят фильтр по менеджерам ?>
+                                    <div class="mb-3">
+                                        <label for="export-select-manager" class="form-label">Менеджер (необязательно)</label>
+                                        <select id="export-select-manager" class="form-control select2" data-toggle="select2" name="manager_id" data-dropdown-parent="#export-excel-modal">
+                                            <option value="">Все менеджеры</option>
+                                            <?php // Опции будут загружены динамически ?>
+                                        </select>
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php if (in_array($user_data['user_group'], [1, 2, 3])): // Директор, Руководитель и Менеджер видят фильтр по агентам ?>
+                                    <div class="mb-3">
+                                        <label for="export-select-agent" class="form-label">Агент (необязательно)</label>
+                                        <select id="export-select-agent" class="form-control select2" data-toggle="select2" name="agent_id" data-dropdown-parent="#export-excel-modal" disabled>
+                                            <option value="">Все агенты</option>
+                                        </select>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+
+                            <!-- Правая колонка для полей -->
+                            <div class="col-lg-7">
+                                <h5 class="mb-3 text-uppercase"><i class="mdi mdi-format-list-bulleted me-1"></i> Поля для экспорта</h5>
                                 <div id="export-fields-container">
                                     <p class="text-muted">Загрузка полей для экспорта...</p>
                                 </div>
@@ -838,8 +864,58 @@ require_once SYSTEM . '/layouts/head.php';
 
         // --- ЛОГИКА ЭКСПОРТА В EXCEL ---
 
+        // Обработчик для переключателей полей (вкл/выкл)
+        $(document).on('change', '.export-toggle-switch', function() {
+            const isChecked = $(this).is(':checked');
+            const targetName = $(this).data('target-order-input');
+            // Ищем инпут по атрибуту name, так как он уникален
+            const targetInput = $(`input[name="${targetName}"]`);
+
+            targetInput.prop('disabled', !isChecked);
+            if (!isChecked) {
+                // Если выключили, очищаем значение и запускаем проверку на дубликаты
+                targetInput.val('').trigger('input');
+            }
+        });
+
+        // Обработчик для полей сортировки (проверка на дубликаты)
+        $(document).on('input', '.export-order-input', function() {
+            const allInputs = $('.export-order-input:not(:disabled)');
+            const values = {};
+            const duplicates = [];
+
+            // Шаг 1: Находим все дублирующиеся значения
+            allInputs.each(function() {
+                const value = $(this).val();
+                if (value === '') return; // Пропускаем пустые поля
+
+                if (values[value]) {
+                    // Если такое значение уже встречалось, добавляем его в список дубликатов
+                    duplicates.push(value);
+                } else {
+                    values[value] = true;
+                }
+            });
+
+            // Шаг 2: Подсвечиваем или убираем подсветку
+            allInputs.each(function() {
+                const value = $(this).val();
+                // Подсвечиваем поле, если его значение непустое и есть в списке дубликатов
+                if (value !== '' && duplicates.includes(value)) {
+                    $(this).addClass('is-invalid');
+                } else {
+                    $(this).removeClass('is-invalid');
+                }
+            });
+        });
+        
+
         // Загрузка полей при открытии модального окна
         $('#export-excel-modal').on('show.bs.modal', function () {
+            // Инициализируем Select2 для фильтров
+            $('#export-select-manager').select2({ dropdownParent: $('#export-excel-modal') });
+            $('#export-select-agent').select2({ dropdownParent: $('#export-excel-modal') });
+            $('#export-select-status').select2({ dropdownParent: $('#export-excel-modal') });
             const fieldsContainer = $('#export-fields-container');
             fieldsContainer.html('<p class="text-muted">Загрузка полей для экспорта...</p>');
 

@@ -151,3 +151,26 @@ function loaderBTN(btn, status) {
 <!-- App js -->
 <!-- <script src="assets/js/app.min.js"></script> -->
 <script src="assets/js/app.js"></script>
+
+<script>
+// Глобальное исправление для "залипания" подсветки в Select2 при прокрутке колесиком
+(function() {
+    let scrollTimeout;
+    $(document).on('wheel', '.select2-results__options', function(e) {
+        const optionsList = $(this);
+        
+        // Добавляем класс, который отключает hover-эффекты через CSS
+        if (!optionsList.hasClass('scrolling-with-wheel')) {
+            optionsList.addClass('scrolling-with-wheel');
+        }
+        
+        // Очищаем старый таймер, если он был
+        clearTimeout(scrollTimeout);
+        
+        // Устанавливаем новый таймер. Если прокрутки не было 150мс, считаем, что она закончилась.
+        scrollTimeout = setTimeout(function() {
+            optionsList.removeClass('scrolling-with-wheel');
+        }, 150);
+    });
+})();
+</script>

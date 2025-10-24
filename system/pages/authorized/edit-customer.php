@@ -233,6 +233,16 @@ try {
                                                     </select>
                                                 </div>
 
+                                                <div class="block-can-export <?= ($customer_data['user_group'] == '1') ? 'visually-hidden' : '' ?>">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Разрешения</label>
+                                                        <div class="form-check form-switch">
+                                                            <input type="checkbox" class="form-check-input" id="can-export" name="can_export" <?= ($customer_data['can_export'] == 1) ? 'checked' : '' ?>>
+                                                            <label class="form-check-label" for="can-export">Разрешить экспорт</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
                                                 <div class="block-supervisors <?= ($customer_data['user_group'] != '3') ? 'visually-hidden' : '' ?>">
 
                                                     <?php if($supervisors): ?>
@@ -497,18 +507,26 @@ try {
             let blockSupervisors = $('.block-supervisors');
             let blockManagers = $('.block-managers');
             let blockAgentCountries = $('.block-agent-countries');
+            let blockCanExport = $('.block-can-export');
+
             let cssClass = 'visually-hidden';
 
             // Сначала сбрасываем все зависимые блоки
             blockSupervisors.addClass(cssClass);
             blockManagers.addClass(cssClass);
             blockAgentCountries.addClass(cssClass);
+            blockCanExport.addClass(cssClass);
+
 
             if(el == '3') { // Менеджер
                 blockSupervisors.removeClass(cssClass);
             } else if(el == '4') { // Агент
                 blockManagers.removeClass(cssClass);
                 blockAgentCountries.removeClass(cssClass);
+            }
+
+            if (el != '1') { // Если выбран НЕ Директор
+                blockCanExport.removeClass(cssClass);
             }
         });
     </script>

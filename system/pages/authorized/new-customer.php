@@ -226,6 +226,15 @@ try {
                                                     </select>
                                                 </div>
 
+                                                <div class="block-can-export visually-hidden">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Разрешения</label>
+                                                        <div class="form-check form-switch">
+                                                            <input type="checkbox" class="form-check-input" id="can-export" name="can_export">
+                                                            <label class="form-check-label" for="can-export">Разрешить экспорт</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
 
                                                 <div class="block-supervisors visually-hidden">
 
@@ -462,12 +471,15 @@ try {
             let blockSupervisors = $('.block-supervisors');
             let blockManagers = $('.block-managers');
             let blockAgentCountries = $('.block-agent-countries');
+            let blockCanExport = $('.block-can-export');
             let cssClass = 'visually-hidden';
 
             // Сначала сбрасываем все зависимые блоки
             blockSupervisors.addClass(cssClass);
             blockManagers.addClass(cssClass);
             blockAgentCountries.addClass(cssClass);
+            blockCanExport.addClass(cssClass);
+
 
             if (el == '3') { // Менеджер
                 blockSupervisors.removeClass(cssClass);
@@ -475,6 +487,11 @@ try {
                 blockManagers.removeClass(cssClass);
                 blockAgentCountries.removeClass(cssClass);
             }
+
+            if (el != '1') { // Если выбран НЕ Директор
+                blockCanExport.removeClass(cssClass);
+            }
+
         });
     </script>
     

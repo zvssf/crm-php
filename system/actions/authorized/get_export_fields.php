@@ -7,12 +7,14 @@ if (empty($country_id) || !is_numeric($country_id)) {
     exit;
 }
 
-// Статичный список основных полей
 $fields = [
     'c.client_id' => 'ID',
-    'c.client_name' => 'ФИО',
-    'c.phone' => 'Телефон',
+    'c.first_name' => 'Имя',
+    'c.last_name' => 'Фамилия',
+    'c.middle_name' => 'Отчество',
+    'phone_combined' => 'Телефон', // Используем виртуальный ключ
     'c.email' => 'Email',
+    'c.gender' => 'Пол',
     'c.passport_number' => 'Номер паспорта',
     'c.birth_date' => 'Дата рождения',
     'c.passport_expiry_date' => 'Срок действия паспорта',
@@ -61,11 +63,32 @@ try {
 function render_switch($key, $label, $is_checked, $is_disabled) {
     $disabled_attr = $is_disabled ? 'disabled' : '';
     $checked_attr = $is_checked ? 'checked' : '';
+    $clean_key = preg_replace('/[^a-zA-Z0-9_-]/', '', $key);
+
     echo '
-    <div class="d-flex justify-content-between align-items-center mb-3 ' . ($is_disabled ? 'p-2 bg-light rounded' : '') . '">
-        <label class="form-label mb-0 ' . ($is_disabled ? 'fw-bold' : '') . '" for="field-' . $key . '">' . $label . '</label>
-        <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" id="field-' . $key . '" name="fields[]" value="' . $key . '" ' . $checked_attr . ' ' . $disabled_attr . '>
+    <div class="d-flex justify-content-between align-items-center mb-2 export-field-row ' . ($is_disabled ? 'p-2 bg-light rounded' : '') . '">
+        <label class="form-label mb-0 ' . ($is_disabled ? 'fw-bold' : '') . '" for="field-' . $clean_key . '">' . $label . '</label>
+        <div class="d-flex align-items-center">
+            <div class="input-group input-group-sm me-2" style="width: 85px;">
+                <span class="input-group-text">№</span>
+                <input type="text" 
+                       class="form-control export-order-input" 
+                       name="field_order[' . $key . ']" 
+                       placeholder="-"
+                       oninput="this.value = this.value.replace(/[^0-9]/g, \'\')"
+                       maxlength="2"
+                       ' . ($is_checked ? '' : 'disabled') . '>
+            </div>
+            <div class="form-check form-switch">
+                <input class="form-check-input export-toggle-switch" 
+                       type="checkbox" 
+                       id="field-' . $clean_key . '" 
+                       name="fields[]" 
+                       value="' . $key . '" 
+                       data-target-order-input="field_order[' . $key . ']"
+                       ' . $checked_attr . ' 
+                       ' . $disabled_attr . '>
+            </div>
         </div>
     </div>';
 }
@@ -77,9 +100,10 @@ echo '<div class="row">';
 echo '<div class="col-xl-4">';
 echo '<h5 class="mb-3 text-uppercase"><i class="mdi mdi-account-circle me-1"></i> Основная информация</h5>';
 render_switch('c.client_id', 'ID', true, true);
-render_switch('c.client_name', 'ФИО', true, true);
+render_switch('c.first_name', 'Имя', true, true);
+render_switch('c.last_name', 'Фамилия', true, true);
 if (in_array('middle_name', $visible_fields)) render_switch('c.middle_name', 'Отчество', true, false);
-if (in_array('phone', $visible_fields)) render_switch('c.phone', 'Телефон', true, false);
+render_switch('phone_combined', 'Телефон', true, false);
 if (in_array('gender', $visible_fields)) render_switch('c.gender', 'Пол', true, false);
 if (in_array('email', $visible_fields)) render_switch('c.email', 'Email', true, false);
 echo '</div>';

@@ -21,6 +21,7 @@ $user_supervisor  = valid($_POST['select-supervisor'] ?? '');
 $user_manager     = valid($_POST['select-manager'] ?? '');
 $user_credit_limit = valid($_POST['user_credit_limit'] ?? '0.00');
 $countries_post   = $_POST['countries'] ?? [];
+$can_export = isset($_POST['can_export']) ? 1 : 0;
 
 $user_address     = valid($_POST['user_address'] ?? '');
 $user_website     = valid($_POST['user_website'] ?? '');
@@ -126,7 +127,8 @@ try {
           `user_website`      = :website,
           `user_messengers`   = :messengers,
           `user_comment`      = :comment,
-          `user_credit_limit` = :credit_limit
+          `user_credit_limit` = :credit_limit,
+          `can_export`        = :can_export
       WHERE `user_id`         = :user_id
   ");
 
@@ -144,7 +146,8 @@ try {
       ':messengers'  => $user_messengers,
       ':comment'     => $user_comment,
       ':credit_limit'=> ($user_group == 4) ? $user_credit_limit : 0.00,
-      ':user_id'     => $user_id
+      ':user_id'     => $user_id,
+      ':can_export'  => ($user_group == 1) ? 1 : $can_export // Директору экспорт разрешен всегда
   ]);
 
   // Сначала удаляем все старые привязки стран для этого пользователя

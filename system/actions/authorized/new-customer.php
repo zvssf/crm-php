@@ -12,6 +12,7 @@ $new_password     = valid($_POST['new-password'] ?? '');
 $confirm_password = valid($_POST['confirm-password'] ?? '');
 $user_credit_limit = valid($_POST['user_credit_limit'] ?? '0.00');
 $countries_post   = $_POST['countries'] ?? [];
+$can_export = isset($_POST['can_export']) ? 1 : 0;
 
 $user_address     = valid($_POST['user_address'] ?? '');
 $user_website     = valid($_POST['user_website'] ?? '');
@@ -125,6 +126,7 @@ try {
             `user_messengers`,
             `user_comment`,
             `user_credit_limit`
+            'can_export'
         ) VALUES (
             :login,
             :password,
@@ -141,6 +143,7 @@ try {
             :messengers,
             :comment,
             :credit_limit
+            :can_export
         )
     ");
 
@@ -158,7 +161,8 @@ try {
         ':website'     => $user_website,
         ':messengers'  => $user_messengers,
         ':comment'     => $user_comment,
-        ':credit_limit'=> ($user_group == 4) ? $user_credit_limit : 0.00
+        ':credit_limit'=> ($user_group == 4) ? $user_credit_limit : 0.00,
+        ':can_export'  => ($user_group == 1) ? 1 : $can_export // Директору экспорт разрешен всегда
     ]);
 
     $new_user_id = $pdo->lastInsertId();
