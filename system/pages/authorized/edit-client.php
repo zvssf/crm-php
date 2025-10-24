@@ -267,17 +267,17 @@ require_once SYSTEM . '/layouts/head.php';
                                                         class="mdi mdi-account-circle me-1"></i> Основная информация
                                                 </h5>
                                                 <div class="mb-3">
-                                                    <label for="first_name" class="form-label">Имя</label>
-                                                    <input type="text" class="form-control" id="first_name"
-                                                        name="first_name" placeholder="Введите имя"
-                                                        value="<?= valid($client_data['first_name']) ?>" required
-                                                        <?= $is_readonly ? 'disabled' : '' ?>>
-                                                </div>
-                                                <div class="mb-3">
                                                     <label for="last_name" class="form-label">Фамилия</label>
                                                     <input type="text" class="form-control" id="last_name"
                                                         name="last_name" placeholder="Введите фамилию"
                                                         value="<?= valid($client_data['last_name']) ?>" required
+                                                        <?= $is_readonly ? 'disabled' : '' ?>>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="first_name" class="form-label">Имя</label>
+                                                    <input type="text" class="form-control" id="first_name"
+                                                        name="first_name" placeholder="Введите имя"
+                                                        value="<?= valid($client_data['first_name']) ?>" required
                                                         <?= $is_readonly ? 'disabled' : '' ?>>
                                                 </div>
 

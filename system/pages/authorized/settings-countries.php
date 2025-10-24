@@ -426,20 +426,6 @@ require_once SYSTEM . '/layouts/head.php';
                                 <h5 class="mb-3 text-uppercase"><i class="mdi mdi-account-circle me-1"></i> Основная информация</h5>
                                 
                                 <div class="d-flex justify-content-between align-items-center mb-3 p-2 bg-light rounded">
-                                    <label class="form-label mb-0 fw-bold">Имя</label>
-                                    <div class="d-flex gap-3">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" id="switch-visible-first_name" data-field="first_name" data-type="visible" checked disabled>
-                                            <label class="form-check-label" for="switch-visible-first_name">Наличие</label>
-                                        </div>
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" id="switch-required-first_name" data-field="first_name" data-type="required" checked disabled>
-                                            <label class="form-check-label" for="switch-required-first_name">Обязательность</label>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="d-flex justify-content-between align-items-center mb-3 p-2 bg-light rounded">
                                     <label class="form-label mb-0 fw-bold">Фамилия</label>
                                     <div class="d-flex gap-3">
                                         <div class="form-check form-switch">
@@ -449,6 +435,20 @@ require_once SYSTEM . '/layouts/head.php';
                                         <div class="form-check form-switch">
                                             <input class="form-check-input" type="checkbox" id="switch-required-last_name" data-field="last_name" data-type="required" checked disabled>
                                             <label class="form-check-label" for="switch-required-last_name">Обязательность</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mb-3 p-2 bg-light rounded">
+                                    <label class="form-label mb-0 fw-bold">Имя</label>
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="switch-visible-first_name" data-field="first_name" data-type="visible" checked disabled>
+                                            <label class="form-check-label" for="switch-visible-first_name">Наличие</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="switch-required-first_name" data-field="first_name" data-type="required" checked disabled>
+                                            <label class="form-check-label" for="switch-required-first_name">Обязательность</label>
                                         </div>
                                     </div>
                                 </div>

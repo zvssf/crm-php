@@ -210,12 +210,12 @@ require_once SYSTEM . '/layouts/head.php';
                                             <div class="col-xl-4">
                                                 <h5 class="mb-4 text-uppercase"><i class="mdi mdi-account-circle me-1"></i> Основная информация</h5>
                                                 <div class="mb-3">
-                                                    <label for="first_name" class="form-label">Имя</label>
-                                                    <input type="text" class="form-control" id="first_name" name="first_name" placeholder="Введите имя" required>
-                                                </div>
-                                                <div class="mb-3">
                                                     <label for="last_name" class="form-label">Фамилия</label>
                                                     <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Введите фамилию" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="first_name" class="form-label">Имя</label>
+                                                    <input type="text" class="form-control" id="first_name" name="first_name" placeholder="Введите имя" required>
                                                 </div>
                                                 
                                                 <?php if ($field_settings['middle_name']['is_visible']): ?>
