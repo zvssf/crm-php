@@ -5,9 +5,8 @@ $first_name = valid($_POST['first_name'] ?? '');
 $last_name = valid($_POST['last_name'] ?? '');
 $middle_name = valid($_POST['middle_name'] ?? '');
 $gender = valid($_POST['gender'] ?? '');
-$phone_code = valid($_POST['phone_code'] ?? '');
-$phone_number = valid($_POST['phone_number'] ?? '');
-$phone = '+' . preg_replace('/[^0-9]/', '', $phone_code . $phone_number);
+$phone_code = valid($_POST['phone_code'] ?? null);
+$phone_number = valid($_POST['phone_number'] ?? null);
 $email = valid($_POST['email'] ?? '');
 
 $passport_number_raw = valid($_POST['passport_number'] ?? '');
@@ -139,7 +138,7 @@ try {
     $sql = "
         UPDATE `clients` SET
             `agent_id` = :agent_id, `client_name` = :client_name, `client_status` = :status, `first_name` = :first_name, `last_name` = :last_name, 
-            `middle_name` = :middle_name, `gender` = :gender, `phone` = :phone, `email` = :email, 
+            `middle_name` = :middle_name, `gender` = :gender, `phone_code` = :phone_code, `phone_number` = :phone_number, `email` = :email, 
             `passport_number` = :passport_number, `birth_date` = :birth_date, 
             `passport_expiry_date` = :passport_expiry_date, `nationality` = :nationality, 
             `visit_date_start` = :visit_date_start, 
@@ -157,7 +156,8 @@ try {
         ':last_name' => $last_name,
         ':middle_name' => !empty($middle_name) ? $middle_name : null,
         ':gender' => $gender,
-        ':phone' => $phone,
+        ':phone_code' => !empty($phone_code) ? preg_replace('/[^0-9]/', '', $phone_code) : null,
+        ':phone_number' => !empty($phone_number) ? preg_replace('/[^0-9]/', '', $phone_number) : null,
         ':email' => !empty($email) ? $email : null,
         ':passport_number' => !empty($passport_number) ? $passport_number : null,
         ':birth_date' => $birth_date,

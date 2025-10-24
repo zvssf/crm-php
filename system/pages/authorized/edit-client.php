@@ -228,26 +228,6 @@ try {
     error_log('DB Error fetching users for edit-client page: ' . $e->getMessage());
 }
 
-$phone_code = '';
-$phone_number = '';
-if (!empty($client_data['phone'])) {
-    $cleaned_phone = preg_replace('/[^0-9]/', '', $client_data['phone']);
-    $country_codes_lengths = [4, 3, 2, 1];
-    $found = false;
-    foreach ($country_codes_lengths as $length) {
-        if (strlen($cleaned_phone) > $length) {
-            $potential_code = substr($cleaned_phone, 0, $length);
-            $phone_code = $potential_code;
-            $phone_number = substr($cleaned_phone, $length);
-            $found = true;
-            break;
-        }
-    }
-    if (!$found) {
-        $phone_number = $cleaned_phone;
-    }
-}
-
 require_once SYSTEM . '/layouts/head.php';
 ?>
 
@@ -319,11 +299,11 @@ require_once SYSTEM . '/layouts/head.php';
                                                     <div class="input-group">
                                                         <span class="input-group-text">+</span>
                                                         <input type="text" class="form-control" placeholder="Код"
-                                                            name="phone_code" id="phone_code" value="<?= $phone_code ?>"
-                                                            style="max-width: 80px;" <?php if ($field_settings['phone']['is_required'] && !$is_readonly): ?>required<?php endif; ?> <?= $is_readonly ? 'disabled' : '' ?>>
+                                                            name="phone_code" id="phone_code" value="<?= valid($client_data['phone_code']) ?>"
+                                                            style="max-width: 80px;" oninput="this.value = this.value.replace(/[^0-9]/g, '')" <?php if ($field_settings['phone']['is_required'] && !$is_readonly): ?>required<?php endif; ?> <?= $is_readonly ? 'disabled' : '' ?>>
                                                         <input type="text" class="form-control"
                                                             placeholder="Номер телефона" name="phone_number"
-                                                            id="phone_number" value="<?= $phone_number ?>" <?php if ($field_settings['phone']['is_required'] && !$is_readonly): ?>required<?php endif; ?>
+                                                            id="phone_number" value="<?= valid($client_data['phone_number']) ?>" oninput="this.value = this.value.replace(/[^0-9]/g, '')" <?php if ($field_settings['phone']['is_required'] && !$is_readonly): ?>required<?php endif; ?>
                                                             <?= $is_readonly ? 'disabled' : '' ?>>
                                                     </div>
                                                 </div>

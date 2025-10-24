@@ -212,7 +212,7 @@ try {
 
                     // Поля для сортировки, взятые из главной анкеты
                     $member['sort_client_name'] = trim($main_client_data['last_name'] . ' ' . $main_client_data['first_name'] . ' ' . $main_client_data['middle_name']);
-                    $member['sort_phone'] = $main_client_data['phone'];
+                    $member['sort_phone'] = '+' . $main_client_data['phone_code'] . $main_client_data['phone_number'];
                     $member['sort_passport'] = $main_client_data['passport_number'];
                     $member['sort_cities'] = $main_client_data['client_cities_list'];
                     $member['sort_categories'] = $main_client_data['client_categories_list'];
@@ -475,7 +475,7 @@ require_once SYSTEM . '/layouts/head.php';
                                                         $base_in_group_order = $client['sort_in_group_order'] ?? 0;
 
                                                         $base_client_name = valid($client['sort_client_name'] ?? trim($client['last_name'] . ' ' . $client['first_name'] . ' ' . $client['middle_name']));
-                                                        $base_phone = valid($client['sort_phone'] ?? $client['phone']);
+                                                        $base_phone = valid($client['sort_phone'] ?? ('+' . $client['phone_code'] . $client['phone_number']));
                                                         $base_passport = valid($client['sort_passport'] ?? $client['passport_number']);
                                                         $base_cities = valid($client['sort_cities'] ?? $client['client_cities_list']);
                                                         $base_categories = valid($client['sort_categories'] ?? $client['client_categories_list']);
@@ -506,7 +506,7 @@ require_once SYSTEM . '/layouts/head.php';
                                                                     style="display:none;"><?= $base_client_name ?></span><?= valid(trim($client['last_name'] . ' ' . $client['first_name'] . ' ' . $client['middle_name'])) ?>
                                                             </td>
                                                             <td><span
-                                                                    style="display:none;"><?= $base_phone ?></span><?= valid($client['phone']) ?>
+                                                                    style="display:none;"><?= $base_phone ?></span><?= (!empty($client['phone_code'])) ? '+' . valid($client['phone_code']) . ' ' . valid($client['phone_number']) : '' ?>
                                                             </td>
                                                             <td><span
                                                                     style="display:none;"><?= $base_passport ?></span><?= valid($client['passport_number']) ?>

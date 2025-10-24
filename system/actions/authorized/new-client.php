@@ -5,9 +5,9 @@ $first_name  = valid($_POST['first_name'] ?? '');
 $last_name   = valid($_POST['last_name'] ?? '');
 $middle_name = valid($_POST['middle_name'] ?? null);
 $gender      = valid($_POST['gender'] ?? 'male');
-$phone_code         = valid($_POST['phone_code'] ?? '');
-$phone_number       = valid($_POST['phone_number'] ?? '');
-$phone              = !empty($phone_code) || !empty($phone_number) ? '+' . preg_replace('/[^0-9]/', '', $phone_code . $phone_number) : null;
+$phone_code         = valid($_POST['phone_code'] ?? null);
+$phone_number       = valid($_POST['phone_number'] ?? null);
+$phone              = !empty($phone_code) || !empty($phone_number) ? '+' . preg_replace('/[^0-9]/', '', $phone_code . $phone_number) : null; // Оставляем для обратной совместимости, если где-то используется
 $email       = valid($_POST['email'] ?? null);
 
 $passport_number_raw  = valid($_POST['passport_number'] ?? null);
@@ -26,7 +26,8 @@ $days_until_visit   = valid($_POST['days_until_visit'] ?? null);
 $notes              = valid($_POST['notes'] ?? null);
 
 $middle_name = !empty($middle_name) ? $middle_name : null;
-$phone = !empty($phone) ? $phone : null;
+$phone_code = !empty($phone_code) ? preg_replace('/[^0-9]/', '', $phone_code) : null;
+$phone_number = !empty($phone_number) ? preg_replace('/[^0-9]/', '', $phone_number) : null;
 $email = !empty($email) ? $email : null;
 $passport_number = !empty($passport_number) ? $passport_number : null;
 $nationality = !empty($nationality) ? $nationality : null;
@@ -141,11 +142,11 @@ try {
     $sql = "
         INSERT INTO `clients` (
             `center_id`, `agent_id`, `creator_id`, `client_name`, `client_status`, `first_name`, `last_name`, `middle_name`, 
-            `gender`, `phone`, `email`, `passport_number`, `birth_date`, `passport_expiry_date`, 
+            `gender`, `phone_code`, `phone_number`, `email`, `passport_number`, `birth_date`, `passport_expiry_date`, 
             `nationality`, `visit_date_start`, `visit_date_end`, `days_until_visit`, `notes`, `sale_price`
         ) VALUES (
             :center_id, :agent_id, :creator_id, :client_name, :status, :first_name, :last_name, :middle_name, 
-            :gender, :phone, :email, :passport_number, :birth_date, :passport_expiry_date, 
+            :gender, :phone_code, :phone_number, :email, :passport_number, :birth_date, :passport_expiry_date, 
             :nationality, :visit_date_start, :visit_date_end, :days_until_visit, :notes, :sale_price
         )
     ";
@@ -162,7 +163,8 @@ try {
         ':last_name' => $last_name,
         ':middle_name' => $middle_name,
         ':gender' => $gender,
-        ':phone' => $phone,
+        ':phone_code' => $phone_code,
+        ':phone_number' => $phone_number,
         ':email' => $email,
         ':passport_number' => $passport_number,
         ':birth_date' => $birth_date,

@@ -230,8 +230,8 @@ require_once SYSTEM . '/layouts/head.php';
                                                     <label for="phone_number" class="form-label">Мобильный телефон</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text">+</span>
-                                                        <input type="text" class="form-control" placeholder="Код" name="phone_code" id="phone_code" style="max-width: 80px;" <?php if ($field_settings['phone']['is_required']): ?>required<?php endif; ?>>
-                                                        <input type="text" class="form-control" placeholder="Номер телефона" name="phone_number" id="phone_number" <?php if ($field_settings['phone']['is_required']): ?>required<?php endif; ?>>
+                                                        <input type="text" class="form-control" placeholder="Код" name="phone_code" id="phone_code" style="max-width: 80px;" oninput="this.value = this.value.replace(/[^0-9]/g, '')" <?php if ($field_settings['phone']['is_required']): ?>required<?php endif; ?>>
+                                                        <input type="text" class="form-control" placeholder="Номер телефона" name="phone_number" id="phone_number" oninput="this.value = this.value.replace(/[^0-9]/g, '')" <?php if ($field_settings['phone']['is_required']): ?>required<?php endif; ?>>
                                                     </div>
                                                 </div>
                                                 <?php endif; ?>
