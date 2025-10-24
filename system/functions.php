@@ -192,6 +192,8 @@ function process_agent_repayments($pdo, $agent_id, $transaction_amount) {
         $repayment_pool += $current_balance;
     }
 
+    $spent_on_credit = 0;
+
     // Шаг 3: Фаза 1 — Расходование "Пула" на Кредитные анкеты (payment_status = 2)
     $stmt_credits = $pdo->prepare(
         "SELECT `client_id`, `paid_from_credit` FROM `clients` 
@@ -220,6 +222,7 @@ function process_agent_repayments($pdo, $agent_id, $transaction_amount) {
         ]);
         
         $repayment_pool -= $payment_amount;
+        $spent_on_credit += $payment_amount;
 
         if (abs($credit_amount - $payment_amount) < 0.01) {
             $stmt_update_status = $pdo->prepare("UPDATE `clients` SET `payment_status` = 1 WHERE `client_id` = :client_id");
@@ -262,7 +265,7 @@ function process_agent_repayments($pdo, $agent_id, $transaction_amount) {
     }
 
     // Шаг 5: Финальное обновление баланса агента
-    $final_balance = $current_balance + $transaction_amount - $spent_on_unpaid;
+    $final_balance = $current_balance + $transaction_amount - $spent_on_unpaid - $spent_on_credit;
     $stmt_update_balance = $pdo->prepare("UPDATE `users` SET `user_balance` = :final_balance WHERE `user_id` = :agent_id");
     $stmt_update_balance->execute([':final_balance' => $final_balance, ':agent_id' => $agent_id]);
 }
