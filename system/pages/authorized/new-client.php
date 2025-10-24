@@ -265,7 +265,7 @@ require_once SYSTEM . '/layouts/head.php';
                                                 <h5 class="mb-4 text-uppercase"><i class="mdi mdi-card-account-details-outline me-1"></i> Документы</h5>
                                                 <div class="mb-3">
                                                     <label for="passport_number" class="form-label">Номер паспорта</label>
-                                                    <input type="text" class="form-control" id="passport_number" name="passport_number" placeholder="Введите номер паспорта" required>
+                                                    <input type="text" class="form-control" id="passport_number" name="passport_number" placeholder="Введите номер паспорта" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
                                                 </div>
 
                                                 <?php if ($field_settings['birth_date']['is_visible']): ?>

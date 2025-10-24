@@ -11,6 +11,11 @@ $phone              = !empty($phone_code) || !empty($phone_number) ? '+' . preg_
 $email       = valid($_POST['email'] ?? null);
 
 $passport_number_raw  = valid($_POST['passport_number'] ?? null);
+
+if (!empty($passport_number_raw) && !preg_match('/^[0-9]+$/', $passport_number_raw)) {
+    message('Ошибка', 'Номер паспорта должен содержать только цифры!', 'error', '');
+}
+
 $passport_number      = preg_replace('/[^0-9]/', '', $passport_number_raw);
 $birth_date_raw       = valid($_POST['birth_date'] ?? null);
 $passport_expiry_raw  = valid($_POST['passport_expiry_date'] ?? null);
