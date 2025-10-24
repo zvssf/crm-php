@@ -3,8 +3,8 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 127.0.0.1:3306
--- Время создания: Окт 24 2025 г., 02:53
--- Версия сервера: 8.0.30
+-- Время создания: Окт 24 2025 г., 12:57
+-- Версия сервера: 10.8.4-MariaDB
 -- Версия PHP: 8.1.9
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -28,9 +28,9 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `city_suppliers` (
-  `id` int NOT NULL,
-  `city_id` int NOT NULL,
-  `supplier_id` int NOT NULL
+  `id` int(11) NOT NULL,
+  `city_id` int(11) NOT NULL,
+  `supplier_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_unicode_520_ci;
 
 --
@@ -47,48 +47,49 @@ INSERT INTO `city_suppliers` (`id`, `city_id`, `supplier_id`) VALUES
 --
 
 CREATE TABLE `clients` (
-  `client_id` int NOT NULL,
-  `center_id` int NOT NULL,
-  `agent_id` int DEFAULT NULL,
-  `creator_id` int DEFAULT NULL,
-  `client_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-  `first_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-  `last_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-  `middle_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-  `gender` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-  `phone` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-  `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-  `passport_number` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `client_id` int(11) NOT NULL,
+  `center_id` int(11) NOT NULL,
+  `agent_id` int(11) DEFAULT NULL,
+  `creator_id` int(11) DEFAULT NULL,
+  `client_name` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `first_name` varchar(100) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `last_name` varchar(100) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `middle_name` varchar(100) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `gender` varchar(10) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `phone_code` varchar(10) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `phone_number` varchar(20) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `email` varchar(100) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `passport_number` varchar(50) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
   `birth_date` date DEFAULT NULL,
   `passport_expiry_date` date DEFAULT NULL,
-  `nationality` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-  `visit_purpose` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `nationality` varchar(100) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `visit_purpose` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
   `visit_date_start` date DEFAULT NULL,
   `visit_date_end` date DEFAULT NULL,
-  `days_until_visit` int DEFAULT NULL,
-  `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci,
+  `days_until_visit` int(11) DEFAULT NULL,
+  `notes` text COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
   `sale_price` decimal(15,2) DEFAULT NULL,
-  `paid_from_balance` decimal(15,2) NOT NULL DEFAULT '0.00',
-  `paid_from_credit` decimal(15,2) NOT NULL DEFAULT '0.00',
-  `payment_status` tinyint(1) NOT NULL DEFAULT '0',
-  `client_status` int NOT NULL DEFAULT '1',
-  `rejection_reason` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci
+  `paid_from_balance` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `paid_from_credit` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `payment_status` tinyint(1) NOT NULL DEFAULT 0,
+  `client_status` int(11) NOT NULL DEFAULT 1,
+  `rejection_reason` text COLLATE utf8mb4_unicode_520_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 
 --
 -- Дамп данных таблицы `clients`
 --
 
-INSERT INTO `clients` (`client_id`, `center_id`, `agent_id`, `creator_id`, `client_name`, `first_name`, `last_name`, `middle_name`, `gender`, `phone`, `email`, `passport_number`, `birth_date`, `passport_expiry_date`, `nationality`, `visit_purpose`, `visit_date_start`, `visit_date_end`, `days_until_visit`, `notes`, `sale_price`, `paid_from_balance`, `paid_from_credit`, `payment_status`, `client_status`, `rejection_reason`) VALUES
-(17, 1, 19, 1, 'создал менеджер', 'менеджер', 'создал', NULL, 'male', '+4352345', 'aa@a.r', '123', '4538-06-03', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '345.00', '0.00', '0.00', 0, 1, NULL),
-(18, 1, 33, 1, 'Функциональный за Агента Тест', 'Тест', 'Функциональный за Агента', NULL, 'male', '+123312', 'a@a.a', '123', NULL, NULL, NULL, NULL, NULL, NULL, 100, NULL, '4324.00', '0.00', '0.00', 0, 1, NULL),
-(19, 1, 33, 1, 'анкетовна анкета', 'анкета', 'анкетовна', NULL, 'male', '+543345345', 'a@adsds.d', '657', '2008-03-04', '2025-10-16', 'AMERICAN', NULL, '2025-11-20', '2025-11-30', 38, NULL, '2000.00', '0.00', '0.00', 1, 3, NULL),
-(20, 1, 33, 1, 'тест тест', 'тест', 'тест', NULL, 'male', '+453654456', 'a@a.a', '12657897800', '2025-10-22', '2025-10-31', 'ALGERIAN', NULL, '2025-10-09', '2025-11-21', 0, NULL, '1000.00', '0.00', '0.00', 1, 4, NULL),
-(21, 1, 33, 1, '1 1', '1', '1', NULL, 'male', '+654243234', 'a@a.a', '234564243132', '2025-10-24', '2025-10-25', 'ALBANIAN', NULL, '2025-10-08', '2025-11-20', 2, NULL, '1000.00', '0.00', '0.00', 0, 1, NULL),
-(22, 1, 33, 1, '2 2', '2', '2', NULL, 'male', '+345745867', 'a@a.a', '5687945326', '2025-10-08', '2025-10-25', 'ALBANIAN', NULL, '2025-10-15', '2025-11-21', 1, NULL, '100.00', '100.00', '0.00', 1, 1, NULL),
-(23, 1, 33, 1, '3 3', '3', '3', NULL, 'male', '+7864558769', 'agA@a.a', '678955243', '2025-10-08', '2025-10-16', 'ALGERIAN', NULL, '2025-10-22', '2025-11-28', 8, NULL, '1000.00', '0.00', '0.00', 0, 1, NULL),
-(24, 1, 19, 1, '5 5', '5', '5', NULL, 'male', '+47564576', 'agA@a.a', '679802346523145', '2025-10-16', '2025-10-19', 'AMERICAN', NULL, '2025-10-17', '2025-11-28', 3, NULL, '1.00', '0.00', '0.00', 1, 1, NULL),
-(25, 7, 33, 1, 'Тест Тест', 'Тест', 'Тест', NULL, '', '+12314532435453', NULL, '1231233245543', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2000.00', '0.00', '0.00', 0, 3, NULL);
+INSERT INTO `clients` (`client_id`, `center_id`, `agent_id`, `creator_id`, `client_name`, `first_name`, `last_name`, `middle_name`, `gender`, `phone_code`, `phone_number`, `email`, `passport_number`, `birth_date`, `passport_expiry_date`, `nationality`, `visit_purpose`, `visit_date_start`, `visit_date_end`, `days_until_visit`, `notes`, `sale_price`, `paid_from_balance`, `paid_from_credit`, `payment_status`, `client_status`, `rejection_reason`) VALUES
+(17, 1, 19, 1, 'создал менеджер', 'менеджер', 'создал', NULL, 'male', '4', '352345', 'aa@a.r', '123', '4538-06-03', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '345.00', '0.00', '0.00', 0, 1, NULL),
+(18, 1, 33, 1, 'Функциональный за Агента Тест', 'Тест', 'Функциональный за Агента', NULL, 'male', '1', '23312', 'a@a.a', '123', NULL, NULL, NULL, NULL, NULL, NULL, 100, NULL, '4324.00', '0.00', '0.00', 0, 1, NULL),
+(19, 1, 33, 1, 'анкетовна анкета', 'анкета', 'анкетовна', NULL, 'male', '756', '756354', 'a@adsds.d', '657', '2008-03-04', '2025-10-16', 'AMERICAN', NULL, '2025-11-20', '2025-11-30', 38, NULL, '2000.00', '0.00', '0.00', 1, 1, NULL),
+(20, 1, 33, 1, 'тест тест', 'тест', 'тест', NULL, 'male', '4', '53654456', 'a@a.a', '12657897800', '2025-10-22', '2025-10-31', 'ALGERIAN', NULL, '2025-10-09', '2025-11-21', 0, NULL, '1000.00', '0.00', '0.00', 1, 4, NULL),
+(21, 1, 33, 1, '1 1', '1', '1', NULL, 'male', '6', '54243234', 'a@a.a', '234564243132', '2025-10-24', '2025-10-25', 'ALBANIAN', NULL, '2025-10-08', '2025-11-20', 2, NULL, '1000.00', '0.00', '0.00', 0, 1, NULL),
+(22, 1, 33, 1, '2 2', '2', '2', NULL, 'male', '3', '45745867', 'a@a.a', '5687945326', '2025-10-08', '2025-10-25', 'ALBANIAN', NULL, '2025-10-15', '2025-11-21', 1, 'авпвапвапвапвапп', '100.00', '100.00', '0.00', 1, 2, NULL),
+(23, 1, 33, 1, '3 3', '3', '3', NULL, 'male', '7', '864558769', 'agA@a.a', '678955243', '2025-10-08', '2025-10-16', 'ALGERIAN', NULL, '2025-10-22', '2025-11-28', 8, NULL, '1000.00', '1000.00', '0.00', 1, 1, NULL),
+(24, 1, 19, 1, '5 5', '5', '5', NULL, 'male', '4', '7564576', 'agA@a.a', '679802346523145', '2025-10-16', '2025-10-19', 'AMERICAN', NULL, '2025-10-17', '2025-11-28', 3, NULL, '1.00', '0.00', '0.00', 1, 1, NULL),
+(25, 7, 33, 1, 'Тест Тест', 'Тест', 'Тест', NULL, '', '1', '2314532435453', NULL, '1231233245543', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2000.00', '0.00', '0.00', 0, 3, NULL);
 
 -- --------------------------------------------------------
 
@@ -97,9 +98,9 @@ INSERT INTO `clients` (`client_id`, `center_id`, `agent_id`, `creator_id`, `clie
 --
 
 CREATE TABLE `client_cities` (
-  `id` int NOT NULL,
-  `client_id` int NOT NULL,
-  `city_id` int NOT NULL
+  `id` int(11) NOT NULL,
+  `client_id` int(11) NOT NULL,
+  `city_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 
 --
@@ -129,13 +130,13 @@ INSERT INTO `client_cities` (`id`, `client_id`, `city_id`) VALUES
 (76, 16, 3),
 (87, 18, 1),
 (88, 17, 1),
-(92, 19, 1),
 (96, 20, 1),
 (131, 24, 2),
 (158, 25, 1),
 (194, 23, 1),
-(195, 21, 1),
-(196, 22, 1);
+(199, 21, 1),
+(202, 19, 1),
+(203, 22, 1);
 
 -- --------------------------------------------------------
 
@@ -144,10 +145,10 @@ INSERT INTO `client_cities` (`id`, `client_id`, `city_id`) VALUES
 --
 
 CREATE TABLE `client_input_values` (
-  `id` int NOT NULL,
-  `client_id` int NOT NULL,
-  `input_id` int NOT NULL,
-  `value` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
+  `id` int(11) NOT NULL,
+  `client_id` int(11) NOT NULL,
+  `input_id` int(11) NOT NULL,
+  `value` text COLLATE utf8mb4_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -158,8 +159,8 @@ INSERT INTO `client_input_values` (`id`, `client_id`, `input_id`, `value`) VALUE
 (60, 25, 11, '123'),
 (61, 25, 12, '2'),
 (62, 25, 13, 'Нет'),
-(65, 22, 13, 'Да'),
-(68, 23, 13, 'Да');
+(68, 23, 13, 'Да'),
+(69, 22, 13, 'Да');
 
 -- --------------------------------------------------------
 
@@ -168,10 +169,10 @@ INSERT INTO `client_input_values` (`id`, `client_id`, `input_id`, `value`) VALUE
 --
 
 CREATE TABLE `fin_cashes` (
-  `id` int NOT NULL,
-  `name` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `balance` decimal(15,2) NOT NULL DEFAULT '0.00',
-  `status` int NOT NULL DEFAULT '1'
+  `id` int(11) NOT NULL,
+  `name` varchar(25) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `balance` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `status` int(11) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 
 --
@@ -179,7 +180,7 @@ CREATE TABLE `fin_cashes` (
 --
 
 INSERT INTO `fin_cashes` (`id`, `name`, `balance`, `status`) VALUES
-(1, 'Касса 1', '2561570.70', 1),
+(1, 'Касса 1', '2563870.70', 1),
 (2, 'Касса 2', '21836.00', 2),
 (3, 'Касса 3', '14605.00', 1),
 (4, 'Касса 4', '5004.00', 1),
@@ -192,10 +193,10 @@ INSERT INTO `fin_cashes` (`id`, `name`, `balance`, `status`) VALUES
 --
 
 CREATE TABLE `fin_suppliers` (
-  `id` int NOT NULL,
-  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `balance` decimal(15,2) NOT NULL DEFAULT '0.00',
-  `status` int NOT NULL DEFAULT '1'
+  `id` int(11) NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `balance` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `status` int(11) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 
 --
@@ -204,7 +205,7 @@ CREATE TABLE `fin_suppliers` (
 
 INSERT INTO `fin_suppliers` (`id`, `name`, `balance`, `status`) VALUES
 (1, 'Занебесное', '1002033.00', 1),
-(2, 'Даб', '-37109.90', 1),
+(2, 'Даб', '-38109.90', 1),
 (3, 'Название 3', '0.00', 2),
 (4, 'Название 4', '0.00', 1);
 
@@ -215,14 +216,14 @@ INSERT INTO `fin_suppliers` (`id`, `name`, `balance`, `status`) VALUES
 --
 
 CREATE TABLE `fin_transactions` (
-  `id` int NOT NULL,
-  `transaction_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `operation_type` int NOT NULL,
-  `amount` decimal(15,2) NOT NULL DEFAULT '0.00',
-  `cash_id` int NOT NULL,
-  `agent_id` int DEFAULT NULL,
-  `supplier_id` int DEFAULT NULL,
-  `comment` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci
+  `id` int(11) NOT NULL,
+  `transaction_date` datetime NOT NULL DEFAULT current_timestamp(),
+  `operation_type` int(11) NOT NULL,
+  `amount` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `cash_id` int(11) NOT NULL,
+  `agent_id` int(11) DEFAULT NULL,
+  `supplier_id` int(11) DEFAULT NULL,
+  `comment` text COLLATE utf8mb4_unicode_520_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 
 --
@@ -322,7 +323,9 @@ INSERT INTO `fin_transactions` (`id`, `transaction_date`, `operation_type`, `amo
 (108, '2025-10-23 17:53:16', 1, '1100.00', 1, 33, NULL, ''),
 (109, '2025-10-23 21:52:38', 1, '1100.00', 1, 33, NULL, ''),
 (110, '2025-10-23 21:54:46', 1, '1100.00', 1, 33, NULL, ''),
-(111, '2025-10-23 21:57:29', 1, '1090.00', 1, 33, NULL, '');
+(111, '2025-10-23 21:57:29', 1, '1090.00', 1, 33, NULL, ''),
+(112, '2025-10-24 10:29:20', 1, '1200.00', 1, 33, NULL, ''),
+(113, '2025-10-24 10:33:23', 1, '1100.00', 1, 33, NULL, '');
 
 -- --------------------------------------------------------
 
@@ -331,11 +334,11 @@ INSERT INTO `fin_transactions` (`id`, `transaction_date`, `operation_type`, `amo
 --
 
 CREATE TABLE `login_attempts` (
-  `id` int NOT NULL,
-  `user_login` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `ip_address` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `attempts` int DEFAULT '1',
-  `last_attempt` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `id` int(11) NOT NULL,
+  `user_login` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `ip_address` varchar(45) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `attempts` int(11) DEFAULT 1,
+  `last_attempt` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 
 -- --------------------------------------------------------
@@ -345,10 +348,10 @@ CREATE TABLE `login_attempts` (
 --
 
 CREATE TABLE `settings_centers` (
-  `center_id` int NOT NULL,
-  `center_name` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `country_id` int NOT NULL,
-  `center_status` int NOT NULL DEFAULT '1'
+  `center_id` int(11) NOT NULL,
+  `center_name` varchar(25) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `country_id` int(11) NOT NULL,
+  `center_status` int(11) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 
 --
@@ -371,13 +374,13 @@ INSERT INTO `settings_centers` (`center_id`, `center_name`, `country_id`, `cente
 --
 
 CREATE TABLE `settings_cities` (
-  `city_id` int NOT NULL,
-  `city_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `city_category` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-  `country_id` int NOT NULL,
-  `city_status` tinyint(1) DEFAULT '1',
-  `cost_price` decimal(10,2) NOT NULL DEFAULT '0.00',
-  `min_sale_price` decimal(10,2) NOT NULL DEFAULT '0.00'
+  `city_id` int(11) NOT NULL,
+  `city_name` varchar(100) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `city_category` varchar(100) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `country_id` int(11) NOT NULL,
+  `city_status` tinyint(1) DEFAULT 1,
+  `cost_price` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `min_sale_price` decimal(10,2) NOT NULL DEFAULT 0.00
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 
 --
@@ -396,9 +399,9 @@ INSERT INTO `settings_cities` (`city_id`, `city_name`, `city_category`, `country
 --
 
 CREATE TABLE `settings_city_inputs` (
-  `id` int NOT NULL,
-  `city_id` int NOT NULL,
-  `input_id` int NOT NULL
+  `id` int(11) NOT NULL,
+  `city_id` int(11) NOT NULL,
+  `input_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 
 --
@@ -423,9 +426,9 @@ INSERT INTO `settings_city_inputs` (`id`, `city_id`, `input_id`) VALUES
 --
 
 CREATE TABLE `settings_countries` (
-  `country_id` int NOT NULL,
-  `country_name` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `country_status` int NOT NULL DEFAULT '1'
+  `country_id` int(11) NOT NULL,
+  `country_name` varchar(25) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `country_status` int(11) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 
 --
@@ -449,11 +452,11 @@ INSERT INTO `settings_countries` (`country_id`, `country_name`, `country_status`
 --
 
 CREATE TABLE `settings_country_fields` (
-  `id` int NOT NULL,
-  `country_id` int NOT NULL,
+  `id` int(11) NOT NULL,
+  `country_id` int(11) NOT NULL,
   `field_name` varchar(50) NOT NULL,
-  `is_visible` tinyint(1) NOT NULL DEFAULT '1',
-  `is_required` tinyint(1) NOT NULL DEFAULT '0'
+  `is_visible` tinyint(1) NOT NULL DEFAULT 1,
+  `is_required` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 --
@@ -581,11 +584,11 @@ INSERT INTO `settings_country_fields` (`id`, `country_id`, `field_name`, `is_vis
 --
 
 CREATE TABLE `settings_inputs` (
-  `input_id` int NOT NULL,
-  `input_name` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `input_type` int NOT NULL,
-  `input_status` int NOT NULL DEFAULT '1',
-  `input_select_data` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL
+  `input_id` int(11) NOT NULL,
+  `input_name` varchar(25) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `input_type` int(11) NOT NULL,
+  `input_status` int(11) NOT NULL DEFAULT 1,
+  `input_select_data` varchar(128) COLLATE utf8mb4_unicode_520_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 
 --
@@ -607,45 +610,46 @@ INSERT INTO `settings_inputs` (`input_id`, `input_name`, `input_type`, `input_st
 --
 
 CREATE TABLE `users` (
-  `user_id` int NOT NULL,
-  `user_login` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `user_password` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `user_group` int NOT NULL DEFAULT '0',
-  `user_status` int NOT NULL DEFAULT '2',
-  `user_session_key` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `user_firstname` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `user_lastname` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `user_tel` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `user_login` varchar(32) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `user_password` varchar(32) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `user_group` int(11) NOT NULL DEFAULT 0,
+  `user_status` int(11) NOT NULL DEFAULT 2,
+  `user_session_key` text COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `user_firstname` varchar(25) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `user_lastname` varchar(25) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `user_tel` varchar(25) COLLATE utf8mb4_unicode_520_ci NOT NULL,
   `user_tel_2` varchar(25) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-  `user_balance` decimal(15,2) NOT NULL DEFAULT '0.00',
-  `user_credit_limit` decimal(15,2) NOT NULL DEFAULT '0.00',
-  `user_supervisor` int NOT NULL DEFAULT '0',
+  `user_balance` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `user_credit_limit` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `user_supervisor` int(11) NOT NULL DEFAULT 0,
+  `can_export` tinyint(1) NOT NULL DEFAULT 0,
   `user_address` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
   `user_website` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-  `user_messengers` text COLLATE utf8mb4_unicode_520_ci,
-  `user_comment` text COLLATE utf8mb4_unicode_520_ci
+  `user_messengers` text COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `user_comment` text COLLATE utf8mb4_unicode_520_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 
 --
 -- Дамп данных таблицы `users`
 --
 
-INSERT INTO `users` (`user_id`, `user_login`, `user_password`, `user_group`, `user_status`, `user_session_key`, `user_firstname`, `user_lastname`, `user_tel`, `user_tel_2`, `user_balance`, `user_credit_limit`, `user_supervisor`, `user_address`, `user_website`, `user_messengers`, `user_comment`) VALUES
-(1, 'a@a.a', 'e10adc3949ba59abbe56e057f20f883e', 1, 1, 'Ej0SOHBjw0ss/iKATqAdw7XQ1ira++txN8CqPMoQf8jq3w7kPFSDm8sjS6vKbhxWMKteRk2vMVuvMeEHAUIgY3QiphXEkb97xtecHFULby4vlgSsfEzZ66Awkh0EFcch', 'Сергей', 'Фамилия', '+79009009090', NULL, '0.00', '0.00', 0, NULL, NULL, NULL, NULL),
-(2, 'a@a.aa', '74b87337454200d4d33f80c4663dc5e5', 1, 0, '', 'Сергей', 'Фамилия', '+79009009091', NULL, '0.00', '0.00', 0, NULL, NULL, NULL, NULL),
-(3, 'd@d.d', '74b87337454200d4d33f80c4663dc5e5', 2, 0, '', 'Имя', 'Фамилия', '+79009009092', NULL, '0.00', '0.00', 0, NULL, NULL, NULL, NULL),
-(12, 's@s.ss', '74b87337454200d4d33f80c4663dc5e5', 3, 0, '', 'Олег', 'Фамилия', '+79009009093', NULL, '0.00', '0.00', 3, NULL, NULL, NULL, NULL),
-(19, 'asd@asd.sadwwww', '74b87337454200d4d33f80c4663dc5e5', 4, 1, '', 'Ирина', 'Фамилия', '+79009009094', NULL, '1017252.50', '0.00', 32, NULL, NULL, NULL, NULL),
-(21, 's@s.ssw', '74b87337454200d4d33f80c4663dc5e5', 4, 0, '', 'Роман', 'Фамилия', '+79009009098', NULL, '-11111.48', '0.00', 12, NULL, NULL, NULL, NULL),
-(22, 's@s.sss', '74b87337454200d4d33f80c4663dc5e5', 3, 0, '', 'Вадим', 'Фамилия', '+79009009097', NULL, '0.00', '0.00', 3, NULL, NULL, NULL, NULL),
-(27, 'a@a.aasdd', '74b87337454200d4d33f80c4663dc5e5', 4, 0, '', 'Сергей', 'Фамилия', '+234324234234234', NULL, '0.00', '0.00', 12, NULL, NULL, NULL, NULL),
-(28, 'a@a.aeee', '74b87337454200d4d33f80c4663dc5e5', 1, 0, '', 'Анатолий', 'Фамилия', '+79009009096', NULL, '0.00', '0.00', 0, NULL, NULL, NULL, NULL),
-(29, 'asd@asd.sf', '202cb962ac59075b964b07152d234b70', 2, 0, '', 'пвпа', 'вапва', '+899444444444', NULL, '0.00', '0.00', 0, NULL, NULL, NULL, NULL),
-(30, 'rukA@a.a', '202cb962ac59075b964b07152d234b70', 2, 1, '', 'Руководитель', 'тип-А', '+213123123', NULL, '0.00', '0.00', 0, '', '', '', ''),
-(31, 'rukB@a.a', '202cb962ac59075b964b07152d234b70', 2, 1, '', 'Руководитель', 'тип-Б', '+12394352', NULL, '0.00', '0.00', 0, NULL, NULL, NULL, NULL),
-(32, 'menA@a.a', '202cb962ac59075b964b07152d234b70', 3, 1, '', 'Менежер', 'тип-А-1', '+123123453', NULL, '0.00', '0.00', 30, NULL, NULL, NULL, NULL),
-(33, 'agA@a.a', '202cb962ac59075b964b07152d234b70', 4, 1, '', 'Агент', 'тип-А-1', '+3234546657', NULL, '990.00', '1500.00', 32, '', '', '', ''),
-(34, 'agA@aasdasd.a', '202cb962ac59075b964b07152d234b70', 1, 1, '', 'test', 'test', '+98543739845', NULL, '0.00', '0.00', 0, 'Тихонравова, 6, 38 Владимир 600037', 'site.ru', 'telegram:test_user|viber:89959606801', 'dsfsdfsdfsdfsdf');
+INSERT INTO `users` (`user_id`, `user_login`, `user_password`, `user_group`, `user_status`, `user_session_key`, `user_firstname`, `user_lastname`, `user_tel`, `user_tel_2`, `user_balance`, `user_credit_limit`, `user_supervisor`, `can_export`, `user_address`, `user_website`, `user_messengers`, `user_comment`) VALUES
+(1, 'a@a.a', 'e10adc3949ba59abbe56e057f20f883e', 1, 1, 'Lk97QzlutFbZgkzbmqkqNrAjv3C7wwZUF1HPf4RR73lOAC8lzoUUnMeTYhpcWUi2mpm8+CgLvzUlQPo3rkgWDxGrQISUSNDbuSlMYg+as1WqHf92y+cVchXyKGRZR7vM', 'Сергей', 'Фамилия', '+79009009090', NULL, '0.00', '0.00', 0, 0, NULL, NULL, NULL, NULL),
+(2, 'a@a.aa', '74b87337454200d4d33f80c4663dc5e5', 1, 0, '', 'Сергей', 'Фамилия', '+79009009091', NULL, '0.00', '0.00', 0, 0, NULL, NULL, NULL, NULL),
+(3, 'd@d.d', '74b87337454200d4d33f80c4663dc5e5', 2, 0, '', 'Имя', 'Фамилия', '+79009009092', NULL, '0.00', '0.00', 0, 0, NULL, NULL, NULL, NULL),
+(12, 's@s.ss', '74b87337454200d4d33f80c4663dc5e5', 3, 1, '', 'Олег', 'Фамилия', '+79009009093', NULL, '0.00', '0.00', 3, 0, NULL, NULL, NULL, NULL),
+(19, 'asd@asd.sadwwww', '74b87337454200d4d33f80c4663dc5e5', 4, 1, '', 'Ирина', 'Фамилия', '+79009009094', NULL, '1017252.50', '0.00', 32, 0, NULL, NULL, NULL, NULL),
+(21, 's@s.ssw', '74b87337454200d4d33f80c4663dc5e5', 4, 1, '', 'Роман', 'Фамилия', '+79009009098', NULL, '-11111.48', '0.00', 12, 0, '', '', '', ''),
+(22, 's@s.sss', '74b87337454200d4d33f80c4663dc5e5', 3, 0, '', 'Вадим', 'Фамилия', '+79009009097', NULL, '0.00', '0.00', 3, 0, NULL, NULL, NULL, NULL),
+(27, 'a@a.aasdd', '74b87337454200d4d33f80c4663dc5e5', 4, 0, '', 'Сергей', 'Фамилия', '+234324234234234', NULL, '0.00', '0.00', 12, 0, NULL, NULL, NULL, NULL),
+(28, 'a@a.aeee', '74b87337454200d4d33f80c4663dc5e5', 1, 0, '', 'Анатолий', 'Фамилия', '+79009009096', NULL, '0.00', '0.00', 0, 0, NULL, NULL, NULL, NULL),
+(29, 'asd@asd.sf', '202cb962ac59075b964b07152d234b70', 2, 0, '', 'пвпа', 'вапва', '+899444444444', NULL, '0.00', '0.00', 0, 0, NULL, NULL, NULL, NULL),
+(30, 'rukA@a.a', '202cb962ac59075b964b07152d234b70', 2, 1, '', 'Руководитель', 'тип-А', '+213123123', NULL, '0.00', '0.00', 0, 0, '', '', '', ''),
+(31, 'rukB@a.a', '202cb962ac59075b964b07152d234b70', 2, 1, '', 'Руководитель', 'тип-Б', '+12394352', NULL, '0.00', '0.00', 0, 0, NULL, NULL, NULL, NULL),
+(32, 'menA@a.a', '202cb962ac59075b964b07152d234b70', 3, 1, '', 'Менежер', 'тип-А-1', '+123123453', NULL, '0.00', '0.00', 30, 0, NULL, NULL, NULL, NULL),
+(33, 'agA@a.a', '202cb962ac59075b964b07152d234b70', 4, 1, '', 'Агент', 'тип-А-1', '+3234546657', NULL, '0.00', '1500.00', 32, 1, '', '', '', ''),
+(34, 'agA@aasdasd.a', '202cb962ac59075b964b07152d234b70', 1, 1, '', 'test', 'test', '+98543739845', NULL, '0.00', '0.00', 0, 0, 'Тихонравова, 6, 38 Владимир 600037', 'site.ru', 'telegram:test_user|viber:89959606801', 'dsfsdfsdfsdfsdf');
 
 -- --------------------------------------------------------
 
@@ -654,9 +658,9 @@ INSERT INTO `users` (`user_id`, `user_login`, `user_password`, `user_group`, `us
 --
 
 CREATE TABLE `user_countries` (
-  `id` int NOT NULL,
-  `user_id` int NOT NULL,
-  `country_id` int NOT NULL
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `country_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 --
@@ -664,7 +668,7 @@ CREATE TABLE `user_countries` (
 --
 
 INSERT INTO `user_countries` (`id`, `user_id`, `country_id`) VALUES
-(3, 33, 1);
+(5, 33, 1);
 
 --
 -- Индексы сохранённых таблиц
@@ -790,97 +794,97 @@ ALTER TABLE `user_countries`
 -- AUTO_INCREMENT для таблицы `city_suppliers`
 --
 ALTER TABLE `city_suppliers`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT для таблицы `clients`
 --
 ALTER TABLE `clients`
-  MODIFY `client_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `client_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT для таблицы `client_cities`
 --
 ALTER TABLE `client_cities`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=197;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=204;
 
 --
 -- AUTO_INCREMENT для таблицы `client_input_values`
 --
 ALTER TABLE `client_input_values`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=70;
 
 --
 -- AUTO_INCREMENT для таблицы `fin_cashes`
 --
 ALTER TABLE `fin_cashes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT для таблицы `fin_suppliers`
 --
 ALTER TABLE `fin_suppliers`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT для таблицы `fin_transactions`
 --
 ALTER TABLE `fin_transactions`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=112;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=114;
 
 --
 -- AUTO_INCREMENT для таблицы `login_attempts`
 --
 ALTER TABLE `login_attempts`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT для таблицы `settings_centers`
 --
 ALTER TABLE `settings_centers`
-  MODIFY `center_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `center_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT для таблицы `settings_cities`
 --
 ALTER TABLE `settings_cities`
-  MODIFY `city_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `city_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT для таблицы `settings_city_inputs`
 --
 ALTER TABLE `settings_city_inputs`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
 -- AUTO_INCREMENT для таблицы `settings_countries`
 --
 ALTER TABLE `settings_countries`
-  MODIFY `country_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `country_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT для таблицы `settings_country_fields`
 --
 ALTER TABLE `settings_country_fields`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=577;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=577;
 
 --
 -- AUTO_INCREMENT для таблицы `settings_inputs`
 --
 ALTER TABLE `settings_inputs`
-  MODIFY `input_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `input_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT для таблицы `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT для таблицы `user_countries`
 --
 ALTER TABLE `user_countries`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Ограничения внешнего ключа сохраненных таблиц
