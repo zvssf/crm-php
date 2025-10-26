@@ -16,10 +16,10 @@ try {
 
     // 2. Получение Данных Анкеты
     $stmt_client = $pdo->prepare(
-        "SELECT c.agent_id, c.sale_price, c.payment_status, cc.city_id 
-         FROM `clients` c
-         LEFT JOIN `client_cities` cc ON c.client_id = cc.client_id
-         WHERE c.client_id = :client_id AND c.client_status = 2"
+        "SELECT c.agent_id, c.sale_price, c.payment_status, cc.city_id
+        FROM `clients` c
+        LEFT JOIN `client_cities` cc ON c.client_id = cc.client_id
+        WHERE c.client_id = :client_id AND c.client_status = 2"
     );
     $stmt_client->execute([':client_id' => $client_id]);
     $client_info = $stmt_client->fetch(PDO::FETCH_ASSOC);
@@ -34,13 +34,7 @@ try {
     $payment_status = (int) $client_info['payment_status'];
     $final_city_id = $client_info['city_id'];
 
-    // 4. Финансовая Корректировка — Агент
-    if ($agent_id && $sale_price > 0 && in_array($payment_status, [1, 2])) {
-        // Вызываем новую глобальную функцию. Сумма пополнения - это возвращаемая стоимость анкеты.
-        process_agent_repayments($pdo, $agent_id, $sale_price);
-    }
-
-    // 5. Финансовая Корректировка — Поставщик
+    // 4. Финансовая Корректировка — Поставщик (возврат себестоимости)
     if ($final_city_id) {
         $stmt_city_cost = $pdo->prepare("SELECT `cost_price` FROM `settings_cities` WHERE `city_id` = :city_id");
         $stmt_city_cost->execute([':city_id' => $final_city_id]);
@@ -60,16 +54,27 @@ try {
         }
     }
 
-    // 6. Обновление Статуса Анкеты
-    $stmt_update_client = $pdo->prepare(
-        "UPDATE `clients` SET 
-            `client_status` = 1, 
-            `payment_status` = 0, 
-            `paid_from_balance` = 0.00, 
-            `paid_from_credit` = 0.00 
-         WHERE `client_id` = :client_id"
-    );
-    $stmt_update_client->execute([':client_id' => $client_id]);
+    // 5. Финансовая Корректировка — Агент
+    if ($agent_id && $sale_price > 0 && in_array($payment_status, [1, 2])) {
+        // ШАГ 5.1: Сначала обнуляем финансовый статус анкеты
+        $stmt_update_client = $pdo->prepare(
+            "UPDATE `clients` SET
+            `client_status` = 1,
+            `payment_status` = 0,
+            `paid_from_balance` = 0.00,
+            `paid_from_credit` = 0.00
+            WHERE `client_id` = :client_id"
+        );
+        $stmt_update_client->execute([':client_id' => $client_id]);
+
+        // ШАГ 5.2: Затем вызываем перерасчет, передав возвращенную сумму
+        process_agent_repayments($pdo, $agent_id, $sale_price);
+
+    } else {
+        // Если анкета не была оплачена, просто меняем ее статус
+        $stmt_update_client = $pdo->prepare("UPDATE `clients` SET `client_status` = 1 WHERE `client_id` = :client_id");
+        $stmt_update_client->execute([':client_id' => $client_id]);
+    }
 
     $pdo->commit();
     message('Уведомление', 'Анкета возвращена в работу. Финансовые операции отменены.', 'success', 'reload');

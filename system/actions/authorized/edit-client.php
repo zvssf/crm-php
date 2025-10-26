@@ -119,6 +119,48 @@ try {
     $pdo = db_connect();
     $pdo->beginTransaction();
 
+    // --- НАЧАЛО БЛОКА ПРОВЕРКИ ИЗМЕНЕНИЯ ЦЕНЫ ДИРЕКТОРОМ ---
+    $stmt_old_client = $pdo->prepare("SELECT `client_status`, `agent_id`, `sale_price` FROM `clients` WHERE `client_id` = :client_id");
+    $stmt_old_client->execute([':client_id' => $client_id]);
+    $old_client_data = $stmt_old_client->fetch(PDO::FETCH_ASSOC);
+
+    if ($old_client_data && $old_client_data['client_status'] == 2 && $user_data['user_group'] == 1) {
+        $old_sale_price = (float) $old_client_data['sale_price'];
+        $new_sale_price = (float) $sale_price;
+
+        if ($new_sale_price > $old_sale_price) {
+            // Сценарий А: Цена увеличилась
+            $price_difference = $new_sale_price - $old_sale_price;
+            
+            $stmt_agent_balance = $pdo->prepare("SELECT `user_balance` FROM `users` WHERE `user_id` = :agent_id");
+            $stmt_agent_balance->execute([':agent_id' => $old_client_data['agent_id']]);
+            $agent_balance = (float) $stmt_agent_balance->fetchColumn();
+
+            if ($agent_balance < $price_difference) {
+                message('Ошибка', 'У агента недостаточно средств на балансе для покрытия разницы в стоимости!', 'error', '');
+            }
+
+            // Списываем разницу с агента и добавляем к оплате анкеты
+            $pdo->prepare("UPDATE `users` SET `user_balance` = `user_balance` - :diff WHERE `user_id` = :agent_id")
+                ->execute([':diff' => $price_difference, ':agent_id' => $old_client_data['agent_id']]);
+            
+            $pdo->prepare("UPDATE `clients` SET `paid_from_balance` = `paid_from_balance` + :diff WHERE `client_id` = :client_id")
+                ->execute([':diff' => $price_difference, ':client_id' => $client_id]);
+
+        } elseif ($new_sale_price < $old_sale_price) {
+            // Сценарий Б: Цена уменьшилась
+            $refund_amount = $old_sale_price - $new_sale_price;
+
+            // Уменьшаем сумму оплаты по анкете
+            $pdo->prepare("UPDATE `clients` SET `paid_from_balance` = `paid_from_balance` - :refund WHERE `client_id` = :client_id")
+                ->execute([':refund' => $refund_amount, ':client_id' => $client_id]);
+            
+            // Вызываем перераспределение средств
+            process_agent_repayments($pdo, $old_client_data['agent_id'], $refund_amount);
+        }
+    }
+    // --- КОНЕЦ БЛОКА ПРОВЕРКИ ИЗМЕНЕНИЯ ЦЕНЫ ДИРЕКТОРОМ ---
+
     if (!empty($city_ids)) {
         if ($sale_price === null || $sale_price === '') {
             message('Ошибка', 'Необходимо указать стоимость!', 'error', '');

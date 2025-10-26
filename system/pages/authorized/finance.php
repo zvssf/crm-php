@@ -222,7 +222,6 @@ try {
                               <?php if($transaction['operation_type'] === 0): ?>
                                 <a href="#" class="font-18 text-warning" onclick="sendRestoreTransactionForm('<?= $transaction['id'] ?>')"><i class="mdi mdi-cached"></i></a>
                               <?php else: ?>
-                                <a href="#" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRightTransaction" aria-controls="offcanvasRight" onclick="modalOnTransaction('edit', '<?= $transaction['id'] ?>', '<?= $transaction['operation_type'] ?>', '<?= str_replace(['-', '+'], '', $transaction['amount']) ?>', '<?= $transaction['cash_id'] ?>', '<?= $transaction['agent_id'] ?>', '<?= valid($transaction['comment'] ?? '') ?>')" class="font-18 text-info me-2"><i class="uil uil-pen"></i></a>
                                 <a href="#" class="font-18 text-danger" data-bs-toggle="modal" data-bs-target="#del-transaction-modal" onclick="modalDelTransactionForm('<?= $transaction['id'] ?>', '<?= $transaction_display_name ?>')"><i class="uil uil-trash"></i></a>
                               <?php endif; ?>
                             </td>
@@ -731,59 +730,30 @@ try {
       let blockAgents = $('.block-select-agents');
       let blockSuppliers = $('.block-select-suppliers');
       
-      modalTitle.text('');
+      modalTitle.text('Добавление транзакции');
+      btn.text('Добавить');
+      
       transactionId.val('');
       transactionAmount.val('');
       transactionComment.val('');
       $('#form-transaction #select-operation-type option, #form-transaction #select-cash-status option').prop('selected', false);
       $('#form-transaction #select-cash, #form-transaction #select-agent, #form-transaction #select-supplier').val('hide').trigger('change');
+      $('#form-transaction #select-operation-type option[value="1"]').prop('selected', true).trigger('change');
       
-      if (type == 'new') {
-        modalTitle.text('Добавление транзакции');
-        btn.text('Добавить');
-        $('#form-transaction #select-operation-type option[value="1"]').prop('selected', true).trigger('change');
-        
-        blockOperationType.removeClass(cssClass);
-        blockCash.removeClass(cssClass);
-        blockAgents.removeClass(cssClass);
-        
-        if (!blockSuppliers.hasClass(cssClass)) {
-          blockSuppliers.addClass(cssClass);
-        }
-        
-      } else if (type == 'edit') {
-        modalTitle.text('Редактирование транзакции');
-        btn.text('Сохранить');
-        
-        transactionId.val(id);
-        transactionAmount.val(amount);
-        transactionComment.val(comment);
-        
-        blockOperationType.addClass(cssClass);
-        blockCash.addClass(cssClass);
-        blockAgents.addClass(cssClass);
+      blockOperationType.removeClass(cssClass);
+      blockCash.removeClass(cssClass);
+      blockAgents.removeClass(cssClass);
+      
+      if (!blockSuppliers.hasClass(cssClass)) {
         blockSuppliers.addClass(cssClass);
       }
     }
     
-    
-    
-    
-    
-    
-    
     function sendTransactionForm(btn) {
       event.preventDefault();
       loaderBTN(btn, 'true');
-      let transactionId = $('#form-transaction input[name="transaction-edit-id"]').val();
-      let typeForm;
-      if(transactionId) {
-        typeForm = 'edit-transaction';
-      } else {
-        typeForm = 'new-transaction';
-      }
       jQuery.ajax({
-        url:      '/?page=<?= $page ?>&form=' + typeForm,
+        url:      '/?page=<?= $page ?>&form=new-transaction',
         type:     'POST',
         dataType: 'html',
         data:     jQuery('#form-transaction').serialize(),

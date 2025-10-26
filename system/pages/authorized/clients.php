@@ -187,8 +187,8 @@ try {
     $stmt_clients->execute($params);
     $clients = $stmt_clients->fetchAll(PDO::FETCH_ASSOC);
 
-    // Группировку и вывод категорий применяем только для вкладок "В работе" и "Записанные"
-    if (in_array($current_status, [1, 2]) && !empty($clients)) {
+    // Группировку и вывод категорий применяем только для вкладок "В работе"
+    if (in_array($current_status, [1]) && !empty($clients)) {
         // Шаг 1: Группируем анкеты по ключу "паспорт + ID категорий"
         $groups = [];
         foreach ($clients as $client) {
