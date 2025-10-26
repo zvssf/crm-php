@@ -119,57 +119,73 @@ try {
     $pdo = db_connect();
     $pdo->beginTransaction();
 
-    // --- НАЧАЛО БЛОКА ПРОВЕРКИ ИЗМЕНЕНИЯ ЦЕНЫ ДИРЕКТОРОМ ---
-    $stmt_old_client = $pdo->prepare("SELECT `client_status`, `agent_id`, `sale_price` FROM `clients` WHERE `client_id` = :client_id");
+    // --- НАЧАЛО БЛОКА ИЗМЕНЕНИЯ СТОИМОСТИ ЗАПИСАННОЙ АНКЕТЫ ---
+    $stmt_old_client = $pdo->prepare("SELECT * FROM `clients` WHERE `client_id` = :client_id FOR UPDATE");
     $stmt_old_client->execute([':client_id' => $client_id]);
     $old_client_data = $stmt_old_client->fetch(PDO::FETCH_ASSOC);
 
+    // Логика применяется только для анкет в статусе "Записанные" (2) и только Директором (1)
     if ($old_client_data && $old_client_data['client_status'] == 2 && $user_data['user_group'] == 1) {
+        
         $old_sale_price = (float) $old_client_data['sale_price'];
         $new_sale_price = (float) $sale_price;
+        $price_difference = $new_sale_price - $old_sale_price;
+        $agent_id_for_op = $old_client_data['agent_id'];
 
-        if ($new_sale_price > $old_sale_price) {
-            // Сценарий А: Цена увеличилась
-            $price_difference = $new_sale_price - $old_sale_price;
+        // Если цена действительно изменилась
+        if (abs($price_difference) > 0.01 && !empty($agent_id_for_op)) {
             
-            $stmt_agent_balance = $pdo->prepare("SELECT `user_balance` FROM `users` WHERE `user_id` = :agent_id");
-            $stmt_agent_balance->execute([':agent_id' => $old_client_data['agent_id']]);
-            $agent_balance = (float) $stmt_agent_balance->fetchColumn();
+            // --- СЛУЧАЙ 1: ЦЕНА УМЕНЬШИЛАСЬ (Возврат) ---
+            if ($price_difference < 0) {
+                $refund_amount = abs($price_difference);
 
-            if ($agent_balance < $price_difference) {
-                message('Ошибка', 'У агента недостаточно средств на балансе для покрытия разницы в стоимости!', 'error', '');
+                // Уменьшаем сумму оплаты по анкете, сначала за счет кредита, потом за счет баланса
+                $old_credit = (float)$old_client_data['paid_from_credit'];
+                $credit_reduction = min($old_credit, $refund_amount);
+                $balance_reduction = $refund_amount - $credit_reduction;
+
+                $pdo->prepare("UPDATE `clients` SET `paid_from_credit` = `paid_from_credit` - :credit_reduct, `paid_from_balance` = `paid_from_balance` - :balance_reduct WHERE `client_id` = :client_id")
+                    ->execute([':credit_reduct' => $credit_reduction, ':balance_reduct' => $balance_reduction, ':client_id' => $client_id]);
+                
+                // Если после уменьшения кредит стал нулевым, анкета считается полностью оплаченной
+                if (($old_credit - $credit_reduction) < 0.01) {
+                     $pdo->prepare("UPDATE `clients` SET `payment_status` = 1 WHERE `client_id` = :client_id")->execute([':client_id' => $client_id]);
+                }
+                
+                // Возвращенную сумму отправляем на перераспределение в любом случае
+                process_agent_repayments($pdo, $agent_id_for_op, $refund_amount);
             }
+            // --- СЛУЧАЙ 2: ЦЕНА УВЕЛИЧИЛАСЬ (Доплата) ---
+            else {
+                $surcharge = $price_difference;
 
-            // Списываем разницу с агента и добавляем к оплате анкеты
-            $pdo->prepare("UPDATE `users` SET `user_balance` = `user_balance` - :diff WHERE `user_id` = :agent_id")
-                ->execute([':diff' => $price_difference, ':agent_id' => $old_client_data['agent_id']]);
-            
-            $pdo->prepare("UPDATE `clients` SET `paid_from_balance` = `paid_from_balance` + :diff WHERE `client_id` = :client_id")
-                ->execute([':diff' => $price_difference, ':client_id' => $client_id]);
+                $stmt_agent = $pdo->prepare("SELECT `user_balance` FROM `users` WHERE `user_id` = :agent_id FOR UPDATE");
+                $stmt_agent->execute([':agent_id' => $agent_id_for_op]);
+                $agent_balance = (float) $stmt_agent->fetchColumn();
 
-        } elseif ($new_sale_price < $old_sale_price) {
-            // Сценарий Б: Цена уменьшилась
-            $refund_amount = $old_sale_price - $new_sale_price;
+                $payment_from_balance = min($surcharge, max(0, $agent_balance));
+                $new_credit = $surcharge - $payment_from_balance;
 
-            // Уменьшаем сумму оплаты по анкете
-            $pdo->prepare("UPDATE `clients` SET `paid_from_balance` = `paid_from_balance` - :refund WHERE `client_id` = :client_id")
-                ->execute([':refund' => $refund_amount, ':client_id' => $client_id]);
-            
-            // Вызываем перераспределение средств
-            process_agent_repayments($pdo, $old_client_data['agent_id'], $refund_amount);
+                // Списываем с баланса агента
+                if ($payment_from_balance > 0) {
+                    $pdo->prepare("UPDATE `users` SET `user_balance` = `user_balance` - :payment WHERE `user_id` = :agent_id")
+                        ->execute([':payment' => $payment_from_balance, ':agent_id' => $agent_id_for_op]);
+                }
+                
+                // Обновляем анкету
+                $update_params = [':payment' => $payment_from_balance, ':client_id' => $client_id];
+                $sql_update_client = "UPDATE `clients` SET `paid_from_balance` = `paid_from_balance` + :payment";
+                
+                if ($new_credit > 0) {
+                    $sql_update_client .= ", `paid_from_credit` = `paid_from_credit` + :new_credit, `payment_status` = 2";
+                    $update_params[':new_credit'] = $new_credit;
+                }
+                $sql_update_client .= " WHERE `client_id` = :client_id";
+                $pdo->prepare($sql_update_client)->execute($update_params);
+            }
         }
     }
-    // --- КОНЕЦ БЛОКА ПРОВЕРКИ ИЗМЕНЕНИЯ ЦЕНЫ ДИРЕКТОРОМ ---
-
-    if (!empty($city_ids)) {
-        if ($sale_price === null || $sale_price === '') {
-            message('Ошибка', 'Необходимо указать стоимость!', 'error', '');
-        }
-
-        if (!is_numeric($sale_price)) {
-            message('Ошибка', 'Некорректная стоимость', 'error', '');
-        }
-    }
+    // --- КОНЕЦ БЛОКА ИЗМЕНЕНИЯ СТОИМОСТИ ---
 
     $stmt_client = $pdo->prepare("SELECT `client_status`, `center_id` FROM `clients` WHERE `client_id` = :client_id");
     $stmt_client->execute([':client_id' => $client_id]);
@@ -234,7 +250,6 @@ try {
     }
 
     if (!empty($city_ids)) {
-        // Удаляем старые категории перед добавлением новых
         $stmt_delete_cities = $pdo->prepare("DELETE FROM `client_cities` WHERE `client_id` = :client_id");
         $stmt_delete_cities->execute([':client_id' => $client_id]);
 

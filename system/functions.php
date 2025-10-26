@@ -183,18 +183,19 @@ function getIP() {
 function process_agent_repayments($pdo, $agent_id, $transaction_amount) {
     $affected_log = [];
 
-    // Шаг 1: Инициализация.
+    // Шаг 1: Инициализация. Получаем баланс агента, блокируя строку для обновления.
     $stmt_agent = $pdo->prepare("SELECT `user_balance` FROM `users` WHERE `user_id` = :agent_id FOR UPDATE");
     $stmt_agent->execute([':agent_id' => $agent_id]);
     $current_balance = (float) $stmt_agent->fetchColumn();
     
-    // Определяем "кошелек" (средства для оплат).
+    // Определяем "кошелек" (средства для оплат). Используем только положительный остаток на балансе.
     $funds_to_spend = (float) $transaction_amount;
     if ($current_balance > 0) {
         $funds_to_spend += $current_balance;
     }
 
-    // Итоговый баланс агента после пополнения, но до трат на НОВЫЕ анкеты.
+    // Это "рабочий" баланс. Он начнется с текущего баланса + сумма транзакции,
+    // а затем будет уменьшаться по мере оплаты неоплаченных анкет.
     $running_final_balance = $current_balance + (float) $transaction_amount;
 
     // Шаг 2: Фаза 1 — Погашение кредитных анкет (статус 2).
@@ -220,14 +221,17 @@ function process_agent_repayments($pdo, $agent_id, $transaction_amount) {
                 WHERE `client_id` = :client_id"
             );
             $stmt_update_credit->execute([
-                ':p_add' => $payment_for_debt,
-                ':p_sub' => $payment_for_debt,
+                ':p_add'     => $payment_for_debt,
+                ':p_sub'     => $payment_for_debt,
                 ':client_id' => $client['client_id']
             ]);
             
             $funds_to_spend -= $payment_for_debt;
-            $affected_log[] = ['client_id' => $client['client_id'], 'amount_paid' => $payment_for_debt];
+            
+            // Логируем именно погашение кредита
+            $affected_log[] = ['client_id' => $client['client_id'], 'type' => 'credit_repayment', 'amount' => $payment_for_debt];
 
+            // Если разница между суммой долга и оплатой незначительна (из-за погрешностей float), считаем долг погашенным.
             if (abs($credit_part - $payment_for_debt) < 0.01) {
                 $pdo->prepare("UPDATE `clients` SET `payment_status` = 1 WHERE `client_id` = :client_id")->execute([':client_id' => $client['client_id']]);
             }
@@ -248,6 +252,7 @@ function process_agent_repayments($pdo, $agent_id, $transaction_amount) {
             if ($funds_to_spend <= 0) break;
 
             $sale_price = (float) $client['sale_price'];
+            // Оплачиваем только если денег хватает на полную стоимость.
             if (round($funds_to_spend, 2) >= round($sale_price, 2)) {
                 $pdo->prepare(
                     "UPDATE `clients` SET 
@@ -258,16 +263,21 @@ function process_agent_repayments($pdo, $agent_id, $transaction_amount) {
                 )->execute([':sale_price' => $sale_price, ':client_id' => $client['client_id']]);
 
                 $funds_to_spend -= $sale_price;
-                $running_final_balance -= $sale_price;
+                $running_final_balance -= $sale_price; // Уменьшаем итоговый баланс, т.к. это расход на новую анкету
 
-                $affected_log[] = ['client_id' => $client['client_id'], 'amount_paid' => $sale_price];
+                // Логируем полную оплату
+                $affected_log[] = ['client_id' => $client['client_id'], 'type' => 'full_payment', 'amount' => $sale_price];
             }
         }
     }
     
     // Шаг 4: Финализация баланса.
+    // Если после всех оплат в "кошельке" остались деньги, они становятся новым балансом агента.
+    // Если же деньги ушли в минус (т.к. мы тратили из кредита), running_final_balance корректно отразит новый долг.
+    $final_balance = ($funds_to_spend > 0) ? $funds_to_spend : $running_final_balance;
+    
     $stmt_update_balance = $pdo->prepare("UPDATE `users` SET `user_balance` = :final_balance WHERE `user_id` = :agent_id");
-    $stmt_update_balance->execute([':final_balance' => $running_final_balance, ':agent_id' => $agent_id]);
+    $stmt_update_balance->execute([':final_balance' => $final_balance, ':agent_id' => $agent_id]);
 
     return $affected_log;
 }

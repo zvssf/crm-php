@@ -6,6 +6,7 @@ if (empty($client_id) || !preg_match('/^[0-9]{1,11}$/u', $client_id)) {
     message('Ошибка', 'Недопустимое значение ID анкеты!', 'error', '');
 }
 
+// Это действие может выполнять только Директор
 if ($user_data['user_group'] != 1) {
     message('Ошибка', 'У вас нет прав для выполнения этого действия!', 'error', '');
 }
@@ -14,18 +15,20 @@ try {
     $pdo = db_connect();
     $pdo->beginTransaction();
 
-    // 2. Получение Данных Анкеты
+    // 2. Получение Данных Анкеты (блокируем строку для обновления)
     $stmt_client = $pdo->prepare(
         "SELECT c.agent_id, c.sale_price, c.payment_status, cc.city_id
         FROM `clients` c
         LEFT JOIN `client_cities` cc ON c.client_id = cc.client_id
-        WHERE c.client_id = :client_id AND c.client_status = 2"
+        WHERE c.client_id = :client_id AND c.client_status = 2
+        FOR UPDATE"
     );
     $stmt_client->execute([':client_id' => $client_id]);
     $client_info = $stmt_client->fetch(PDO::FETCH_ASSOC);
 
     // 3. Валидация
     if (!$client_info) {
+        $pdo->rollBack();
         message('Ошибка', 'Анкета не найдена или уже не находится в статусе "Записанные".', 'error', '');
     }
 
@@ -56,7 +59,7 @@ try {
 
     // 5. Финансовая Корректировка — Агент
     if ($agent_id && $sale_price > 0 && in_array($payment_status, [1, 2])) {
-        // ШАГ 5.1: Сначала обнуляем финансовый статус анкеты
+        // ШАГ 5.1: Сначала обнуляем финансовый статус анкеты и меняем ее статус на "В работе".
         $stmt_update_client = $pdo->prepare(
             "UPDATE `clients` SET
             `client_status` = 1,
@@ -67,11 +70,11 @@ try {
         );
         $stmt_update_client->execute([':client_id' => $client_id]);
 
-        // ШАГ 5.2: Затем вызываем перерасчет, передав возвращенную сумму
+        // ШАГ 5.2: Затем вызываем нашу центральную функцию, передав возвращенную сумму для перераспределения.
         process_agent_repayments($pdo, $agent_id, $sale_price);
 
     } else {
-        // Если анкета не была оплачена, просто меняем ее статус
+        // Если анкета не была оплачена (или бесплатная), просто меняем ее статус на "В работе".
         $stmt_update_client = $pdo->prepare("UPDATE `clients` SET `client_status` = 1 WHERE `client_id` = :client_id");
         $stmt_update_client->execute([':client_id' => $client_id]);
     }

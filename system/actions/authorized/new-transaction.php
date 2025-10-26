@@ -18,20 +18,19 @@ $validate = function($value, $pattern, $emptyMsg, $invalidMsg) {
     }
 };
 
-$validate($operation_type, '[0-9]',        'Выберите тип транзакции!', 'Недопустимое значение типа транзакции!');
+$validate($operation_type, '[1-2]',        'Выберите тип транзакции!', 'Недопустимое значение типа транзакции!');
 $validate($amount,         '[0-9.]+',      'Введите сумму транзакции!', 'Недопустимое значение суммы!');
 $validate($select_cash,    '[0-9]{1,11}',  'Выберите кассу!',           'Недопустимое значение кассы!');
 
 if($operation_type === '1') {
-    $validate($select_agent, '[0-9]{1,11}',                    'Выберите агента!',    'Недопустимое значение агента!');
+    $validate($select_agent, '[0-9]{1,11}', 'Выберите агента!', 'Недопустимое значение агента!');
 }
 
 try {
     $pdo = db_connect();
     $pdo->beginTransaction();
 
-
-    // --- ОСНОВНАЯ ЛОГИКА ТРАНЗАКЦИИ ---
+    // --- ПРОВЕРКИ СУЩЕСТВОВАНИЯ СУЩНОСТЕЙ ---
     $stmt = $pdo->prepare("SELECT 1 FROM `fin_cashes` WHERE `id` = :id ");
     $stmt->execute([':id' => $select_cash]);
     if ($stmt->rowCount() === 0) {
@@ -46,7 +45,7 @@ try {
         }
     }
 
-    if($operation_type === '2' && $select_supplier !== 'hide') {
+    if($operation_type === '2' && !empty($select_supplier) && $select_supplier !== 'hide') {
         $stmt = $pdo->prepare("SELECT 1 FROM `fin_suppliers` WHERE `id` = :id ");
         $stmt->execute([':id' => $select_supplier]);
         if ($stmt->rowCount() === 0) {
@@ -54,6 +53,7 @@ try {
         }
     }
 
+    // --- ОСНОВНАЯ ЛОГИКА ТРАНЗАКЦИИ ---
     $amount_to_db = 0;
     $agent_id_to_db = NULL;
     $supplier_id_to_db = NULL;
@@ -66,7 +66,7 @@ try {
         // Обновляем баланс кассы
         $pdo->prepare("UPDATE `fin_cashes` SET `balance` = `balance` + :amount WHERE `id` = :id")->execute([':amount' => $amount, ':id' => $select_cash]);
         
-        // Вызываем функцию перерасчета и получаем лог
+        // ВЫЗЫВАЕМ ЦЕНТРАЛЬНУЮ ФУНКЦИЮ ПЕРЕРАСЧЕТА И ПОЛУЧАЕМ ЛОГ
         $log_data = process_agent_repayments($pdo, $agent_id_to_db, $amount);
         if (!empty($log_data)) {
             $affected_clients_log = json_encode($log_data);
@@ -77,7 +77,7 @@ try {
         $agent_id_to_db = NULL;
         $pdo->prepare("UPDATE `fin_cashes` SET `balance` = `balance` - :amount WHERE `id` = :id")->execute([':amount' => $amount, ':id' => $select_cash]);
         
-        if ($select_supplier !== 'hide') {
+        if (!empty($select_supplier) && $select_supplier !== 'hide') {
             $supplier_id_to_db = $select_supplier;
             $pdo->prepare("UPDATE `fin_suppliers` SET `balance` = `balance` + :amount WHERE `id` = :id")->execute([':amount' => $amount, ':id' => $supplier_id_to_db]);
         }
