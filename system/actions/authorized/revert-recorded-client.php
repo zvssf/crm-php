@@ -6,7 +6,6 @@ if (empty($client_id) || !preg_match('/^[0-9]{1,11}$/u', $client_id)) {
     message('Ошибка', 'Недопустимое значение ID анкеты!', 'error', '');
 }
 
-// Это действие может выполнять только Директор
 if ($user_data['user_group'] != 1) {
     message('Ошибка', 'У вас нет прав для выполнения этого действия!', 'error', '');
 }
@@ -15,9 +14,9 @@ try {
     $pdo = db_connect();
     $pdo->beginTransaction();
 
-    // 2. Получение Данных Анкеты (блокируем строку для обновления)
+    // 2. Получение данных по оплате анкеты
     $stmt_client = $pdo->prepare(
-        "SELECT c.agent_id, c.sale_price, c.payment_status, cc.city_id
+        "SELECT c.agent_id, c.payment_status, c.paid_from_balance, c.paid_from_credit, cc.city_id
         FROM `clients` c
         LEFT JOIN `client_cities` cc ON c.client_id = cc.client_id
         WHERE c.client_id = :client_id AND c.client_status = 2
@@ -33,11 +32,10 @@ try {
     }
 
     $agent_id = $client_info['agent_id'];
-    $sale_price = (float) $client_info['sale_price'];
     $payment_status = (int) $client_info['payment_status'];
     $final_city_id = $client_info['city_id'];
 
-    // 4. Финансовая Корректировка — Поставщик (возврат себестоимости)
+    // 4. Финансовая Корректировка — Поставщик
     if ($final_city_id) {
         $stmt_city_cost = $pdo->prepare("SELECT `cost_price` FROM `settings_cities` WHERE `city_id` = :city_id");
         $stmt_city_cost->execute([':city_id' => $final_city_id]);
@@ -58,8 +56,17 @@ try {
     }
 
     // 5. Финансовая Корректировка — Агент
-    if ($agent_id && $sale_price > 0 && in_array($payment_status, [1, 2])) {
-        // ШАГ 5.1: Сначала обнуляем финансовый статус анкеты и меняем ее статус на "В работе".
+    if ($agent_id && in_array($payment_status, [1, 2])) {
+        // ШАГ 5.1: Вычисляем общую сумму, которая была потрачена на анкету
+        $refund_amount = (float)$client_info['paid_from_balance'] + (float)$client_info['paid_from_credit'];
+
+        // ШАГ 5.2: Вызываем центральную функцию, передавая ей сумму возврата как новую "транзакцию".
+        // Она вернет деньги на баланс агента и перераспределит их, НЕ видя текущую анкету как "неоплаченную".
+        if ($refund_amount > 0) {
+            process_agent_repayments($pdo, $agent_id, $refund_amount);
+        }
+
+        // ШАГ 5.3: И только ПОСЛЕ всех финансовых операций, "обнуляем" статус анкеты.
         $stmt_update_client = $pdo->prepare(
             "UPDATE `clients` SET
             `client_status` = 1,
@@ -70,11 +77,8 @@ try {
         );
         $stmt_update_client->execute([':client_id' => $client_id]);
 
-        // ШАГ 5.2: Затем вызываем нашу центральную функцию, передав возвращенную сумму для перераспределения.
-        process_agent_repayments($pdo, $agent_id, $sale_price);
-
     } else {
-        // Если анкета не была оплачена (или бесплатная), просто меняем ее статус на "В работе".
+        // Если анкета не была оплачена, просто меняем ее статус
         $stmt_update_client = $pdo->prepare("UPDATE `clients` SET `client_status` = 1 WHERE `client_id` = :client_id");
         $stmt_update_client->execute([':client_id' => $client_id]);
     }

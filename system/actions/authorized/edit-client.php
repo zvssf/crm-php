@@ -166,11 +166,10 @@ try {
                 $payment_from_balance = min($surcharge, max(0, $agent_balance));
                 $new_credit = $surcharge - $payment_from_balance;
 
-                // Списываем с баланса агента
-                if ($payment_from_balance > 0) {
-                    $pdo->prepare("UPDATE `users` SET `user_balance` = `user_balance` - :payment WHERE `user_id` = :agent_id")
-                        ->execute([':payment' => $payment_from_balance, ':agent_id' => $agent_id_for_op]);
-                }
+                // Списываем ВСЮ сумму доплаты с баланса агента, уводя его в минус, если необходимо.
+                // Эта операция игнорирует кредитный лимит.
+                $pdo->prepare("UPDATE `users` SET `user_balance` = `user_balance` - :surcharge WHERE `user_id` = :agent_id")
+                    ->execute([':surcharge' => $surcharge, ':agent_id' => $agent_id_for_op]);
                 
                 // Обновляем анкету
                 $update_params = [':payment' => $payment_from_balance, ':client_id' => $client_id];

@@ -52,13 +52,6 @@ if (!$current_center_name) {
     exit('Визовый центр не найден!');
 }
 
-$country_id = null;
-foreach($centers as $center) {
-    if ($center['center_id'] == $center_id) {
-        $country_id = $center['country_id'];
-        break;
-    }
-}
 $country_name = $arr_countries[$country_id] ?? 'Неизвестная страна';
 
 $page_title = 'Новая анкета';
@@ -89,10 +82,10 @@ try {
     $pdo_fields = db_connect();
     $stmt_fields = $pdo_fields->prepare("
         SELECT `field_name`, `is_visible`, `is_required` 
-        FROM `settings_country_fields` 
-        WHERE `country_id` = :country_id
+        FROM `settings_center_fields` 
+        WHERE `center_id` = :center_id
     ");
-    $stmt_fields->execute([':country_id' => $country_id]);
+    $stmt_fields->execute([':center_id' => $center_id]);
     $db_settings = $stmt_fields->fetchAll(PDO::FETCH_ASSOC);
     
     if ($db_settings) {

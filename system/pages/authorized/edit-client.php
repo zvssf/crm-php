@@ -53,20 +53,21 @@ try {
 
 $center_id = $client_data['center_id'];
 $current_center_name = $arr_centers[$center_id] ?? 'Неизвестный ВЦ';
-$country_id = null;
+// Находим country_id для заголовка страницы, но не для настроек
+$country_id_for_title = null;
 foreach ($centers as $center) {
     if ($center['center_id'] == $center_id) {
-        $country_id = $center['country_id'];
+        $country_id_for_title = $center['country_id'];
         break;
     }
 }
-$country_name = $arr_countries[$country_id] ?? 'Неизвестная страна';
+$country_name = $arr_countries[$country_id_for_title] ?? 'Неизвестная страна';
 
 $page_title = 'Редактирование анкеты';
 
 // --- НАЧАЛО БЛОКА ЗАГРУЗКИ НАСТРОЕК ПОЛЕЙ ---
 
-// Настройки по умолчанию (все поля видимы, но не обязательны, кроме ключевых)
+// Настройки по умолчанию
 $field_settings = [
     'first_name' => ['is_visible' => true, 'is_required' => true],
     'last_name' => ['is_visible' => true, 'is_required' => true],
@@ -90,16 +91,15 @@ try {
     // $pdo уже был создан ранее в этом файле
     $stmt_fields = $pdo->prepare("
         SELECT `field_name`, `is_visible`, `is_required` 
-        FROM `settings_country_fields` 
-        WHERE `country_id` = :country_id
+        FROM `settings_center_fields` 
+        WHERE `center_id` = :center_id
     ");
-    $stmt_fields->execute([':country_id' => $country_id]);
+    $stmt_fields->execute([':center_id' => $center_id]);
     $db_settings = $stmt_fields->fetchAll(PDO::FETCH_ASSOC);
     
     if ($db_settings) {
         foreach ($db_settings as $row) {
             if (isset($field_settings[$row['field_name']])) {
-                // Не позволяем переопределять видимость и обязательность для жестко заданных полей
                 if (!in_array($row['field_name'], ['first_name', 'last_name', 'passport_number', 'agent_id', 'city_ids', 'sale_price', 'phone'])) {
                      $field_settings[$row['field_name']]['is_visible'] = (bool)$row['is_visible'];
                      $field_settings[$row['field_name']]['is_required'] = (bool)$row['is_required'];

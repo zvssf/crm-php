@@ -80,40 +80,6 @@ try {
         ':country_id'  => $country_id
     ]);
 
-    // Обновляем настройки полей: сначала удаляем старые, потом вставляем новые
-    $stmt_delete = $pdo->prepare("DELETE FROM `settings_country_fields` WHERE `country_id` = :country_id");
-    $stmt_delete->execute([':country_id' => $country_id]);
-
-    if (!empty($field_settings_json)) {
-        $field_settings = json_decode($field_settings_json, true);
-        
-        if (is_array($field_settings)) {
-            $sql_fields = "
-                INSERT INTO `settings_country_fields` (
-                    `country_id`, 
-                    `field_name`, 
-                    `is_visible`, 
-                    `is_required`
-                ) VALUES (
-                    :country_id, 
-                    :field_name, 
-                    :is_visible, 
-                    :is_required
-                )
-            ";
-            $stmt_fields = $pdo->prepare($sql_fields);
-
-            foreach ($field_settings as $field_name => $settings) {
-                $stmt_fields->execute([
-                    ':country_id'   => $country_id,
-                    ':field_name'   => $field_name,
-                    ':is_visible'   => !empty($settings['is_visible']) ? 1 : 0,
-                    ':is_required'  => !empty($settings['is_required']) ? 1 : 0
-                ]);
-            }
-        }
-    }
-
     $pdo->commit();
     message('Уведомление', 'Сохранение выполнено!', 'success', 'settings-countries');
 

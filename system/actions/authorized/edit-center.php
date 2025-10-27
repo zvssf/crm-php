@@ -1,6 +1,7 @@
 <?php
 
 $center_id = valid($_POST['center-edit-id'] ?? '');
+$field_settings_json = $_POST['field_settings'] ?? '';
 
 if (empty($center_id)) {
     redirectAJAX('settings-centers');
@@ -29,6 +30,7 @@ $validate($country_id,    '[0-9]{1,11}',                 'Выберите ст�
 
 try {
     $pdo = db_connect();
+    $pdo->beginTransaction();
 
     $stmt = $pdo->prepare("
     SELECT * 
@@ -79,9 +81,48 @@ try {
         ':center_id'  => $center_id
     ]);
 
+    // Обновляем настройки полей: сначала удаляем старые, потом вставляем новые
+    $stmt_delete = $pdo->prepare("DELETE FROM `settings_center_fields` WHERE `center_id` = :center_id");
+    $stmt_delete->execute([':center_id' => $center_id]);
+
+    if (!empty($field_settings_json)) {
+        $field_settings = json_decode($field_settings_json, true);
+        
+        if (is_array($field_settings)) {
+            $sql_fields = "
+                INSERT INTO `settings_center_fields` (
+                    `center_id`, 
+                    `field_name`, 
+                    `is_visible`, 
+                    `is_required`
+                ) VALUES (
+                    :center_id, 
+                    :field_name, 
+                    :is_visible, 
+                    :is_required
+                )
+            ";
+            $stmt_fields = $pdo->prepare($sql_fields);
+
+            foreach ($field_settings as $field_name => $settings) {
+                $stmt_fields->execute([
+                    ':center_id'    => $center_id,
+                    ':field_name'   => $field_name,
+                    ':is_visible'   => !empty($settings['is_visible']) ? 1 : 0,
+                    ':is_required'  => !empty($settings['is_required']) ? 1 : 0
+                ]);
+            }
+        }
+    }
+
+    $pdo->commit();
+
     message('Уведомление', 'Сохранение выполнено!', 'success', 'settings-centers');
 
 } catch (PDOException $e) {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
     error_log('DB Error: ' . $e->getMessage());
     message('Ошибка', 'Не удалось сохранить изменения. Попробуйте позже.', 'error', '');
 }
