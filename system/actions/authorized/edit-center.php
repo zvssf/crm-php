@@ -55,10 +55,11 @@ try {
         $stmt = $pdo->prepare("
         SELECT 1 
         FROM `settings_centers` 
-        WHERE `center_name` = :name
+        WHERE `center_name` = :name AND `center_id` != :center_id
         ");
         $stmt->execute([
-          ':name' => $center_name
+          ':name'       => $center_name,
+          ':center_id'  => $center_id
         ]);
         if ($stmt->rowCount() > 0) {
             message('Ошибка', 'Данный визовый центр уже существует!', 'error', '');

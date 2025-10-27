@@ -48,10 +48,11 @@ foreach ($centers as $center) {
 }
 
 $current_center_name = $arr_centers[$center_id] ?? null;
-if (!$current_center_name) {
+if (!$current_center) {
     exit('Визовый центр не найден!');
 }
 
+$country_id = $current_center['country_id'];
 $country_name = $arr_countries[$country_id] ?? 'Неизвестная страна';
 
 $page_title = 'Новая анкета';

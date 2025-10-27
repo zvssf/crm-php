@@ -1,4 +1,5 @@
 <?php
+$crm_version = 1;
 mb_internal_encoding('UTF-8');
 mb_regex_encoding('UTF-8');
 mb_http_output('UTF-8');

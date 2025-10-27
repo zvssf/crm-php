@@ -1,9 +1,25 @@
 <?php
 header('Content-Type: text/html; charset=utf-8');
 
-$country_id = valid($_POST['country_id'] ?? 0);
+$center_id = valid($_POST['center_id'] ?? 0);
 
-if (empty($country_id) || !is_numeric($country_id)) {
+if (empty($center_id) || !is_numeric($center_id)) {
+    exit;
+}
+
+// Получаем ID страны на основе ID визового центра
+try {
+    $pdo_temp = db_connect();
+    $stmt_country = $pdo_temp->prepare("SELECT country_id FROM settings_centers WHERE center_id = ?");
+    $stmt_country->execute([$center_id]);
+    $country_id = $stmt_country->fetchColumn();
+    $pdo_temp = null;
+} catch (PDOException $e) {
+    error_log('DB Error get_export_fields (get country_id): ' . $e->getMessage());
+    exit;
+}
+
+if (empty($country_id)) {
     exit;
 }
 
@@ -30,15 +46,34 @@ $fields = [
     'c.notes' => 'Пометки'
 ];
 
+$saved_fields = null;
+$saved_order = null;
+
+try {
+    $pdo_settings = db_connect();
+    $stmt_user_settings = $pdo_settings->prepare("SELECT `settings` FROM `user_export_settings` WHERE `user_id` = :user_id AND `center_id` = :center_id");
+    $stmt_user_settings->execute([':user_id' => $user_data['user_id'], ':center_id' => $center_id]);
+    $saved_settings_json = $stmt_user_settings->fetchColumn();
+
+    if ($saved_settings_json) {
+        $saved_data = json_decode($saved_settings_json, true);
+        $saved_fields = $saved_data['fields'] ?? null;
+        $saved_order = $saved_data['field_order'] ?? null;
+    }
+} catch (PDOException $e) {
+    error_log('DB Error getting user export settings: ' . $e->getMessage());
+    // Не прерываем выполнение, просто используем настройки по умолчанию
+}
+
 try {
     $pdo = db_connect();
 
-    // Получаем динамические настройки видимости полей для страны
-    $stmt_settings = $pdo->prepare("SELECT `field_name` FROM `settings_country_fields` WHERE `country_id` = :country_id AND `is_visible` = 1");
-    $stmt_settings->execute([':country_id' => $country_id]);
+    // Получаем динамические настройки видимости полей для визового центра
+    $stmt_settings = $pdo->prepare("SELECT `field_name` FROM `settings_center_fields` WHERE `center_id` = :center_id AND `is_visible` = 1");
+    $stmt_settings->execute([':center_id' => $center_id]);
     $visible_fields = array_column($stmt_settings->fetchAll(PDO::FETCH_ASSOC), 'field_name');
 
-    // Получаем дополнительные поля, привязанные к городам этой страны
+    // Получаем дополнительные поля, привязанные к городам этой страны (страну мы уже определили ранее)
     $stmt_inputs = $pdo->prepare("
         SELECT DISTINCT si.input_id, si.input_name
         FROM `settings_inputs` si
@@ -60,10 +95,26 @@ try {
 }
 
 // Функция для генерации одного переключателя
-function render_switch($key, $label, $is_checked, $is_disabled) {
+function render_switch($key, $label, $default_checked, $is_disabled) {
+    global $saved_fields, $saved_order;
+
+    if ($saved_fields !== null) {
+        $is_checked = in_array($key, $saved_fields);
+    } else {
+        $is_checked = $default_checked;
+    }
+    
+    // Поля, которые нельзя отключить, всегда должны быть отмечены
+    if ($is_disabled) {
+        $is_checked = true;
+    }
+
+    $order_value = $saved_order[$key] ?? '';
+
     $disabled_attr = $is_disabled ? 'disabled' : '';
     $checked_attr = $is_checked ? 'checked' : '';
     $clean_key = preg_replace('/[^a-zA-Z0-9_-]/', '', $key);
+    $order_value_attr = !empty($order_value) ? 'value="' . valid($order_value) . '"' : 'placeholder="-"';
 
     echo '
     <div class="d-flex justify-content-between align-items-center mb-2 export-field-row ' . ($is_disabled ? 'p-2 bg-light rounded' : '') . '">
@@ -74,7 +125,7 @@ function render_switch($key, $label, $is_checked, $is_disabled) {
                 <input type="text" 
                        class="form-control export-order-input" 
                        name="field_order[' . $key . ']" 
-                       placeholder="-"
+                       ' . $order_value_attr . '
                        oninput="this.value = this.value.replace(/[^0-9]/g, \'\')"
                        maxlength="2"
                        ' . ($is_checked ? '' : 'disabled') . '>
@@ -135,7 +186,7 @@ if (in_array('notes', $visible_fields)) render_switch('c.notes', 'Ваши по�
 
 if (!empty($additional_inputs)) {
     echo '<h5 class="mt-4 mb-3 text-uppercase"><i class="mdi mdi-plus-box-outline me-1"></i> Дополнительные поля</h5>';
-    foreach($additional_inputs as $id => $name) {
+    foreach ($additional_inputs as $id => $name) {
         render_switch('input_' . $id, $name, true, false);
     }
 }

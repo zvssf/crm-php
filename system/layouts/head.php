@@ -7,19 +7,19 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
         <!-- App favicon -->
-        <link rel="shortcut icon" href="assets/images/favicon.ico">
+        <link rel="shortcut icon" href="assets/images/favicon.ico?v=<?= $crm_version ?>">
 
         <!-- Plugin css -->
-        <link rel="stylesheet" href="assets/vendor/jquery-toast-plugin/jquery.toast.min.css">
+        <link rel="stylesheet" href="assets/vendor/jquery-toast-plugin/jquery.toast.min.css?v=<?= $crm_version ?>">
 
 
         <!-- Bootstrap Touchspin css -->
-<link href="assets/vendor/bootstrap-touchspin/jquery.bootstrap-touchspin.min.css" rel="stylesheet" type="text/css" />
+<link href="assets/vendor/bootstrap-touchspin/jquery.bootstrap-touchspin.min.css?v=<?= $crm_version ?>" rel="stylesheet" type="text/css" />
 
 
 
         <!-- Icons css -->
-<link href="assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+<link href="assets/css/icons.min.css?v=<?= $crm_version ?>" rel="stylesheet" type="text/css" />
 
 
 
@@ -27,23 +27,23 @@
 
 
 <!-- Datatable css -->
-<link href="assets/vendor/datatables.net-bs5/css/dataTables.bootstrap5.min.css" rel="stylesheet" type="text/css" />
-        <link href="assets/vendor/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css" rel="stylesheet" type="text/css" />
+<link href="assets/vendor/datatables.net-bs5/css/dataTables.bootstrap5.min.css?v=<?= $crm_version ?>" rel="stylesheet" type="text/css" />
+        <link href="assets/vendor/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css?v=<?= $crm_version ?>" rel="stylesheet" type="text/css" />
 
 
 
 <!-- Select2 css -->
-<link href="assets/vendor/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+<link href="assets/vendor/select2/css/select2.min.css?v=<?= $crm_version ?>" rel="stylesheet" type="text/css" />
 
 <!-- Daterangepicker css -->
-<link href="assets/vendor/daterangepicker/daterangepicker.css" rel="stylesheet" type="text/css" />
+<link href="assets/vendor/daterangepicker/daterangepicker.css?v=<?= $crm_version ?>" rel="stylesheet" type="text/css" />
 
 <!-- Sweet Alert2 css -->
 <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" type="text/css" />
 
 
 <!-- App css -->
-<link href="assets/css/app-saas.min.css" rel="stylesheet" type="text/css" id="app-style" />
+<link href="assets/css/app-saas.min.css?v=<?= $crm_version ?>" rel="stylesheet" type="text/css" id="app-style" />
 
 <!-- Theme Config Js -->
 <script src="assets/js/config.js"></script>

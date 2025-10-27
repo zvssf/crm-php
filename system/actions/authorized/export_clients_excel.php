@@ -29,6 +29,7 @@ if (empty($center_id) || empty($status_id) || empty($fields)) {
     exit('Ошибка: Недостаточно данных для экспорта.');
 }
 
+
 // Словарь для перевода ключей полей в человекочитаемые названия
 $field_labels = [
     'c.client_id' => 'ID', 'c.first_name' => 'Имя', 'c.last_name' => 'Фамилия', 'c.middle_name' => 'Отчество',
@@ -156,6 +157,37 @@ foreach ($all_possible_fields as $possible_key) {
     if (in_array($possible_key, $unnumbered_fields_keys)) { $final_fields[] = $possible_key; }
 }
 
+// --- НАЧАЛО БЛОКА СОХРАНЕНИЯ НАСТРОЕК (ФИНАЛЬНАЯ ВЕРСИЯ) ---
+try {
+    // Собираем для сохранения только те данные, что пришли из формы.
+    $settings_to_save = [
+        'fields'      => $_POST['fields'] ?? [],
+        'field_order' => $field_order,
+    ];
+
+    $settings_json = json_encode($settings_to_save);
+
+    if ($settings_json) {
+        // $pdo уже определен в этом месте
+        $sql_save = "
+            INSERT INTO `user_export_settings` (`user_id`, `center_id`, `settings`)
+            VALUES (:user_id, :center_id, :settings_insert)
+            ON DUPLICATE KEY UPDATE `settings` = :settings_update
+        ";
+        $stmt_save = $pdo->prepare($sql_save);
+        $stmt_save->execute([
+            ':user_id'          => $user_data['user_id'],
+            ':center_id'        => $center_id,
+            ':settings_insert'  => $settings_json,
+            ':settings_update'  => $settings_json
+        ]);
+    }
+} catch (PDOException $e) {
+    // Не прерываем скачивание файла, просто логируем ошибку для анализа
+    error_log('DB Error on saving user export settings: ' . $e->getMessage());
+}
+// --- КОНЕЦ БЛОКА СОХРАНЕНИЯ НАСТРОЕК ---
+
 // --- НОВАЯ ЛОГИКА ГЕНЕРАЦИИ XLSX ФАЙЛА ---
 $spreadsheet = new Spreadsheet();
 $sheet = $spreadsheet->getActiveSheet();
@@ -225,6 +257,8 @@ $filename = "export_clients_" . date('Y-m-d') . ".xlsx";
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Content-Disposition: attachment;filename="' . $filename . '"');
 header('Cache-Control: max-age=0');
+
+
 
 $writer = new Xlsx($spreadsheet);
 $writer->save('php://output');

@@ -305,20 +305,20 @@
 <!-- Brand Logo Light -->
 <a href="/?page=dashboard" class="logo logo-light">
     <span class="logo-lg">
-        <img src="assets/images/logo.png" alt="logo">
+        <img src="assets/images/logo.png?v=<?= $crm_version ?>" alt="logo">
     </span>
     <span class="logo-sm">
-        <img src="assets/images/logo-sm.png" alt="small logo">
+        <img src="assets/images/logo-sm.png?v=<?= $crm_version ?>" alt="small logo">
     </span>
 </a>
 
 <!-- Brand Logo Dark -->
 <a href="/?page=dashboard" class="logo logo-dark">
     <span class="logo-lg">
-        <img src="assets/images/logo-dark.png" alt="dark logo">
+        <img src="assets/images/logo-dark.png?v=<?= $crm_version ?>" alt="dark logo">
     </span>
     <span class="logo-sm">
-        <img src="assets/images/logo-dark-sm.png" alt="small logo">
+        <img src="assets/images/logo-dark-sm.png?v=<?= $crm_version ?>" alt="small logo">
     </span>
 </a>
 

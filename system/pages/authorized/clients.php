@@ -922,7 +922,7 @@ require_once SYSTEM . '/layouts/head.php';
             $.ajax({
                 url: '/?form=get_export_fields',
                 type: 'POST',
-                data: { country_id: '<?= $current_center['country_id'] ?>' },
+                data: { center_id: '<?= $center_id ?>' },
                 success: function(response) {
                     fieldsContainer.html(response);
                 },
@@ -1213,6 +1213,15 @@ require_once SYSTEM . '/layouts/head.php';
                     $('#del-client-modal').modal('show');
                 }
             });
+        });
+
+        // Обработчик для формы экспорта
+        $('#form-export-excel').on('submit', function() {
+            // Автоматически закрываем модальное окно при отправке
+            $('#export-excel-modal').modal('hide');
+
+            // Показываем пользователю уведомление, что процесс запущен
+            message('Экспорт запущен', 'Ваш файл уже скачивается.', 'info', '');
         });
     </script>
 </body>

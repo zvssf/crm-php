@@ -1,66 +1,66 @@
 <!-- Vendor js -->
-<script src="assets/js/vendor.min.js"></script>
+<script src="assets/js/vendor.min.js?v=<?= $crm_version ?>"></script>
 
 
 
-<script src="assets/vendor/jquery-toast-plugin/jquery.toast.min.js"></script>
+<script src="assets/vendor/jquery-toast-plugin/jquery.toast.min.js?v=<?= $crm_version ?>"></script>
 
 <!-- Bootstrap Touchspin js -->
-<script src="assets/vendor/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js"></script>
+<script src="assets/vendor/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js?v=<?= $crm_version ?>"></script>
 
 <!-- Code Highlight js -->
-<script src="assets/vendor/highlightjs/highlight.pack.min.js"></script>
-<script src="assets/vendor/clipboard/clipboard.min.js"></script>
-<script src="assets/js/hyper-syntax.js"></script>
+<script src="assets/vendor/highlightjs/highlight.pack.min.js?v=<?= $crm_version ?>"></script>
+<script src="assets/vendor/clipboard/clipboard.min.js?v=<?= $crm_version ?>"></script>
+<script src="assets/js/hyper-syntax.js?v=<?= $crm_version ?>"></script>
 
 <!-- Datatable js -->
-<script src="assets/vendor/datatables.net/js/jquery.dataTables.min.js"></script>
-<script src="assets/vendor/datatables.net-bs5/js/dataTables.bootstrap5.min.js"></script>
-<script src="assets/vendor/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
-<script src="assets/vendor/datatables.net-responsive-bs5/js/responsive.bootstrap5.min.js"></script>
-<script src="assets/vendor/jquery-datatables-checkboxes/js/dataTables.checkboxes.min.js"></script>
+<script src="assets/vendor/datatables.net/js/jquery.dataTables.min.js?v=<?= $crm_version ?>"></script>
+<script src="assets/vendor/datatables.net-bs5/js/dataTables.bootstrap5.min.js?v=<?= $crm_version ?>"></script>
+<script src="assets/vendor/datatables.net-responsive/js/dataTables.responsive.min.js?v=<?= $crm_version ?>"></script>
+<script src="assets/vendor/datatables.net-responsive-bs5/js/responsive.bootstrap5.min.js?v=<?= $crm_version ?>"></script>
+<script src="assets/vendor/jquery-datatables-checkboxes/js/dataTables.checkboxes.min.js?v=<?= $crm_version ?>"></script>
 
 
 
 <?php if($page == 'customers'): ?>
     <!-- Customers App js -->
-    <script src="assets/js/pages/customers.js"></script>
+    <script src="assets/js/pages/customers.js?v=<?= $crm_version ?>"></script>
 
     <?php elseif($page == 'finance'): ?>
 
     <!-- Centers App js -->
-    <script src="assets/js/pages/cashes.js"></script>
-    <script src="assets/js/pages/transactions.js"></script>
-    <script src="assets/js/pages/suppliers.js"></script>
+    <script src="assets/js/pages/cashes.js?v=<?= $crm_version ?>"></script>
+    <script src="assets/js/pages/transactions.js?v=<?= $crm_version ?>"></script>
+    <script src="assets/js/pages/suppliers.js?v=<?= $crm_version ?>"></script>
 
 
     <?php elseif($page == 'settings-centers'): ?>
 
     <!-- Centers App js -->
-    <script src="assets/js/pages/settings-centers.js"></script>
+    <script src="assets/js/pages/settings-centers.js?v=<?= $crm_version ?>"></script>
 
     <?php elseif($page == 'settings-countries'): ?>
 
     <!-- Centers App js -->
-    <script src="assets/js/pages/settings-countries.js"></script>
+    <script src="assets/js/pages/settings-countries.js?v=<?= $crm_version ?>"></script>
 
 
     <?php elseif($page == 'settings-cities'): ?>
 
     <!-- Centers App js -->
-    <script src="assets/js/pages/settings-cities.js"></script>
+    <script src="assets/js/pages/settings-cities.js?v=<?= $crm_version ?>"></script>
 
 
 
     <?php elseif($page == 'settings-inputs'): ?>
 
     <!-- Centers App js -->
-    <script src="assets/js/pages/settings-inputs.js"></script>
+    <script src="assets/js/pages/settings-inputs.js?v=<?= $crm_version ?>"></script>
 
     <?php elseif($page == 'clients'): ?>
 
     <!-- Clients App js -->
-    <script src="assets/js/pages/clients.js"></script>
+    <script src="assets/js/pages/clients.js?v=<?= $crm_version ?>"></script>
 
     <?php endif; ?>
 
@@ -68,10 +68,10 @@
 
 
 <!-- Input Mask Plugin js -->
-<script src="assets/vendor/jquery-mask-plugin/jquery.mask.min.js"></script>
+<script src="assets/vendor/jquery-mask-plugin/jquery.mask.min.js?v=<?= $crm_version ?>"></script>
 
 <!-- Bootstrap Maxlength js -->
-<script src="assets/vendor/bootstrap-maxlength/bootstrap-maxlength.min.js"></script>
+<script src="assets/vendor/bootstrap-maxlength/bootstrap-maxlength.min.js?v=<?= $crm_version ?>"></script>
 
 
 <!-- Code Highlight js -->
@@ -80,18 +80,18 @@
 <script src="assets/js/hyper-syntax.js"></script> -->
 
 <!-- Input Mask Plugin js -->
-<script src="assets/vendor/jquery-mask-plugin/jquery.mask.min.js"></script>
+<script src="assets/vendor/jquery-mask-plugin/jquery.mask.min.js?v=<?= $crm_version ?>"></script>
 
 <!-- Bootstrap Maxlength js -->
-<script src="assets/vendor/bootstrap-maxlength/bootstrap-maxlength.min.js"></script>
+<script src="assets/vendor/bootstrap-maxlength/bootstrap-maxlength.min.js?v=<?= $crm_version ?>"></script>
 
 <!--  Select2 Js -->
-<script src="assets/vendor/select2/js/select2.min.js"></script>
+<script src="assets/vendor/select2/js/select2.min.js?v=<?= $crm_version ?>"></script>
 
 <!-- Daterangepicker js -->
-<script src="assets/vendor/moment/min/moment.min.js"></script>
-<script src="assets/vendor/moment/locale/ru.js"></script>
-<script src="assets/vendor/daterangepicker/daterangepicker.js"></script>
+<script src="assets/vendor/moment/min/moment.min.js?v=<?= $crm_version ?>"></script>
+<script src="assets/vendor/moment/locale/ru.js?v=<?= $crm_version ?>"></script>
+<script src="assets/vendor/daterangepicker/daterangepicker.js?v=<?= $crm_version ?>"></script>
 
 <!-- Sweet Alert2 js -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
@@ -150,7 +150,7 @@ function loaderBTN(btn, status) {
 
 <!-- App js -->
 <!-- <script src="assets/js/app.min.js"></script> -->
-<script src="assets/js/app.js"></script>
+<script src="assets/js/app.js?v=<?= $crm_version ?>"></script>
 
 <script>
 // Глобальное исправление для "залипания" подсветки в Select2 при прокрутке колесиком
