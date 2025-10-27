@@ -17,7 +17,7 @@ return [
             'new-supplier', 'edit-supplier', 'del-supplier', 'restore-supplier', 'confirm-client', 'restore-client', 
             'new-client', 'del-client', 'edit-client', 'review-client', 'approve-client', 'decline-client', 'approve-draft-director',
             'check-client-completeness', 'get-client-categories', 'get-additional-fields',
-            'get-min-sale-price', 'pay_client_credit', 'revert-recorded-client', 'get-country-fields', 'get_export_fields', 'export_clients_excel',
+            'get-min-sale-price', 'pay_client_credit', 'revert-recorded-client', 'get-center-fields', 'get_export_fields', 'export_clients_excel',
         ],
     ],
     'supervisor' => [
