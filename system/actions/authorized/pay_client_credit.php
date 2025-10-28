@@ -46,16 +46,19 @@ try {
     $pdo->prepare("UPDATE `users` SET `user_balance` = `user_balance` - :sale_price WHERE `user_id` = :agent_id")
         ->execute([':sale_price' => $sale_price, ':agent_id' => $agent_id]);
 
+    $recording_uid = uniqid(); // Генерируем уникальный ID
     $stmt_update_client = $pdo->prepare(
         "UPDATE `clients` SET 
             `payment_status` = 2, 
             `paid_from_balance` = :paid_from_balance, 
-            `paid_from_credit` = :paid_from_credit 
+            `paid_from_credit` = :paid_from_credit,
+            `recording_uid` = :recording_uid 
          WHERE `client_id` = :client_id"
     );
     $stmt_update_client->execute([
         ':paid_from_balance' => $paid_from_balance,
         ':paid_from_credit'  => $paid_from_credit,
+        ':recording_uid'     => $recording_uid,
         ':client_id'         => $client_id
     ]);
 

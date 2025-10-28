@@ -45,20 +45,11 @@ if ($client_id) {
     $center_id = $stmt_center->fetchColumn();
 }
 
-$country_id = null;
+$field_settings = [];
 if ($center_id) {
     $pdo_temp = db_connect();
-    $stmt_country = $pdo_temp->prepare("SELECT country_id FROM settings_centers WHERE center_id = ?");
-    $stmt_country->execute([$center_id]);
-    $country_id = $stmt_country->fetchColumn();
-    $pdo_temp = null;
-}
-
-$field_settings = [];
-if ($country_id) {
-    $pdo_temp = db_connect();
-    $stmt_fields = $pdo_temp->prepare("SELECT field_name, is_required FROM settings_country_fields WHERE country_id = ? AND is_required = 1");
-    $stmt_fields->execute([$country_id]);
+    $stmt_fields = $pdo_temp->prepare("SELECT field_name, is_required FROM settings_center_fields WHERE center_id = ? AND is_required = 1");
+    $stmt_fields->execute([$center_id]);
     $db_settings = $stmt_fields->fetchAll(PDO::FETCH_KEY_PAIR);
     if ($db_settings) {
         $field_settings = $db_settings;
@@ -83,12 +74,12 @@ if ($user_data['user_group'] != 4) {
 $validate($city_ids, 'Необходимо выбрать хотя бы одну категорию!');
 $validate($sale_price, 'Поле "Стоимость" обязательно для заполнения!');
 
-// Динамическая валидация на основе настроек страны
+// Валидация телефона (всегда обязательна, как на форме)
+$validate($phone_code, 'Поле "Код страны" телефона обязательно для заполнения!');
+$validate($phone_number, 'Поле "Номер телефона" обязательно для заполнения!');
+
+// Динамическая валидация на основе настроек центра
 if (isset($field_settings['middle_name'])) $validate($middle_name, 'Поле "Отчество" обязательно для заполнения!');
-if (isset($field_settings['phone'])) {
-    $validate($phone_code, 'Поле "Код страны" телефона обязательно для заполнения!');
-    $validate($phone_number, 'Поле "Номер телефона" обязательно для заполнения!');
-}
 if (isset($field_settings['gender'])) $validate($gender, 'Поле "Пол" обязательно для заполнения!');
 if (isset($field_settings['email'])) $validate($email, 'Поле "Email" обязательно для заполнения!');
 if (isset($field_settings['birth_date'])) $validate($birth_date_raw, 'Поле "Дата рождения" обязательно для заполнения!');

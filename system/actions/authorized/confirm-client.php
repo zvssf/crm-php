@@ -22,9 +22,13 @@ try {
     $stmt_insert = $pdo->prepare("INSERT INTO `client_cities` (`client_id`, `city_id`) VALUES (:client_id, :city_id)");
     $stmt_insert->execute([':client_id' => $client_id, ':city_id' => $final_city_id]);
 
-    // 3. Обновляем статус анкеты
-    $stmt_status = $pdo->prepare("UPDATE `clients` SET `client_status` = 2 WHERE `client_id` = :client_id AND `client_status` = 1");
-    $stmt_status->execute([':client_id' => $client_id]);
+    // 3. Генерируем уникальный ID и обновляем статус анкеты
+    $recording_uid = uniqid();
+    $stmt_status = $pdo->prepare("UPDATE `clients` SET `client_status` = 2, `recording_uid` = :recording_uid WHERE `client_id` = :client_id AND `client_status` = 1");
+    $stmt_status->execute([
+        ':client_id' => $client_id,
+        ':recording_uid' => $recording_uid
+    ]);
 
     // 4. Получаем данные анкеты (агент, стоимость и номер паспорта)
     $stmt_client = $pdo->prepare("SELECT `agent_id`, `sale_price`, `passport_number` FROM `clients` WHERE `client_id` = :client_id");
