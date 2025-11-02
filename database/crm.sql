@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 127.0.0.1:3306
--- Время создания: Окт 27 2025 г., 19:12
+-- Время создания: Ноя 03 2025 г., 02:14
 -- Версия сервера: 8.0.30
 -- Версия PHP: 8.1.9
 
@@ -73,23 +73,24 @@ CREATE TABLE `clients` (
   `paid_from_credit` decimal(15,2) NOT NULL DEFAULT '0.00',
   `payment_status` tinyint(1) NOT NULL DEFAULT '0',
   `client_status` int NOT NULL DEFAULT '1',
-  `rejection_reason` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci
+  `rejection_reason` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci,
+  `recording_uid` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 
 --
 -- Дамп данных таблицы `clients`
 --
 
-INSERT INTO `clients` (`client_id`, `center_id`, `agent_id`, `creator_id`, `client_name`, `first_name`, `last_name`, `middle_name`, `gender`, `phone_code`, `phone_number`, `email`, `passport_number`, `birth_date`, `passport_expiry_date`, `nationality`, `visit_purpose`, `visit_date_start`, `visit_date_end`, `days_until_visit`, `notes`, `sale_price`, `paid_from_balance`, `paid_from_credit`, `payment_status`, `client_status`, `rejection_reason`) VALUES
-(17, 1, 19, 1, 'создал менеджер', 'менеджер', 'создал', NULL, 'male', '4', '352345', 'aa@a.r', '123', '4538-06-03', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '345.00', '0.00', '0.00', 0, 1, NULL),
-(18, 1, 33, 1, 'Функциональный за Агента Тест', 'Тест', 'Функциональный за Агента', NULL, 'male', '1', '23312', 'a@a.a', '123', NULL, NULL, NULL, NULL, NULL, NULL, 100, NULL, '4324.00', '0.00', '0.00', 0, 1, NULL),
-(19, 1, 33, 1, 'анкетовна анкета', 'анкета', 'анкетовна', NULL, 'male', '756', '756354', 'a@adsds.d', '657', '2008-03-04', '2025-10-16', 'AMERICAN', NULL, '2025-11-20', '2025-11-30', 38, NULL, '2000.00', '0.00', '0.00', 1, 4, NULL),
-(20, 1, 33, 1, 'тест тест', 'тест', 'тест', NULL, 'male', '4', '53654456', 'a@a.a', '12657897800', '2025-10-22', '2025-10-31', 'ALGERIAN', NULL, '2025-10-09', '2025-11-21', 0, NULL, '1000.00', '0.00', '0.00', 1, 4, NULL),
-(21, 1, 33, 1, '1 1', '1', '1', NULL, 'male', '6', '54243234', 'a@a.a', '234564243132', '2025-10-24', '2025-10-25', 'ALBANIAN', NULL, '2025-10-08', '2025-11-20', 2, NULL, '1000.00', '0.00', '0.00', 0, 2, NULL),
-(22, 1, 33, 1, '2 2', '2', '2', NULL, 'male', '3', '45745867', 'a@a.a', '5687945326', '2025-10-08', '2025-10-25', 'ALBANIAN', NULL, '2025-10-15', '2025-11-21', 100, 'авпвапвапвапвапп', '100.00', '0.00', '0.00', 0, 1, NULL),
-(23, 1, 33, 1, '3 3', '3', '3', NULL, 'male', '7', '864558769', 'agA@a.a', '678955243', '2025-10-08', '2025-10-16', 'ALGERIAN', NULL, '2025-10-22', '2025-11-28', 8, NULL, '1000.00', '1000.00', '0.00', 1, 1, NULL),
-(24, 1, 19, 1, '5 5', '5', '5', NULL, 'male', '4', '7564576', 'agA@a.a', '679802346523145', '2025-10-16', '2025-10-19', 'AMERICAN', NULL, '2025-10-17', '2025-11-28', 3, NULL, '1.00', '0.00', '0.00', 1, 1, NULL),
-(25, 7, 33, 1, 'Тест Тест', 'Тест', 'Тест', NULL, '', '1', '2314532435453', NULL, '1231233245543', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2000.00', '0.00', '0.00', 0, 3, NULL);
+INSERT INTO `clients` (`client_id`, `center_id`, `agent_id`, `creator_id`, `client_name`, `first_name`, `last_name`, `middle_name`, `gender`, `phone_code`, `phone_number`, `email`, `passport_number`, `birth_date`, `passport_expiry_date`, `nationality`, `visit_purpose`, `visit_date_start`, `visit_date_end`, `days_until_visit`, `notes`, `sale_price`, `paid_from_balance`, `paid_from_credit`, `payment_status`, `client_status`, `rejection_reason`, `recording_uid`) VALUES
+(17, 1, 19, 1, 'создал менеджер', 'менеджер', 'создал', NULL, 'male', '4', '352345', 'aa@a.r', '123', '4538-06-03', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '345.00', '0.00', '0.00', 0, 1, NULL, NULL),
+(18, 1, 33, 1, 'Функциональный за Агента Тест', 'Тест', 'Функциональный за Агента', NULL, 'male', '1', '23312', 'a@a.a', '123', NULL, NULL, NULL, NULL, NULL, NULL, 100, NULL, '4324.00', '0.00', '0.00', 0, 1, NULL, NULL),
+(19, 1, 33, 1, 'анкетовна анкета', 'анкета', 'анкетовна', NULL, 'male', '756', '756354', 'a@adsds.d', '657', '2008-03-04', '2025-10-16', 'AMERICAN', NULL, '2025-11-20', '2025-11-30', 38, NULL, '2000.00', '0.00', '0.00', 1, 4, NULL, NULL),
+(20, 1, 33, 1, 'тест тест', 'тест', 'тест', NULL, 'male', '4', '53654456', 'a@a.a', '12657897800', '2025-10-22', '2025-10-31', 'ALGERIAN', NULL, '2025-10-09', '2025-11-21', 0, NULL, '1000.00', '0.00', '0.00', 1, 4, NULL, NULL),
+(21, 1, 33, 1, '1 1', '1', '1', NULL, 'male', '6', '54243234', 'a@a.a', '234564243132', '2025-10-24', '2025-10-25', 'ALBANIAN', NULL, '2025-10-08', '2025-11-20', 2, NULL, '1000.00', '450.00', '550.00', 2, 2, NULL, '6907b2e2d3c89'),
+(22, 1, 33, 1, '2 2', '2', '2', NULL, 'male', '3', '45745867', 'a@a.a', '5687945326', '2025-10-08', '2025-10-25', 'ALBANIAN', NULL, '2025-10-15', '2025-11-21', 100, 'авпвапвапвапвапп', '50.00', '50.00', '0.00', 1, 2, NULL, '6907b2e4bec30'),
+(23, 1, 33, 1, '3 3', '3', '3', NULL, 'male', '7', '864558769', 'agA@a.a', '678955243', '2025-10-08', '2025-10-16', 'ALGERIAN', NULL, '2025-10-22', '2025-11-28', 8, NULL, '400.00', '1000.00', '0.00', 1, 1, NULL, NULL),
+(24, 1, 19, 1, '5 5', '5', '5', NULL, 'male', '4', '7564576', 'agA@a.a', '679802346523145', '2025-10-16', '2025-10-19', 'AMERICAN', NULL, '2025-10-17', '2025-11-28', 3, NULL, '1.00', '0.00', '0.00', 1, 1, NULL, NULL),
+(25, 7, 33, 1, 'Тест Тест', 'Тест', 'Тест', NULL, '', '1', '2314532435453', NULL, '1231233245543', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2000.00', '0.00', '0.00', 0, 3, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -133,10 +134,10 @@ INSERT INTO `client_cities` (`id`, `client_id`, `city_id`) VALUES
 (96, 20, 1),
 (131, 24, 2),
 (158, 25, 1),
-(194, 23, 1),
 (202, 19, 1),
-(238, 22, 1),
-(239, 21, 1);
+(241, 23, 1),
+(260, 21, 1),
+(262, 22, 1);
 
 -- --------------------------------------------------------
 
@@ -159,8 +160,8 @@ INSERT INTO `client_input_values` (`id`, `client_id`, `input_id`, `value`) VALUE
 (60, 25, 11, '123'),
 (61, 25, 12, '2'),
 (62, 25, 13, 'Нет'),
-(68, 23, 13, 'Да'),
-(73, 22, 13, 'Да');
+(74, 23, 13, 'Да'),
+(75, 22, 13, 'Да');
 
 -- --------------------------------------------------------
 
@@ -205,7 +206,7 @@ CREATE TABLE `fin_suppliers` (
 
 INSERT INTO `fin_suppliers` (`id`, `name`, `balance`, `status`) VALUES
 (1, 'Занебесное', '1002033.00', 1),
-(2, 'Даб', '-38109.90', 1),
+(2, 'Даб', '-39109.90', 1),
 (3, 'Название 3', '0.00', 2),
 (4, 'Название 4', '0.00', 1);
 
@@ -225,7 +226,7 @@ CREATE TABLE `fin_transactions` (
   `supplier_id` int DEFAULT NULL,
   `comment` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci,
   `affected_clients_log` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin COMMENT 'Лог анкет, затронутых транзакцией'
-) ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Дамп данных таблицы `fin_transactions`
@@ -409,16 +410,6 @@ INSERT INTO `settings_center_fields` (`id`, `center_id`, `field_name`, `is_visib
 (68, 7, 'visit_dates', 0, 0),
 (69, 7, 'days_until_visit', 0, 0),
 (70, 7, 'notes', 0, 0),
-(81, 1, 'middle_name', 1, 0),
-(82, 1, 'phone', 1, 0),
-(83, 1, 'gender', 1, 0),
-(84, 1, 'email', 1, 0),
-(85, 1, 'birth_date', 1, 0),
-(86, 1, 'passport_expiry_date', 1, 0),
-(87, 1, 'nationality', 1, 0),
-(88, 1, 'visit_dates', 1, 0),
-(89, 1, 'days_until_visit', 1, 0),
-(90, 1, 'notes', 1, 0),
 (91, 2, 'middle_name', 1, 0),
 (92, 2, 'phone', 0, 0),
 (93, 2, 'gender', 0, 0),
@@ -428,7 +419,17 @@ INSERT INTO `settings_center_fields` (`id`, `center_id`, `field_name`, `is_visib
 (97, 2, 'nationality', 0, 0),
 (98, 2, 'visit_dates', 0, 0),
 (99, 2, 'days_until_visit', 0, 0),
-(100, 2, 'notes', 0, 0);
+(100, 2, 'notes', 0, 0),
+(131, 1, 'middle_name', 1, 0),
+(132, 1, 'phone', 1, 0),
+(133, 1, 'gender', 1, 0),
+(134, 1, 'email', 1, 0),
+(135, 1, 'birth_date', 1, 0),
+(136, 1, 'passport_expiry_date', 1, 0),
+(137, 1, 'nationality', 1, 0),
+(138, 1, 'visit_dates', 1, 0),
+(139, 1, 'days_until_visit', 1, 0),
+(140, 1, 'notes', 1, 0);
 
 -- --------------------------------------------------------
 
@@ -566,21 +567,21 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `user_login`, `user_password`, `user_group`, `user_status`, `user_session_key`, `user_firstname`, `user_lastname`, `user_tel`, `user_tel_2`, `user_balance`, `user_credit_limit`, `user_supervisor`, `can_export`, `user_address`, `user_website`, `user_messengers`, `user_comment`) VALUES
-(1, 'a@a.a', 'e10adc3949ba59abbe56e057f20f883e', 1, 1, 'ONFuNETQ+Tq4s7jF61uIE/JyzofexMYHRmVyTBvVbW7wRYIfO5RLLUzaMqMWniUJnofVipbr9l+dR+VM747PtDbG018yF7yEpMahTx45YTvXEoeQBY+pccuRWjZGPMut', 'Сергей', 'Фамилия', '+79009009090', NULL, '0.00', '0.00', 0, 0, NULL, NULL, NULL, NULL),
-(2, 'a@a.aa', '74b87337454200d4d33f80c4663dc5e5', 1, 0, '', 'Сергей', 'Фамилия', '+79009009091', NULL, '0.00', '0.00', 0, 0, NULL, NULL, NULL, NULL),
-(3, 'd@d.d', '74b87337454200d4d33f80c4663dc5e5', 2, 0, '', 'Имя', 'Фамилия', '+79009009092', NULL, '0.00', '0.00', 0, 0, NULL, NULL, NULL, NULL),
+(1, 'a@a.a', 'e10adc3949ba59abbe56e057f20f883e', 1, 1, 'KezBYaaiWksJjB7DVHgqe3Ntde48tWC1hvmNWidnjLyCov9g5D+nEsYRLIWJ9wwFdhWFm0kAyAVwEZLM7ocdCQLexZIevo2pBZujrlIIRvmNHUaXRVRbD8mkte/vQn44', 'Сергей', 'Фамилия', '+79009009090', NULL, '0.00', '0.00', 0, 0, NULL, NULL, NULL, NULL),
+(2, 'a@a.aa', '74b87337454200d4d33f80c4663dc5e5', 1, 1, '', 'Сергей', 'Фамилия', '+79009009091', NULL, '0.00', '0.00', 0, 0, NULL, NULL, NULL, NULL),
+(3, 'd@d.d', '74b87337454200d4d33f80c4663dc5e5', 2, 1, '', 'Имя', 'Фамилия', '+79009009092', NULL, '0.00', '0.00', 0, 0, NULL, NULL, NULL, NULL),
 (12, 's@s.ss', '74b87337454200d4d33f80c4663dc5e5', 3, 1, '', 'Олег', 'Фамилия', '+79009009093', NULL, '0.00', '0.00', 3, 0, NULL, NULL, NULL, NULL),
 (19, 'asd@asd.sadwwww', '74b87337454200d4d33f80c4663dc5e5', 4, 1, '', 'Ирина', 'Фамилия', '+79009009094', NULL, '1017252.50', '0.00', 32, 0, NULL, NULL, NULL, NULL),
 (21, 's@s.ssw', '74b87337454200d4d33f80c4663dc5e5', 4, 1, '', 'Роман', 'Фамилия', '+79009009098', NULL, '-11111.48', '0.00', 12, 0, '', '', '', ''),
-(22, 's@s.sss', '74b87337454200d4d33f80c4663dc5e5', 3, 0, '', 'Вадим', 'Фамилия', '+79009009097', NULL, '0.00', '0.00', 3, 0, NULL, NULL, NULL, NULL),
+(22, 's@s.sss', '74b87337454200d4d33f80c4663dc5e5', 3, 1, '', 'Вадим', 'Фамилия', '+79009009097', NULL, '0.00', '0.00', 3, 0, NULL, NULL, NULL, NULL),
 (27, 'a@a.aasdd', '74b87337454200d4d33f80c4663dc5e5', 4, 0, '', 'Сергей', 'Фамилия', '+234324234234234', NULL, '0.00', '0.00', 12, 0, NULL, NULL, NULL, NULL),
 (28, 'a@a.aeee', '74b87337454200d4d33f80c4663dc5e5', 1, 0, '', 'Анатолий', 'Фамилия', '+79009009096', NULL, '0.00', '0.00', 0, 0, NULL, NULL, NULL, NULL),
 (29, 'asd@asd.sf', '202cb962ac59075b964b07152d234b70', 2, 0, '', 'пвпа', 'вапва', '+899444444444', NULL, '0.00', '0.00', 0, 0, NULL, NULL, NULL, NULL),
-(30, 'rukA@a.a', '202cb962ac59075b964b07152d234b70', 2, 1, '', 'Руководитель', 'тип-А', '+213123123', NULL, '0.00', '0.00', 0, 0, '', '', '', ''),
+(30, 'rukA@a.a', '202cb962ac59075b964b07152d234b70', 2, 1, '', 'Руководитель', 'типА', '+213123123', NULL, '0.00', '0.00', 0, 0, '123', '', '', ''),
 (31, 'rukB@a.a', '202cb962ac59075b964b07152d234b70', 2, 1, '', 'Руководитель', 'тип-Б', '+12394352', NULL, '0.00', '0.00', 0, 0, NULL, NULL, NULL, NULL),
 (32, 'menA@a.a', '202cb962ac59075b964b07152d234b70', 3, 1, '', 'Менежер', 'тип-А-1', '+123123453', NULL, '0.00', '0.00', 30, 0, NULL, NULL, NULL, NULL),
-(33, 'agA@a.a', '202cb962ac59075b964b07152d234b70', 4, 1, '', 'Агент', 'тип-А-1', '+3234546657', NULL, '-1000.00', '1500.00', 32, 1, '', '', '', ''),
-(34, 'agA@aasdasd.a', '202cb962ac59075b964b07152d234b70', 1, 1, '', 'test', 'test', '+98543739845', NULL, '0.00', '0.00', 0, 0, 'Тихонравова, 6, 38 Владимир 600037', 'site.ru', 'telegram:test_user|viber:89959606801', 'dsfsdfsdfsdfsdf');
+(33, 'agA@a.a', '202cb962ac59075b964b07152d234b70', 4, 1, '', 'Агент', 'тип-А-1', '+3234546657', NULL, '-550.00', '1500.00', 32, 1, '', '', '', ''),
+(34, 'agA@aasdasd.a', '202cb962ac59075b964b07152d234b70', 1, 0, '', 'test', 'test', '+98543739845', NULL, '0.00', '0.00', 0, 0, 'Тихонравова, 6, 38 Владимир 600037', 'site.ru', 'telegram:test_user|viber:89959606801', 'dsfsdfsdfsdfsdf');
 
 -- --------------------------------------------------------
 
@@ -765,13 +766,13 @@ ALTER TABLE `clients`
 -- AUTO_INCREMENT для таблицы `client_cities`
 --
 ALTER TABLE `client_cities`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=240;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=263;
 
 --
 -- AUTO_INCREMENT для таблицы `client_input_values`
 --
 ALTER TABLE `client_input_values`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=74;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=76;
 
 --
 -- AUTO_INCREMENT для таблицы `fin_cashes`
@@ -789,13 +790,13 @@ ALTER TABLE `fin_suppliers`
 -- AUTO_INCREMENT для таблицы `fin_transactions`
 --
 ALTER TABLE `fin_transactions`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=126;
 
 --
 -- AUTO_INCREMENT для таблицы `login_attempts`
 --
 ALTER TABLE `login_attempts`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- AUTO_INCREMENT для таблицы `settings_centers`
@@ -807,7 +808,7 @@ ALTER TABLE `settings_centers`
 -- AUTO_INCREMENT для таблицы `settings_center_fields`
 --
 ALTER TABLE `settings_center_fields`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=101;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=141;
 
 --
 -- AUTO_INCREMENT для таблицы `settings_cities`

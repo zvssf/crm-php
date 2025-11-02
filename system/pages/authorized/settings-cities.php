@@ -58,9 +58,8 @@ require_once SYSTEM . '/layouts/head.php';
                                                 <div class="dropdown btn-group">
                                                     <button class="btn btn-light mb-2 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Действия</button>
                                                     <div class="dropdown-menu dropdown-menu-animated">
-                                                    <a class="dropdown-item" href="#">Активировать</a>
-                                                    <a class="dropdown-item" href="#">Заблокировать</a>
-                                                    <a class="dropdown-item" href="#">Удалить</a>
+                                                        <a class="dropdown-item" href="#" onclick="handleMassAction('restore')">Восстановить</a>
+                                                        <a class="dropdown-item text-danger" href="#" onclick="handleMassAction('delete')">Удалить</a>
                                                     </div>
                                                 </div>
                                                 <!-- <div class="dropdown btn-group">
@@ -121,11 +120,14 @@ require_once SYSTEM . '/layouts/head.php';
                                                 <tr>
                                                         <td>
                                                             <div class="form-check">
-                                                                <input type="checkbox" class="form-check-input" id="customCheck<?= $city['city_id'] ?>">
+                                                                <input type="checkbox" class="form-check-input dt-checkboxes" id="customCheck<?= $city['city_id'] ?>">
                                                                 <label class="form-check-label" for="customCheck<?= $city['city_id'] ?>">&nbsp;</label>
                                                             </div>
                                                         </td>
-                                                        <td><span class="text-body fw-semibold"><?= $city['city_name'] ?></span></td>
+                                                        <td>
+                                                            <span style="display:none;"><?= $city['city_id'] ?></span>
+                                                            <span class="text-body fw-semibold"><?= $city['city_name'] ?></span>
+                                                        </td>
                                                         <td><span class="text-body"><?= $city['city_category'] ?></span></td>
                                                         <td><span class="text-body fw-semibold"><?= $arr_countries[$city['country_id']] ?? 'Неизвестно' ?></span></td>
                                                         <td><span class="text-<?= $cost_price_css ?> fw-semibold"><i class="mdi mdi-currency-usd"></i><?= number_format($city['cost_price'], 2, '.', ' ') ?></span></td>
@@ -197,12 +199,6 @@ require_once SYSTEM . '/layouts/head.php';
 
 
         <script>
-
-
-
-
-
-            
             function modalDelCityForm(cityid, cityname) {
                 $('#del-city-modal button').attr('attr-city-id', cityid);
                 $('#del-city-modal .span-city-name').text(cityname);
@@ -218,8 +214,6 @@ require_once SYSTEM . '/layouts/head.php';
                         result = jQuery.parseJSON(response);
                         if(result.success_type == 'message') {
                             message(result.msg_title, result.msg_text, result.msg_type, result.msg_url);
-                        } else if(result.success_type == 'redirect') {
-                            redirect(result.url);
                         }
                     },
                     error:  function() {
@@ -237,8 +231,6 @@ require_once SYSTEM . '/layouts/head.php';
                         result = jQuery.parseJSON(response);
                         if(result.success_type == 'message') {
                             message(result.msg_title, result.msg_text, result.msg_type, result.msg_url);
-                        } else if(result.success_type == 'redirect') {
-                            redirect(result.url);
                         }
                     },
                     error:  function() {
@@ -246,28 +238,71 @@ require_once SYSTEM . '/layouts/head.php';
                     }
                 });
             }
-            // function sendProfileNewPassForm(btn) {
-            //     loaderBTN(btn, 'true');
-            //     jQuery.ajax({
-            //         url:      'form',
-            //         type:     'POST',
-            //         dataType: 'html',
-            //         data:     jQuery('#form-profile-new-password').serialize(),
-            //         success:  function(response) {
-            //             loaderBTN(btn, 'false');
-            //             result = jQuery.parseJSON(response);
-            //             if(result.success_type == 'message') {
-            //                 message(result.msg_title, result.msg_text, result.msg_type, result.msg_url);
-            //             } else if(result.success_type == 'redirect') {
-            //                 redirect(result.url);
-            //             }
-            //         },
-            //         error:  function() {
-            //             loaderBTN(btn, 'false');
-            //             message('Ошибка', 'Ошибка отправки формы!', 'error');
-            //         }
-            //     });
-            // }
+
+            function handleMassAction(action) {
+                const table = $('#products-datatable').DataTable();
+                const selectedIds = [];
+
+                const all_rows_nodes = table.rows({ page: 'all' }).nodes();
+
+                $(all_rows_nodes).each(function() {
+                    const row_node = this;
+                    const checkbox = $(row_node).find('td:first .form-check-input');
+
+                    if (checkbox.is(':checked') && !checkbox.is('#customCheck0')) {
+                        const id_cell = $(row_node).find('td').eq(1);
+                        const id = id_cell.find('span:first').text().trim();
+                        if (id) {
+                            selectedIds.push(id);
+                        }
+                    }
+                });
+
+                if (selectedIds.length === 0) {
+                    message('Внимание', 'Пожалуйста, выберите хотя бы один город.', 'warning');
+                    return;
+                }
+
+                let confirmationTitle = 'Вы уверены?';
+                let confirmationText = 'Вы действительно хотите выполнить это действие для ' + selectedIds.length + ' элементов?';
+                let confirmButtonText = 'Да, выполнить!';
+
+                if (action === 'restore') {
+                    confirmationTitle = 'Восстановить выбранное?';
+                    confirmButtonText = 'Да, восстановить!';
+                } else if (action === 'delete') {
+                    confirmationTitle = 'Удалить выбранное?';
+                    confirmButtonText = 'Да, удалить!';
+                }
+
+                Swal.fire({
+                    title: confirmationTitle,
+                    text: confirmationText,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: confirmButtonText,
+                    cancelButtonText: 'Отмена'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '/?form=mass-city-action',
+                            type: 'POST',
+                            dataType: 'json',
+                            data: 'action=' + action + '&' + $.param({ 'city_ids': selectedIds }),
+                            success: function(response) {
+                                if (response.success_type == 'message') {
+                                    message(response.msg_title, response.msg_text, response.msg_type, response.msg_url);
+                                }
+                            },
+                            error: function() {
+                                message('Ошибка', 'Произошла ошибка при отправке запроса.', 'error');
+                            }
+                        });
+                    }
+                });
+            }
         </script>
 
 

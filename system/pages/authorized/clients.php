@@ -310,7 +310,7 @@ require_once SYSTEM . '/layouts/head.php';
                                                 <?php if ($user_data['user_group'] == 1 || $user_data['can_export'] == 1): ?>
                                                     <button type="button" class="btn btn-light mb-2 me-1" data-bs-toggle="modal" data-bs-target="#export-excel-modal">Экспорт в Excel</button>
                                                 <?php endif; ?>
-                                                <?php if ($user_data['user_group'] != 2 && $current_status != 7): // Руководитель не видит массовые действия и они не нужны в "Отмененных" ?>
+                                                <?php if ($user_data['user_group'] != 2 && $current_status != 7 && !(in_array((int)$user_data['user_group'], [3, 4]) && in_array((int)$current_status, [1, 2]))): ?>
                                                 <div class="dropdown btn-group">
                                                     <button class="btn btn-light mb-2 dropdown-toggle" type="button"
                                                         data-bs-toggle="dropdown" aria-haspopup="true"
@@ -321,15 +321,12 @@ require_once SYSTEM . '/layouts/head.php';
                                                         switch ((int) $current_status) {
                                                             case 1: // В работе
                                                                 if ($user_group === 1) {
-                                                                    echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'confirm\')">Записать</a>';
-                                                                }
-                                                                if (in_array($user_group, [1, 3])) { // Убрали "4" (Агент) из массива
                                                                     echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'archive\')">В архив</a>';
                                                                 }
                                                                 break;
                                                             case 2: // Записанные
-                                                                if ($user_group === 1) {
-                                                                    echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'archive\')">В архив</a>';
+                                                                if (in_array($user_group, [1, 3])) {
+                                                                    echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'pay_credit\')">Оплатить в кредит</a>';
                                                                 }
                                                                 break;
                                                             case 3: // Черновики
@@ -348,18 +345,18 @@ require_once SYSTEM . '/layouts/head.php';
                                                                     echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'restore\')">Восстановить</a>';
                                                                 }
                                                                 break;
-                                                            case 5: // На рассмотрении у Директора
+                                                            case 5: // На рассмотрении (общая вкладка для Директора и Менеджера)
                                                                 if ($user_group === 1) {
+                                                                    // Действия для Директора
                                                                     echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'approve\')">Одобрить</a>';
                                                                     echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'decline\')">Отклонить</a>';
-                                                                }
-                                                                break;
-                                                            case 6: // На рассмотрении у Менеджера
-                                                                if ($user_group === 3) {
+                                                                } elseif ($user_group === 3) {
+                                                                    // Действия для Менеджера
                                                                     echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'approve_manager\')">Одобрить</a>';
                                                                     echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'decline\')">Отклонить</a>';
                                                                 }
                                                                 break;
+                                                            // case 6 больше не нужен для генерации меню, так как мы обрабатываем все в case 5
                                                         }
                                                         ?>
                                                     </div>
@@ -502,7 +499,7 @@ require_once SYSTEM . '/layouts/head.php';
                                                             <td>
                                                                 <div class="form-check">
                                                                     <input type="checkbox" class="form-check-input"
-                                                                        id="customCheck<?= $client['client_id'] ?>">
+                                                                        id="customCheck<?= $client['client_id'] ?>" <?= !empty($client['rejection_reason']) ? 'disabled' : '' ?>>
                                                                     <label class="form-check-label"
                                                                         for="customCheck<?= $client['client_id'] ?>">&nbsp;</label>
                                                                 </div>
@@ -1219,6 +1216,77 @@ require_once SYSTEM . '/layouts/head.php';
             // Показываем пользователю уведомление, что процесс запущен
             message('Экспорт запущен', 'Ваш файл уже скачивается.', 'info', '');
         });
+
+        function handleMassAction(action) {
+            const table = $('#clients-datatable').DataTable();
+            const selectedIds = [];
+
+            // ФИНАЛЬНЫЙ, НАДЕЖНЫЙ СПОСОБ:
+            // 1. Получаем DOM-узлы ВСЕХ строк на ВСЕХ страницах таблицы через API
+            const all_rows_nodes = table.rows().nodes();
+
+            // 2. Проверяем КАЖДУЮ строку, отмечен ли в ней чекбокс
+            $(all_rows_nodes).each(function() {
+                const row_node = this;
+                const checkbox = $(row_node).find('td:first .form-check-input');
+
+                // 3. Если чекбокс отмечен, добавляем ID в массив
+                if (checkbox.is(':checked')) {
+                    const id_cell = $(row_node).find('td').eq(1);
+                    const id = id_cell.find('span').last().text().trim();
+                    if (id) {
+                        selectedIds.push(id);
+                    }
+                }
+            });
+
+            if (selectedIds.length === 0) {
+                message('Внимание', 'Пожалуйста, выберите хотя бы одну анкету.', 'warning');
+                return;
+            }
+
+            let confirmationTitle = 'Вы уверены?';
+            let confirmationText = 'Вы действительно хотите выполнить это действие для ' + selectedIds.length + ' анкет?';
+
+            if (action === 'restore') {
+                confirmationTitle = 'Восстановить анкеты?';
+            } else if (action === 'decline') {
+                confirmationTitle = 'Отклонить анкеты?';
+                confirmationText = 'Анкеты будут возвращены в "Черновики" с пометкой об отклонении. Вы уверены?';
+            } else if (action === 'pay_credit') {
+                confirmationTitle = 'Оплатить в кредит?';
+                confirmationText = 'Система попытается оплатить каждую выбранную анкету, используя кредитный лимит ее агента. Вы уверены?';
+            }
+            // Здесь в будущем будут другие условия
+
+            Swal.fire({
+                title: confirmationTitle,
+                text: confirmationText,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Да, выполнить!',
+                cancelButtonText: 'Отмена'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/?form=mass-client-action',
+                        type: 'POST',
+                        dataType: 'json',
+                        data: 'action=' + action + '&' + $.param({ 'client_ids': selectedIds }),
+                        success: function(response) {
+                            if (response.success_type == 'message') {
+                                message(response.msg_title, response.msg_text, response.msg_type, response.msg_url);
+                            }
+                        },
+                        error: function() {
+                            message('Ошибка', 'Произошла ошибка при отправке запроса.', 'error');
+                        }
+                    });
+                }
+            });
+        }
     </script>
 </body>
 

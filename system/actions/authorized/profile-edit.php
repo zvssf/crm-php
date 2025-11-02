@@ -4,9 +4,35 @@ $user_lastname  = valid($_POST['user-lastname'] ?? '');
 $user_login     = valid($_POST['user-login'] ?? '');
 $user_tel       = valid($_POST['user-tel'] ?? '');
 
+$user_tel_2       = valid($_POST['user-tel-2'] ?? '');
+$user_address     = valid($_POST['user_address'] ?? '');
+$user_website     = valid($_POST['user_website'] ?? '');
+$user_comment     = valid($_POST['user_comment'] ?? '');
+
+$messengers_post = $_POST['messengers'] ?? [];
+$messenger_parts = [];
+if (is_array($messengers_post)) {
+    foreach ($messengers_post as $key => $value) {
+        $clean_key = valid($key);
+        $clean_value = valid($value);
+        if (!empty($clean_value)) {
+            $messenger_parts[] = $clean_key . ':' . $clean_value;
+        }
+    }
+}
+$user_messengers = implode('|', $messenger_parts);
+
 $cleanTel = preg_replace('/[+\-\s\(\)]+/', '', $user_tel);
 $fullTel = '+' . ltrim($cleanTel, '0123456789');
 $fullTel = '+' . ltrim($cleanTel, '+');
+
+$fullTel2 = null;
+if (!empty($user_tel_2)) {
+    $cleanTel2 = preg_replace('/[+\-\s\(\)]+/', '', $user_tel_2);
+    if (!empty($cleanTel2)) {
+        $fullTel2 = '+' . ltrim($cleanTel2, '+');
+    }
+}
 
 $validate = function($value, $pattern, $emptyMsg, $invalidMsg) {
   if (empty($value)) {
@@ -46,23 +72,33 @@ try {
       }
   }
 
-  $stmt = $pdo->prepare("
-      UPDATE `users` 
-      SET 
-          `user_firstname`  = :firstname,
-          `user_lastname`   = :lastname,
-          `user_login`      = :login,
-          `user_tel`        = :tel
-      WHERE `user_id`       = :user_id
-  ");
+    $stmt = $pdo->prepare("
+        UPDATE `users` 
+        SET 
+            `user_firstname`  = :firstname,
+            `user_lastname`   = :lastname,
+            `user_login`      = :login,
+            `user_tel`        = :tel,
+            `user_tel_2`      = :tel_2,
+            `user_address`    = :address,
+            `user_website`    = :website,
+            `user_messengers` = :messengers,
+            `user_comment`    = :comment
+        WHERE `user_id`       = :user_id
+    ");
 
-  $stmt->execute([
-      ':firstname' => $user_firstname,
-      ':lastname'  => $user_lastname,
-      ':login'     => $user_login,
-      ':tel'       => $displayTel,
-      ':user_id'   => $user_data['user_id']
-  ]);
+    $stmt->execute([
+        ':firstname' => $user_firstname,
+        ':lastname'  => $user_lastname,
+        ':login'     => $user_login,
+        ':tel'       => $displayTel,
+        ':tel_2'       => $fullTel2,
+        ':address'     => $user_address,
+        ':website'     => $user_website,
+        ':messengers'  => $user_messengers,
+        ':comment'     => $user_comment,
+        ':user_id'   => $user_data['user_id']
+    ]);
 
   message('Уведомление', 'Сохранение выполнено!', 'success', 'profile');
 

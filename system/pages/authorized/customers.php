@@ -113,9 +113,8 @@ try {
                                                 <div class="dropdown btn-group">
                                                     <button class="btn btn-light mb-2 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Действия</button>
                                                     <div class="dropdown-menu dropdown-menu-animated">
-                                                    <a class="dropdown-item" href="#">Активировать</a>
-                                                    <a class="dropdown-item" href="#">Заблокировать</a>
-                                                    <a class="dropdown-item" href="#">Удалить</a>
+                                                        <a class="dropdown-item" href="#" onclick="handleMassAction('restore')">Восстановить</a>
+                                                        <a class="dropdown-item text-danger" href="#" onclick="handleMassAction('delete')">Удалить</a>
                                                     </div>
                                                 </div>
                                                 <?php endif; ?>
@@ -178,11 +177,14 @@ try {
                                                 <tr>
                                                         <td>
                                                             <div class="form-check">
-                                                                <input type="checkbox" class="form-check-input" id="customCheck<?= $customer['user_id'] ?>">
+                                                                <input type="checkbox" class="form-check-input dt-checkboxes" id="customCheck<?= $customer['user_id'] ?>">
                                                                 <label class="form-check-label" for="customCheck<?= $customer['user_id'] ?>">&nbsp;</label>
                                                             </div>
                                                         </td>
-                                                        <td><span class="text-body fw-semibold"><?= $customer['user_firstname'] ?> <?= $customer['user_lastname'] ?></span></td>
+                                                        <td>
+                                                            <span style="display:none;"><?= $customer['user_id'] ?></span>
+                                                            <span class="text-body fw-semibold"><?= $customer['user_firstname'] ?> <?= $customer['user_lastname'] ?></span>
+                                                        </td>
                                                         <td><?= $customer['user_login'] ?></td>
                                                         <td><?= $customer['user_tel'] ?></td>
                                                         <td><?= $customer_group_text ?></td>
@@ -323,6 +325,71 @@ try {
                     },
                     error:  function() {
                         message('Ошибка', 'Ошибка отправки формы!', 'error', '');
+                    }
+                });
+            }
+            
+            function handleMassAction(action) {
+                const table = $('#products-datatable').DataTable();
+                const selectedIds = [];
+
+                const all_rows_nodes = table.rows({ page: 'all' }).nodes();
+
+                $(all_rows_nodes).each(function() {
+                    const row_node = this;
+                    const checkbox = $(row_node).find('td:first .form-check-input');
+
+                    if (checkbox.is(':checked') && !checkbox.is('#customCheck0')) {
+                        const id_cell = $(row_node).find('td').eq(1);
+                        const id = id_cell.find('span:first').text().trim();
+                        if (id) {
+                            selectedIds.push(id);
+                        }
+                    }
+                });
+
+                if (selectedIds.length === 0) {
+                    message('Внимание', 'Пожалуйста, выберите хотя бы одного сотрудника.', 'warning');
+                    return;
+                }
+
+                let confirmationTitle = 'Вы уверены?';
+                let confirmationText = 'Вы действительно хотите выполнить это действие для ' + selectedIds.length + ' сотрудников?';
+                let confirmButtonText = 'Да, выполнить!';
+
+                if (action === 'restore') {
+                    confirmationTitle = 'Восстановить выбранных?';
+                    confirmButtonText = 'Да, восстановить!';
+                } else if (action === 'delete') {
+                    confirmationTitle = 'Удалить выбранных?';
+                    confirmButtonText = 'Да, удалить!';
+                }
+
+                Swal.fire({
+                    title: confirmationTitle,
+                    text: confirmationText,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: confirmButtonText,
+                    cancelButtonText: 'Отмена'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '/?form=mass-customer-action',
+                            type: 'POST',
+                            dataType: 'json',
+                            data: 'action=' + action + '&' + $.param({ 'user_ids': selectedIds }),
+                            success: function(response) {
+                                if (response.success_type == 'message') {
+                                    message(response.msg_title, response.msg_text, response.msg_type, response.msg_url);
+                                }
+                            },
+                            error: function() {
+                                message('Ошибка', 'Произошла ошибка при отправке запроса.', 'error');
+                            }
+                        });
                     }
                 });
             }

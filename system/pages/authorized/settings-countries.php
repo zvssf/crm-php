@@ -60,9 +60,8 @@ require_once SYSTEM . '/layouts/head.php';
                                                 <div class="dropdown btn-group">
                                                     <button class="btn btn-light mb-2 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Действия</button>
                                                     <div class="dropdown-menu dropdown-menu-animated">
-                                                    <a class="dropdown-item" href="#">Активировать</a>
-                                                    <a class="dropdown-item" href="#">Заблокировать</a>
-                                                    <a class="dropdown-item" href="#">Удалить</a>
+                                                        <a class="dropdown-item" href="#" onclick="handleMassAction('restore')">Восстановить</a>
+                                                        <a class="dropdown-item text-danger" href="#" onclick="handleMassAction('delete')">Удалить</a>
                                                     </div>
                                                 </div>
                                                 <!-- <div class="dropdown btn-group">
@@ -109,7 +108,10 @@ require_once SYSTEM . '/layouts/head.php';
                                                                 <label class="form-check-label" for="customCheck<?= $country['country_id'] ?>">&nbsp;</label>
                                                             </div>
                                                         </td>
-                                                        <td><span class="text-body fw-semibold"><?= $country['country_name'] ?></span></td>
+                                                        <td>
+                                                            <span style="display:none;"><?= $country['country_id'] ?></span>
+                                                            <span class="text-body fw-semibold"><?= $country['country_name'] ?></span>
+                                                        </td>
                                                         <td><span class="badge badge-<?= $country_status_css ?>-lighten"><?= $country_status_text ?></span></td>
                     
                                                         <td>
@@ -221,7 +223,6 @@ require_once SYSTEM . '/layouts/head.php';
                 let countryName = $('#form-country #country-name');
                 let btn = $('#form-country button[type=submit] .btn-text');
                 
-                // Сбрасываем все поля
                 modalTitle.text('');
                 countryId.val('');
                 countryName.val('');
@@ -240,18 +241,12 @@ require_once SYSTEM . '/layouts/head.php';
                 }
             }
 
-
             function sendCountryForm(btn) {
                 event.preventDefault();
-
                 loaderBTN(btn, 'true');
                 let countryId = $('#form-country input[name="country-edit-id"]').val();
-                let typeForm;
-                if(countryId) {
-                    typeForm = 'edit-country';
-                } else {
-                    typeForm = 'new-country';
-                }
+                let typeForm = countryId ? 'edit-country' : 'new-country';
+                
                 jQuery.ajax({
                     url:      '/?page=<?= $page ?>&form=' + typeForm,
                     type:     'POST',
@@ -262,8 +257,6 @@ require_once SYSTEM . '/layouts/head.php';
                         result = jQuery.parseJSON(response);
                         if(result.success_type == 'message') {
                             message(result.msg_title, result.msg_text, result.msg_type, result.msg_url);
-                        } else if(result.success_type == 'redirect') {
-                            redirect(result.url);
                         }
                     },
                     error:  function() {
@@ -273,11 +266,11 @@ require_once SYSTEM . '/layouts/head.php';
                 });
             }
 
-            
             function modalDelCountryForm(countryid, countryname) {
                 $('#del-country-modal button').attr('attr-country-id', countryid);
                 $('#del-country-modal .span-country-name').text(countryname);
             }
+
             function sendDelCountryForm() {
                 let countryid = $('#del-country-modal button').attr('attr-country-id');
                 jQuery.ajax({
@@ -289,8 +282,6 @@ require_once SYSTEM . '/layouts/head.php';
                         result = jQuery.parseJSON(response);
                         if(result.success_type == 'message') {
                             message(result.msg_title, result.msg_text, result.msg_type, result.msg_url);
-                        } else if(result.success_type == 'redirect') {
-                            redirect(result.url);
                         }
                     },
                     error:  function() {
@@ -298,6 +289,7 @@ require_once SYSTEM . '/layouts/head.php';
                     }
                 });
             }
+
             function sendRestoreCountryForm(countryid) {
                 jQuery.ajax({
                     url:      '/?page=<?= $page ?>&form=restore-country',
@@ -308,12 +300,75 @@ require_once SYSTEM . '/layouts/head.php';
                         result = jQuery.parseJSON(response);
                         if(result.success_type == 'message') {
                             message(result.msg_title, result.msg_text, result.msg_type, result.msg_url);
-                        } else if(result.success_type == 'redirect') {
-                            redirect(result.url);
                         }
                     },
                     error:  function() {
                         message('Ошибка', 'Ошибка отправки формы!', 'error', '');
+                    }
+                });
+            }
+
+            function handleMassAction(action) {
+                const table = $('#products-datatable').DataTable();
+                const selectedIds = [];
+
+                const all_rows_nodes = table.rows({ page: 'all' }).nodes();
+
+                $(all_rows_nodes).each(function() {
+                    const row_node = this;
+                    const checkbox = $(row_node).find('td:first .form-check-input');
+
+                    if (checkbox.is(':checked') && !checkbox.is('#customCheck0')) {
+                        const id_cell = $(row_node).find('td').eq(1);
+                        const id = id_cell.find('span:first').text().trim();
+                        if (id) {
+                            selectedIds.push(id);
+                        }
+                    }
+                });
+
+                if (selectedIds.length === 0) {
+                    message('Внимание', 'Пожалуйста, выберите хотя бы одну страну.', 'warning');
+                    return;
+                }
+
+                let confirmationTitle = 'Вы уверены?';
+                let confirmationText = 'Вы действительно хотите выполнить это действие для ' + selectedIds.length + ' элементов?';
+                let confirmButtonText = 'Да, выполнить!';
+
+                if (action === 'restore') {
+                    confirmationTitle = 'Восстановить выбранное?';
+                    confirmButtonText = 'Да, восстановить!';
+                } else if (action === 'delete') {
+                    confirmationTitle = 'Удалить выбранное?';
+                    confirmButtonText = 'Да, удалить!';
+                }
+
+                Swal.fire({
+                    title: confirmationTitle,
+                    text: confirmationText,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: confirmButtonText,
+                    cancelButtonText: 'Отмена'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '/?form=mass-country-action',
+                            type: 'POST',
+                            dataType: 'json',
+                            data: 'action=' + action + '&' + $.param({ 'country_ids': selectedIds }),
+                            success: function(response) {
+                                if (response.success_type == 'message') {
+                                    message(response.msg_title, response.msg_text, response.msg_type, response.msg_url);
+                                }
+                            },
+                            error: function() {
+                                message('Ошибка', 'Произошла ошибка при отправке запроса.', 'error');
+                            }
+                        });
                     }
                 });
             }

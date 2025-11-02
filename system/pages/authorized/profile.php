@@ -95,6 +95,77 @@ require_once SYSTEM . '/layouts/head.php';
                                                             </div>
                                                         </div> <!-- end col -->
                                                     </div> <!-- end row -->
+
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="mb-3">
+                                                                <label for="usertel2" class="form-label">Второй номер (опционально)</label>
+                                                                <input type="text" class="form-control" id="usertel2" placeholder="Введите второй номер" name="user-tel-2" value="<?= $user_data['user_tel_2'] ?? '' ?>" data-toggle="input-mask" data-mask-format="+#">
+                                                            </div>
+                                                        </div>
+                                                    </div> <!-- end row -->
+
+                                                    <div class="row">
+                                                        <div class="col-12">
+                                                            <div class="mb-3">
+                                                                <label for="user_address" class="form-label">Адрес проживания</label>
+                                                                <input type="text" class="form-control" id="user_address" placeholder="Введите адрес" name="user_address" value="<?= valid($user_data['user_address'] ?? '') ?>" maxlength="255">
+                                                            </div>
+
+                                                            <div class="mb-3">
+                                                                <label for="user_website" class="form-label">Сайт</label>
+                                                                <input type="text" class="form-control" id="user_website" placeholder="Введите адрес сайта" name="user_website" value="<?= valid($user_data['user_website'] ?? '') ?>" maxlength="255">
+                                                            </div>
+                                                            
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Мессенджеры</label>
+                                                                <div class="d-flex flex-wrap gap-2 mb-2" id="messenger-buttons">
+                                                                    <button type="button" class="btn btn-light" data-messenger="telegram" title="Telegram">
+                                                                        <img src="/assets/images/messengers/telegram.svg" height="16">
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-light" data-messenger="whatsapp" title="WhatsApp">
+                                                                        <img src="/assets/images/messengers/whatsapp.svg" height="16">
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-light" data-messenger="vk" title="VK">
+                                                                        <img src="/assets/images/messengers/vk.svg" height="16">
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-light" data-messenger="viber" title="Viber">
+                                                                        <img src="/assets/images/messengers/viber.svg" height="16">
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-light" data-messenger="x" title="X (Twitter)">
+                                                                        <img src="/assets/images/messengers/x.svg" height="16">
+                                                                    </button>
+                                                                </div>
+                                                                <div id="messenger-inputs">
+                                                                    <div class="mb-2" id="input-container-telegram" style="display: none;">
+                                                                        <label for="messenger_telegram" class="form-label font-13">Telegram</label>
+                                                                        <input type="text" id="messenger_telegram" name="messengers[telegram]" class="form-control" placeholder="@никнейм">
+                                                                    </div>
+                                                                    <div class="mb-2" id="input-container-whatsapp" style="display: none;">
+                                                                        <label for="messenger_whatsapp" class="form-label font-13">WhatsApp</label>
+                                                                        <input type="text" id="messenger_whatsapp" name="messengers[whatsapp]" class="form-control" placeholder="Номер телефона">
+                                                                    </div>
+                                                                    <div class="mb-2" id="input-container-vk" style="display: none;">
+                                                                        <label for="messenger_vk" class="form-label font-13">VK</label>
+                                                                        <input type="text" id="messenger_vk" name="messengers[vk]" class="form-control" placeholder="ID или ник">
+                                                                    </div>
+                                                                    <div class="mb-2" id="input-container-viber" style="display: none;">
+                                                                        <label for="messenger_viber" class="form-label font-13">Viber</label>
+                                                                        <input type="text" id="messenger_viber" name="messengers[viber]" class="form-control" placeholder="Номер телефона">
+                                                                    </div>
+                                                                    <div class="mb-2" id="input-container-x" style="display: none;">
+                                                                        <label for="messenger_x" class="form-label font-13">X (Twitter)</label>
+                                                                        <input type="text" id="messenger_x" name="messengers[x]" class="form-control" placeholder="@никнейм">
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <div class="mb-3">
+                                                                <label for="user_comment" class="form-label">Дополнительная информация</label>
+                                                                <textarea class="form-control" id="user_comment" name="user_comment" rows="3" placeholder="Любая дополнительная информация..."><?= valid($user_data['user_comment'] ?? '') ?></textarea>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                     
                                                     <div class="text-end">
                                                         <button class="btn btn-success mt-2" type="submit">
@@ -239,7 +310,56 @@ require_once SYSTEM . '/layouts/head.php';
         </script>
 
 
+<style>
+    #messenger-buttons .btn.active {
+        border: 2px solid #727cf5;
+        background-color: transparent;
+    }
+</style>
 
+<script>
+    $(document).ready(function() {
+        // Функция для обработки клика по кнопке
+        $('#messenger-buttons .btn').on('click', function() {
+            $(this).toggleClass('active');
+            const messenger = $(this).data('messenger');
+            const inputContainer = $('#input-container-' + messenger);
+            
+            inputContainer.slideToggle(200);
+
+            if (!$(this).hasClass('active')) {
+                inputContainer.find('input').val('');
+            }
+        });
+
+        // Функция для инициализации полей при загрузке
+        function initializeMessengers() {
+            const messengersData = '<?= valid($user_data['user_messengers'] ?? '') ?>';
+            if (!messengersData) {
+                return;
+            }
+
+            const pairs = messengersData.split('|');
+            pairs.forEach(function(pair) {
+                const parts = pair.split(':');
+                if (parts.length === 2) {
+                    const key = parts[0];
+                    const value = parts[1];
+                    
+                    // Активируем кнопку
+                    $('#messenger-buttons .btn[data-messenger="' + key + '"]').addClass('active');
+                    
+                    // Заполняем и показываем поле
+                    const inputContainer = $('#input-container-' + key);
+                    inputContainer.find('input').val(value);
+                    inputContainer.show();
+                }
+            });
+        }
+
+        initializeMessengers();
+    });
+</script>
 
 
 <?php require_once SYSTEM . '/layouts/scripts.php'; ?>

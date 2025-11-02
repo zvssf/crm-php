@@ -53,9 +53,8 @@ require_once SYSTEM . '/layouts/head.php';
                                                 <div class="dropdown btn-group">
                                                     <button class="btn btn-light mb-2 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Действия</button>
                                                     <div class="dropdown-menu dropdown-menu-animated">
-                                                        <a class="dropdown-item" href="#">Активировать</a>
-                                                        <a class="dropdown-item" href="#">Заблокировать</a>
-                                                        <a class="dropdown-item" href="#">Удалить</a>
+                                                        <a class="dropdown-item" href="#" onclick="handleMassAction('restore')">Восстановить</a>
+                                                        <a class="dropdown-item text-danger" href="#" onclick="handleMassAction('delete')">Удалить</a>
                                                     </div>
                                                 </div>
                                             </div><!-- end col-->
@@ -91,11 +90,14 @@ require_once SYSTEM . '/layouts/head.php';
                                                             <tr>
                                                                 <td>
                                                                     <div class="form-check">
-                                                                        <input type="checkbox" class="form-check-input" id="customCheck<?= $center['center_id'] ?>">
+                                                                        <input type="checkbox" class="form-check-input dt-checkboxes" id="customCheck<?= $center['center_id'] ?>">
                                                                         <label class="form-check-label" for="customCheck<?= $center['center_id'] ?>">&nbsp;</label>
                                                                     </div>
                                                                 </td>
-                                                                <td><span class="text-body fw-semibold"><?= $center['center_name'] ?></span></td>
+                                                                <td>
+                                                                    <span style="display:none;"><?= $center['center_id'] ?></span>
+                                                                    <span class="text-body fw-semibold"><?= $center['center_name'] ?></span>
+                                                                </td>
                                                                 <td><span class="text-body fw-semibold"><?= $arr_countries[$center['country_id']] ?? 'Не указана' ?></span></td>
                                                                 <td><span class="badge badge-<?= $center_status_css ?>-lighten"><?= $center_status_text ?></span></td>
 
@@ -475,247 +477,274 @@ require_once SYSTEM . '/layouts/head.php';
         </div>
     </div>
 
+    <?php require_once SYSTEM . '/layouts/scripts.php'; ?>
 
     <script>
-        function modalOnCenter(type, id, name, country_id, status) {
-            let modalTitle = $('#offcanvasRightCenter .offcanvas-header h5');
-            let centerId = $('#form-center input[name="center-edit-id"]');
-            let centerName = $('#form-center #center-name');
-            let btn = $('#form-center button[type=submit] .btn-text');
-            $('#form-center #select-center-status option').prop('selected', false);
-
-            // Сброс настроек полей
-            $('#field-settings-json').val('');
-            const configureBtn = document.getElementById('btn-configure-fields');
-            const icon = configureBtn ? configureBtn.querySelector('i.text-success') : null;
-            if (icon) {
-                icon.remove();
-            }
-            const fieldsModal = document.getElementById('modal-center-fields');
-            if (fieldsModal) {
-                const switches = fieldsModal.querySelectorAll('.field-switch');
-                switches.forEach(s => {
-                    const requiredSwitch = document.getElementById('switch-required-' + s.dataset.field);
-                    if (s.dataset.type === 'visible') {
-                        s.checked = true;
-                        if (requiredSwitch) requiredSwitch.disabled = false;
-                    } else if (s.dataset.type === 'required') {
-                        s.checked = false;
-                    }
-                });
-            }
-
-
-            modalTitle.text('');
-            centerId.val('');
-            centerName.val('');
-
-            if (type == 'new') {
-                modalTitle.text('Добавление визового центра');
-                $('#form-center #select-center-status option[value="1"]').prop('selected', true);
-                $('#form-center #select-country').val('hide').trigger('change');
-                btn.text('Добавить');
-            } else if (type == 'edit') {
-                modalTitle.text('Редактирование визового центра');
-                centerId.val(id);
-                centerName.val(name);
-                $('#form-center #select-country').val(country_id).trigger('change');
-                $('#form-center #select-center-status option[value="' + status + '"]').prop('selected', true);
-                btn.text('Сохранить');
-
-                // Загружаем настройки для этого ВЦ
-                $.ajax({
-                    url: '/?form=get-center-fields',
-                    type: 'POST',
-                    dataType: 'json',
-                    data: {
-                        'center_id': id
-                    },
-                    success: function(settings) {
-                        if (fieldsModal && settings && Object.keys(settings).length > 0) {
-                            const switches = fieldsModal.querySelectorAll('.field-switch');
-                            switches.forEach(s => {
-                                const fieldName = s.dataset.field;
-                                const type = s.dataset.type;
-                                if (settings[fieldName]) {
-                                    s.checked = settings[fieldName][type === 'visible' ? 'is_visible' : 'is_required'];
-                                    const event = new Event('change', {
-                                        bubbles: true
-                                    });
-                                    s.dispatchEvent(event);
-                                }
-                            });
-                            if (configureBtn && !configureBtn.querySelector('i.text-success')) {
-                                const checkIcon = document.createElement('i');
-                                checkIcon.className = 'mdi mdi-check-circle text-success ms-1';
-                                configureBtn.appendChild(checkIcon);
+    function modalOnCenter(type, id, name, country_id, status) {
+        let modalTitle = $('#offcanvasRightCenter .offcanvas-header h5');
+        let centerId = $('#form-center input[name="center-edit-id"]');
+        let centerName = $('#form-center #center-name');
+        let btn = $('#form-center button[type=submit] .btn-text');
+        $('#form-center #select-center-status option').prop('selected', false);
+        $('#field-settings-json').val('');
+        const configureBtn = document.getElementById('btn-configure-fields');
+        const icon = configureBtn ? configureBtn.querySelector('i.text-success') : null;
+        if (icon) {
+            icon.remove();
+        }
+        const fieldsModal = document.getElementById('modal-center-fields');
+        if (fieldsModal) {
+            const switches = fieldsModal.querySelectorAll('.field-switch');
+            switches.forEach(s => {
+                const requiredSwitch = document.getElementById('switch-required-' + s.dataset.field);
+                if (s.dataset.type === 'visible') {
+                    s.checked = true;
+                    if (requiredSwitch) requiredSwitch.disabled = false;
+                } else if (s.dataset.type === 'required') {
+                    s.checked = false;
+                }
+            });
+        }
+        modalTitle.text('');
+        centerId.val('');
+        centerName.val('');
+        if (type == 'new') {
+            modalTitle.text('Добавление визового центра');
+            $('#form-center #select-center-status option[value="1"]').prop('selected', true);
+            $('#form-center #select-country').val('hide').trigger('change');
+            btn.text('Добавить');
+        } else if (type == 'edit') {
+            modalTitle.text('Редактирование визового центра');
+            centerId.val(id);
+            centerName.val(name);
+            $('#form-center #select-country').val(country_id).trigger('change');
+            $('#form-center #select-center-status option[value="' + status + '"]').prop('selected', true);
+            btn.text('Сохранить');
+            $.ajax({
+                url: '/?form=get-center-fields',
+                type: 'POST',
+                dataType: 'json',
+                data: { 'center_id': id },
+                success: function(settings) {
+                    if (fieldsModal && settings && Object.keys(settings).length > 0) {
+                        const switches = fieldsModal.querySelectorAll('.field-switch');
+                        switches.forEach(s => {
+                            const fieldName = s.dataset.field;
+                            const type = s.dataset.type;
+                            if (settings[fieldName]) {
+                                s.checked = settings[fieldName][type === 'visible' ? 'is_visible' : 'is_required'];
+                                const event = new Event('change', { bubbles: true });
+                                s.dispatchEvent(event);
                             }
+                        });
+                        if (configureBtn && !configureBtn.querySelector('i.text-success')) {
+                            const checkIcon = document.createElement('i');
+                            checkIcon.className = 'mdi mdi-check-circle text-success ms-1';
+                            configureBtn.appendChild(checkIcon);
                         }
                     }
+                }
+            });
+        }
+    }
+
+    function sendCenterForm(btn) {
+      event.preventDefault();
+      const fieldsModal = $('#modal-center-fields');
+      if (fieldsModal.length) {
+          const settings = {};
+          const allFields = new Set();
+          fieldsModal.find('.field-switch').each(function() {
+              allFields.add($(this).data('field'));
+          });
+          allFields.forEach(field => {
+              const visibleSwitch = $('#switch-visible-' + field);
+              const requiredSwitch = $('#switch-required-' + field);
+              settings[field] = {
+                  is_visible: visibleSwitch.is(':checked'),
+                  is_required: requiredSwitch.is(':checked')
+              };
+          });
+          $('#field-settings-json').val(JSON.stringify(settings));
+      }
+      loaderBTN(btn, 'true');
+      let centerId = $('#form-center input[name="center-edit-id"]').val();
+      let typeForm = centerId ? 'edit-center' : 'new-center';
+      jQuery.ajax({
+          url: '/?page=<?= $page ?>&form=' + typeForm,
+          type: 'POST',
+          dataType: 'html',
+          data: jQuery('#form-center').serialize(),
+          success: function(response) {
+              loaderBTN(btn, 'false');
+              result = jQuery.parseJSON(response);
+              if (result.success_type == 'message') {
+                  message(result.msg_title, result.msg_text, result.msg_type, result.msg_url);
+              } else if (result.success_type == 'redirect') {
+                  redirect(result.url);
+              }
+          },
+          error: function() {
+              loaderBTN(btn, 'false');
+              message('Ошибка', 'Ошибка отправки формы!', 'error', '');
+          }
+      });
+    }
+
+    function modalDelCenterForm(centerid, centername) {
+        $('#del-center-modal button').attr('attr-center-id', centerid);
+        $('#del-center-modal .span-center-name').text(centername);
+    }
+
+    function sendDelCenterForm() {
+        let centerid = $('#del-center-modal button').attr('attr-center-id');
+        jQuery.ajax({
+            url: '/?page=<?= $page ?>&form=del-center',
+            type: 'POST',
+            dataType: 'html',
+            data: '&center-id=' + centerid,
+            success: function(response) {
+                result = jQuery.parseJSON(response);
+                if (result.success_type == 'message') {
+                    message(result.msg_title, result.msg_text, result.msg_type, result.msg_url);
+                }
+            },
+            error: function() {
+                message('Ошибка', 'Ошибка отправки формы!', 'error', '');
+            }
+        });
+    }
+
+    function sendRestoreCenterForm(centerid) {
+        jQuery.ajax({
+            url: '/?page=<?= $page ?>&form=restore-center',
+            type: 'POST',
+            dataType: 'html',
+            data: '&center-id=' + centerid,
+            success: function(response) {
+                result = jQuery.parseJSON(response);
+                if (result.success_type == 'message') {
+                    message(result.msg_title, result.msg_text, result.msg_type, result.msg_url);
+                }
+            },
+            error: function() {
+                message('Ошибка', 'Ошибка отправки формы!', 'error', '');
+            }
+        });
+    }
+    
+    // --- ФИНАЛЬНАЯ РАБОЧАЯ ВЕРСИЯ ---
+    function handleMassAction(action) {
+        const table = $('#products-datatable').DataTable();
+        const selectedIds = [];
+
+        const all_rows_nodes = table.rows({ page: 'all' }).nodes();
+
+        $(all_rows_nodes).each(function() {
+            const row_node = this;
+            const checkbox = $(row_node).find('td:first .form-check-input');
+
+            if (checkbox.is(':checked') && !checkbox.is('#customCheck0')) {
+                // Имитируем логику clients.php: берем ID из второй колонки
+                const id_cell = $(row_node).find('td').eq(1);
+                const id = id_cell.find('span:first').text().trim();
+                if (id) {
+                    selectedIds.push(id);
+                }
+            }
+        });
+
+        if (selectedIds.length === 0) {
+            message('Внимание', 'Пожалуйста, выберите хотя бы один визовый центр.', 'warning');
+            return;
+        }
+
+        let confirmationTitle = 'Вы уверены?';
+        let confirmationText = 'Вы действительно хотите выполнить это действие для ' + selectedIds.length + ' элементов?';
+        let confirmButtonText = 'Да, выполнить!';
+
+        if (action === 'restore') {
+            confirmationTitle = 'Восстановить выбранное?';
+            confirmButtonText = 'Да, восстановить!';
+        } else if (action === 'delete') {
+            confirmationTitle = 'Удалить выбранное?';
+            confirmButtonText = 'Да, удалить!';
+        }
+
+        Swal.fire({
+            title: confirmationTitle,
+            text: confirmationText,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: confirmButtonText,
+            cancelButtonText: 'Отмена'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '/?form=mass-center-action',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: 'action=' + action + '&' + $.param({ 'center_ids': selectedIds }),
+                    success: function(response) {
+                        if (response.success_type == 'message') {
+                            message(response.msg_title, response.msg_text, response.msg_type, response.msg_url);
+                        }
+                    },
+                    error: function() {
+                        message('Ошибка', 'Произошла ошибка при отправке запроса.', 'error');
+                    }
                 });
             }
-        }
-
-
-        function sendCenterForm(btn) {
-          event.preventDefault();
-
-          // --- НАЧАЛО НОВОГО БЛОКА ---
-          // Объяснение: Собираем данные из модального окна настроек прямо перед отправкой.
-          const fieldsModal = $('#modal-center-fields');
-          if (fieldsModal.length) {
-              const settings = {};
-              const allFields = new Set();
-              fieldsModal.find('.field-switch').each(function() {
-                  allFields.add($(this).data('field'));
-              });
-
-              allFields.forEach(field => {
-                  const visibleSwitch = $('#switch-visible-' + field);
-                  const requiredSwitch = $('#switch-required-' + field);
-                  settings[field] = {
-                      is_visible: visibleSwitch.is(':checked'),
-                      is_required: requiredSwitch.is(':checked')
-                  };
-              });
-              // Помещаем собранные данные в скрытое поле формы.
-              $('#field-settings-json').val(JSON.stringify(settings));
-          }
-          // --- КОНЕЦ НОВОГО БЛОКА ---
-
-          loaderBTN(btn, 'true');
-          let centerId = $('#form-center input[name="center-edit-id"]').val();
-          let typeForm;
-          if (centerId) {
-              typeForm = 'edit-center';
-          } else {
-              typeForm = 'new-center';
-          }
-          jQuery.ajax({
-              url: '/?page=<?= $page ?>&form=' + typeForm,
-              type: 'POST',
-              dataType: 'html',
-              data: jQuery('#form-center').serialize(),
-              success: function(response) {
-                  loaderBTN(btn, 'false');
-                  result = jQuery.parseJSON(response);
-                  if (result.success_type == 'message') {
-                      message(result.msg_title, result.msg_text, result.msg_type, result.msg_url);
-                  } else if (result.success_type == 'redirect') {
-                      redirect(result.url);
-                  }
-              },
-              error: function() {
-                  loaderBTN(btn, 'false');
-                  message('Ошибка', 'Ошибка отправки формы!', 'error', '');
-              }
-          });
-      }
-
-
-
-        function modalDelCenterForm(centerid, centername) {
-            $('#del-center-modal button').attr('attr-center-id', centerid);
-            $('#del-center-modal .span-center-name').text(centername);
-        }
-
-        function sendDelCenterForm() {
-            let centerid = $('#del-center-modal button').attr('attr-center-id');
-            jQuery.ajax({
-                url: '/?page=<?= $page ?>&form=del-center',
-                type: 'POST',
-                dataType: 'html',
-                data: '&center-id=' + centerid,
-                success: function(response) {
-                    result = jQuery.parseJSON(response);
-                    if (result.success_type == 'message') {
-                        message(result.msg_title, result.msg_text, result.msg_type, result.msg_url);
-                    } else if (result.success_type == 'redirect') {
-                        redirect(result.url);
-                    }
-                },
-                error: function() {
-                    message('Ошибка', 'Ошибка отправки формы!', 'error', '');
-                }
-            });
-        }
-
-        function sendRestoreCenterForm(centerid) {
-            jQuery.ajax({
-                url: '/?page=<?= $page ?>&form=restore-center',
-                type: 'POST',
-                dataType: 'html',
-                data: '&center-id=' + centerid,
-                success: function(response) {
-                    result = jQuery.parseJSON(response);
-                    if (result.success_type == 'message') {
-                        message(result.msg_title, result.msg_text, result.msg_type, result.msg_url);
-                    } else if (result.success_type == 'redirect') {
-                        redirect(result.url);
-                    }
-                },
-                error: function() {
-                    message('Ошибка', 'Ошибка отправки формы!', 'error', '');
-                }
-            });
-        }
-
-        $(document).ready(function() {
-            const fieldsModal = $('#modal-center-fields');
-            if (!fieldsModal.length) return;
-
-            // Handle switch dependencies (visible/required)
-            fieldsModal.on('change', '.field-switch', function() {
-                const fieldName = $(this).data('field');
-                const type = $(this).data('type');
-
-                if (type === 'visible') {
-                    const requiredSwitch = $('#switch-required-' + fieldName);
-                    if ($(this).is(':checked')) {
-                        requiredSwitch.prop('disabled', false);
-                    } else {
-                        requiredSwitch.prop('checked', false).prop('disabled', true);
-                    }
-                } else if (type === 'required') {
-                    const visibleSwitch = $('#switch-visible-' + fieldName);
-                    if ($(this).is(':checked') && !visibleSwitch.is(':checked')) {
-                        visibleSwitch.prop('checked', true).trigger('change');
-                    }
-                }
-            });
-
-            // Handle "Готово" button click to save settings to JSON
-            fieldsModal.find('.modal-footer .btn-primary').on('click', function() {
-                const settings = {};
-                const allFields = new Set();
-                fieldsModal.find('.field-switch').each(function() {
-                    allFields.add($(this).data('field'));
-                });
-
-                allFields.forEach(field => {
-                    const visibleSwitch = $('#switch-visible-' + field);
-                    const requiredSwitch = $('#switch-required-' + field);
-
-                    settings[field] = {
-                        is_visible: visibleSwitch.is(':checked'),
-                        is_required: requiredSwitch.is(':checked')
-                    };
-                });
-
-                $('#field-settings-json').val(JSON.stringify(settings));
-
-                const configureBtn = $('#btn-configure-fields');
-                if (configureBtn.length && !configureBtn.find('i.text-success').length) {
-                    configureBtn.append(' <i class="mdi mdi-check-circle text-success ms-1"></i>');
-                }
-            });
         });
-    </script>
+    }
 
+    $(document).ready(function() {
+        const fieldsModal = $('#modal-center-fields');
+        if (!fieldsModal.length) return;
 
-    <?php
-    require_once SYSTEM . '/layouts/scripts.php';
-    ?>
+        fieldsModal.on('change', '.field-switch', function() {
+            const fieldName = $(this).data('field');
+            const type = $(this).data('type');
+            if (type === 'visible') {
+                const requiredSwitch = $('#switch-required-' + fieldName);
+                if ($(this).is(':checked')) {
+                    requiredSwitch.prop('disabled', false);
+                } else {
+                    requiredSwitch.prop('checked', false).prop('disabled', true);
+                }
+            } else if (type === 'required') {
+                const visibleSwitch = $('#switch-visible-' + fieldName);
+                if ($(this).is(':checked') && !visibleSwitch.is(':checked')) {
+                    visibleSwitch.prop('checked', true).trigger('change');
+                }
+            }
+        });
+
+        fieldsModal.find('.modal-footer .btn-primary').on('click', function() {
+            const settings = {};
+            const allFields = new Set();
+            fieldsModal.find('.field-switch').each(function() {
+                allFields.add($(this).data('field'));
+            });
+            allFields.forEach(field => {
+                const visibleSwitch = $('#switch-visible-' + field);
+                const requiredSwitch = $('#switch-required-' + field);
+                settings[field] = {
+                    is_visible: visibleSwitch.is(':checked'),
+                    is_required: requiredSwitch.is(':checked')
+                };
+            });
+            $('#field-settings-json').val(JSON.stringify(settings));
+            const configureBtn = $('#btn-configure-fields');
+            if (configureBtn.length && !configureBtn.find('i.text-success').length) {
+                configureBtn.append(' <i class="mdi mdi-check-circle text-success ms-1"></i>');
+            }
+        });
+    });
+</script>
+
 </body>
 
 </html>

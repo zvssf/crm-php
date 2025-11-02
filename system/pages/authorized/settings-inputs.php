@@ -74,10 +74,10 @@ try {
                         <div class="dropdown btn-group">
                           <button class="btn btn-light mb-2 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Действия</button>
                           <div class="dropdown-menu dropdown-menu-animated">
-                            <a class="dropdown-item" href="#">Восстановить</a>
-                            <a class="dropdown-item" href="#">Удалить</a>
+                              <a class="dropdown-item" href="#" onclick="handleMassAction('restore')">Восстановить</a>
+                              <a class="dropdown-item text-danger" href="#" onclick="handleMassAction('delete')">Удалить</a>
                           </div>
-                        </div>
+                      </div>
                         <!-- <div class="dropdown btn-group">
                         <button class="btn btn-info mb-2 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Фильтр</button>
                         <div class="dropdown-menu dropdown-menu-animated">
@@ -125,11 +125,14 @@ try {
                         <tr>
                           <td>
                             <div class="form-check">
-                              <input type="checkbox" class="form-check-input" id="customCheck<?= $input['input_id'] ?>">
+                              <input type="checkbox" class="form-check-input dt-checkboxes" id="customCheck<?= $input['input_id'] ?>">
                               <label class="form-check-label" for="customCheck<?= $input['input_id'] ?>">&nbsp;</label>
                             </div>
                           </td>
-                          <td><span class="text-body fw-semibold"><?= $input['input_name'] ?></span></td>
+                          <td>
+                            <span style="display:none;"><?= $input['input_id'] ?></span>
+                            <span class="text-body fw-semibold"><?= $input['input_name'] ?></span>
+                        </td>
                           <td><span class="text-body fw-semibold"><?= $input_type_text ?></span></td>
                           <td><span class="badge badge-<?= $input_status_css ?>-lighten"><?= $input_status_text ?></span></td>
                           
@@ -259,126 +262,173 @@ try {
 
 
 <script>
-
-
-
-
-
-
-function modalOnInput(type, id, name, inputType, selectData) {
-  let modalTitle = $('#offcanvasRightInput .offcanvas-header h5');
-  let inputId = $('#form-input input[name="input-edit-id"]');
-  let inputName = $('#form-input #input-name');
-  $('#form-input #select-input-type option').prop('selected', false);
-  let inputSelectData = $('#form-input #input-select-data');
-  
-  modalTitle.text('');
-  inputId.val('');
-  inputName.val('');
-  inputSelectData.val('');
-  
-  let blockSelectData = $('.block-select-data');
-  let cssClass = 'visually-hidden';
-  if(!blockSelectData.hasClass(cssClass)) {
-    blockSelectData.addClass(cssClass);
-  }
-  
-  
-  let btn = $('#form-input button[type=submit] .btn-text');
-  if(type == 'new') {
-    modalTitle.text('Добавление дополнительного поля');
-    $('#form-input #select-input-type option[value="1"]').prop('selected', true);
-    btn.text('Добавить');
-  } else if(type == 'edit') {
-    modalTitle.text('Редактирование дополнительного поля');
-    inputId.val(id);
-    inputName.val(name);
-    $('#form-input #select-input-type option[value="' + inputType + '"]').prop('selected', true);
-    if(inputType == '2' || inputType == '3') {
-      blockSelectData.removeClass(cssClass);
+    function modalOnInput(type, id, name, inputType, selectData) {
+        let modalTitle = $('#offcanvasRightInput .offcanvas-header h5');
+        let inputId = $('#form-input input[name="input-edit-id"]');
+        let inputName = $('#form-input #input-name');
+        $('#form-input #select-input-type option').prop('selected', false);
+        let inputSelectData = $('#form-input #input-select-data');
+        
+        modalTitle.text('');
+        inputId.val('');
+        inputName.val('');
+        inputSelectData.val('');
+        
+        let blockSelectData = $('.block-select-data');
+        let cssClass = 'visually-hidden';
+        if(!blockSelectData.hasClass(cssClass)) {
+            blockSelectData.addClass(cssClass);
+        }
+        
+        let btn = $('#form-input button[type=submit] .btn-text');
+        if(type == 'new') {
+            modalTitle.text('Добавление дополнительного поля');
+            $('#form-input #select-input-type option[value="1"]').prop('selected', true);
+            btn.text('Добавить');
+        } else if(type == 'edit') {
+            modalTitle.text('Редактирование дополнительного поля');
+            inputId.val(id);
+            inputName.val(name);
+            $('#form-input #select-input-type option[value="' + inputType + '"]').prop('selected', true);
+            if(inputType == '2' || inputType == '3') {
+            blockSelectData.removeClass(cssClass);
+            }
+            inputSelectData.val(selectData);
+            btn.text('Сохранить');
+        }
     }
-    inputSelectData.val(selectData);
-    btn.text('Сохранить');
-  }
-}
 
+    function sendInputForm(btn) {
+        event.preventDefault();
+        loaderBTN(btn, 'true');
+        let inputId = $('#form-input input[name="input-edit-id"]').val();
+        let typeForm = inputId ? 'edit-input' : 'new-input';
 
-function sendInputForm(btn) {
-  event.preventDefault();
-  loaderBTN(btn, 'true');
-  let inputId = $('#form-input input[name="input-edit-id"]').val();
-  let typeForm;
-  if(inputId) {
-    typeForm = 'edit-input';
-  } else {
-    typeForm = 'new-input';
-  }
-  jQuery.ajax({
-    url:      '/?page=<?= $page ?>&form=' + typeForm,
-    type:     'POST',
-    dataType: 'html',
-    data:     jQuery('#form-input').serialize(),
-    success:  function(response) {
-      loaderBTN(btn, 'false');
-      result = jQuery.parseJSON(response);
-      if(result.success_type == 'message') {
-        message(result.msg_title, result.msg_text, result.msg_type, result.msg_url);
-      } else if(result.success_type == 'redirect') {
-        redirect(result.url);
-      }
-    },
-    error:  function() {
-      loaderBTN(btn, 'false');
-      message('Ошибка', 'Ошибка отправки формы!', 'error', '');
+        jQuery.ajax({
+            url:      '/?page=<?= $page ?>&form=' + typeForm,
+            type:     'POST',
+            dataType: 'html',
+            data:     jQuery('#form-input').serialize(),
+            success:  function(response) {
+                loaderBTN(btn, 'false');
+                result = jQuery.parseJSON(response);
+                if(result.success_type == 'message') {
+                    message(result.msg_title, result.msg_text, result.msg_type, result.msg_url);
+                }
+            },
+            error:  function() {
+                loaderBTN(btn, 'false');
+                message('Ошибка', 'Ошибка отправки формы!', 'error', '');
+            }
+        });
     }
-  });
-}
 
-
-
-function modalDelInputForm(inputid, inputname) {
-  $('#del-input-modal button').attr('attr-input-id', inputid);
-  $('#del-input-modal .span-input-name').text(inputname);
-}
-function sendDelInputForm() {
-  let inputid = $('#del-input-modal button').attr('attr-input-id');
-  jQuery.ajax({
-    url:      '/?page=<?= $page ?>&form=del-input',
-    type:     'POST',
-    dataType: 'html',
-    data:     '&input-id=' + inputid,
-    success:  function(response) {
-      result = jQuery.parseJSON(response);
-      if(result.success_type == 'message') {
-        message(result.msg_title, result.msg_text, result.msg_type, result.msg_url);
-      } else if(result.success_type == 'redirect') {
-        redirect(result.url);
-      }
-    },
-    error:  function() {
-      message('Ошибка', 'Ошибка отправки формы!', 'error', '');
+    function modalDelInputForm(inputid, inputname) {
+        $('#del-input-modal button').attr('attr-input-id', inputid);
+        $('#del-input-modal .span-input-name').text(inputname);
     }
-  });
-}
-function sendRestoreInputForm(inputid) {
-  jQuery.ajax({
-    url:      '/?page=<?= $page ?>&form=restore-input',
-    type:     'POST',
-    dataType: 'html',
-    data:     '&input-id=' + inputid,
-    success:  function(response) {
-      result = jQuery.parseJSON(response);
-      if(result.success_type == 'message') {
-        message(result.msg_title, result.msg_text, result.msg_type, result.msg_url);
-      } else if(result.success_type == 'redirect') {
-        redirect(result.url);
-      }
-    },
-    error:  function() {
-      message('Ошибка', 'Ошибка отправки формы!', 'error', '');
+
+    function sendDelInputForm() {
+        let inputid = $('#del-input-modal button').attr('attr-input-id');
+        jQuery.ajax({
+            url:      '/?page=<?= $page ?>&form=del-input',
+            type:     'POST',
+            dataType: 'html',
+            data:     '&input-id=' + inputid,
+            success:  function(response) {
+                result = jQuery.parseJSON(response);
+                if(result.success_type == 'message') {
+                    message(result.msg_title, result.msg_text, result.msg_type, result.msg_url);
+                }
+            },
+            error:  function() {
+                message('Ошибка', 'Ошибка отправки формы!', 'error', '');
+            }
+        });
     }
-  });
-}
+
+    function sendRestoreInputForm(inputid) {
+        jQuery.ajax({
+            url:      '/?page=<?= $page ?>&form=restore-input',
+            type:     'POST',
+            dataType: 'html',
+            data:     '&input-id=' + inputid,
+            success:  function(response) {
+                result = jQuery.parseJSON(response);
+                if(result.success_type == 'message') {
+                    message(result.msg_title, result.msg_text, result.msg_type, result.msg_url);
+                }
+            },
+            error:  function() {
+                message('Ошибка', 'Ошибка отправки формы!', 'error', '');
+            }
+        });
+    }
+
+    function handleMassAction(action) {
+        const table = $('#products-datatable').DataTable();
+        const selectedIds = [];
+
+        const all_rows_nodes = table.rows({ page: 'all' }).nodes();
+
+        $(all_rows_nodes).each(function() {
+            const row_node = this;
+            const checkbox = $(row_node).find('td:first .form-check-input');
+
+            if (checkbox.is(':checked') && !checkbox.is('#customCheck0')) {
+                const id_cell = $(row_node).find('td').eq(1);
+                const id = id_cell.find('span:first').text().trim();
+                if (id) {
+                    selectedIds.push(id);
+                }
+            }
+        });
+
+        if (selectedIds.length === 0) {
+            message('Внимание', 'Пожалуйста, выберите хотя бы одно дополнительное поле.', 'warning');
+            return;
+        }
+
+        let confirmationTitle = 'Вы уверены?';
+        let confirmationText = 'Вы действительно хотите выполнить это действие для ' + selectedIds.length + ' элементов?';
+        let confirmButtonText = 'Да, выполнить!';
+
+        if (action === 'restore') {
+            confirmationTitle = 'Восстановить выбранное?';
+            confirmButtonText = 'Да, восстановить!';
+        } else if (action === 'delete') {
+            confirmationTitle = 'Удалить выбранное?';
+            confirmButtonText = 'Да, удалить!';
+        }
+
+        Swal.fire({
+            title: confirmationTitle,
+            text: confirmationText,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: confirmButtonText,
+            cancelButtonText: 'Отмена'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '/?form=mass-input-action',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: 'action=' + action + '&' + $.param({ 'input_ids': selectedIds }),
+                    success: function(response) {
+                        if (response.success_type == 'message') {
+                            message(response.msg_title, response.msg_text, response.msg_type, response.msg_url);
+                        }
+                    },
+                    error: function() {
+                        message('Ошибка', 'Произошла ошибка при отправке запроса.', 'error');
+                    }
+                });
+            }
+        });
+    }
 </script>
 
 

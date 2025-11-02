@@ -17,7 +17,8 @@ return [
             'new-supplier', 'edit-supplier', 'del-supplier', 'restore-supplier', 'confirm-client', 'restore-client', 
             'new-client', 'del-client', 'edit-client', 'review-client', 'approve-client', 'decline-client', 'approve-draft-director',
             'check-client-completeness', 'get-client-categories', 'get-additional-fields',
-            'get-min-sale-price', 'pay_client_credit', 'revert-recorded-client', 'get-center-fields', 'get_export_fields', 'export_clients_excel',
+            'get-min-sale-price', 'pay_client_credit', 'revert-recorded-client', 'get-center-fields', 'get_export_fields', 'export_clients_excel', 
+            'mass-client-action', 'mass-center-action', 'mass-country-action', 'mass-city-action', 'mass-input-action', 'mass-customer-action',
         ],
     ],
     'supervisor' => [
@@ -37,7 +38,7 @@ return [
         'forms' => [
             'profile-edit', 'profile-new-password', 'new-client', 'edit-client', 'del-client', 'restore-client',
             'review-client', 'approve-client-manager', 'decline-client', 'check-client-completeness', 
-            'get-additional-fields', 'get-min-sale-price', 'pay_client_credit', 'get_export_fields', 'export_clients_excel',
+            'get-additional-fields', 'get-min-sale-price', 'pay_client_credit', 'get_export_fields', 'export_clients_excel', 'mass-client-action',
         ],
     ],
     'agent' => [
@@ -48,7 +49,7 @@ return [
         'forms' => [
             'profile-edit', 'profile-new-password', 'new-client', 'edit-client', 'del-client', 'restore-client',
             'review-client', 'revert-rejection-client', 'check-client-completeness', 
-            'get-additional-fields', 'get-min-sale-price', 'get_export_fields', 'export_clients_excel',
+            'get-additional-fields', 'get-min-sale-price', 'get_export_fields', 'export_clients_excel', 'mass-client-action',
         ],
     ],
 ];
