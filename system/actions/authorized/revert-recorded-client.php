@@ -66,20 +66,21 @@ try {
             process_agent_repayments($pdo, $agent_id, $refund_amount);
         }
 
-        // ШАГ 5.3: И только ПОСЛЕ всех финансовых операций, "обнуляем" статус анкеты.
+        // ШАГ 5.3: И только ПОСЛЕ всех финансовых операций, "обнуляем" статус анкеты и ее UID.
         $stmt_update_client = $pdo->prepare(
             "UPDATE `clients` SET
             `client_status` = 1,
             `payment_status` = 0,
             `paid_from_balance` = 0.00,
-            `paid_from_credit` = 0.00
+            `paid_from_credit` = 0.00,
+            `recording_uid` = NULL
             WHERE `client_id` = :client_id"
         );
         $stmt_update_client->execute([':client_id' => $client_id]);
 
     } else {
-        // Если анкета не была оплачена, просто меняем ее статус
-        $stmt_update_client = $pdo->prepare("UPDATE `clients` SET `client_status` = 1 WHERE `client_id` = :client_id");
+        // Если анкета не была оплачена, просто меняем ее статус и сбрасываем UID
+        $stmt_update_client = $pdo->prepare("UPDATE `clients` SET `client_status` = 1, `recording_uid` = NULL WHERE `client_id` = :client_id");
         $stmt_update_client->execute([':client_id' => $client_id]);
     }
 

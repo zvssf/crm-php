@@ -74,12 +74,12 @@ if ($user_data['user_group'] != 4) {
 $validate($city_ids, 'Необходимо выбрать хотя бы одну категорию!');
 $validate($sale_price, 'Поле "Стоимость" обязательно для заполнения!');
 
-// Динамическая валидация на основе настроек страны
+// Валидация телефона (всегда обязательна, как на форме)
+$validate($phone_code, 'Поле "Код страны" телефона обязательно для заполнения!');
+$validate($phone_number, 'Поле "Номер телефона" обязательно для заполнения!');
+
+// Динамическая валидация на основе настроек центра
 if (isset($field_settings['middle_name'])) $validate($middle_name, 'Поле "Отчество" обязательно для заполнения!');
-if (isset($field_settings['phone'])) {
-    $validate($phone_code, 'Поле "Код страны" телефона обязательно для заполнения!');
-    $validate($phone_number, 'Поле "Номер телефона" обязательно для заполнения!');
-}
 if (isset($field_settings['gender'])) $validate($gender, 'Поле "Пол" обязательно для заполнения!');
 if (isset($field_settings['email'])) $validate($email, 'Поле "Email" обязательно для заполнения!');
 if (isset($field_settings['birth_date'])) $validate($birth_date_raw, 'Поле "Дата рождения" обязательно для заполнения!');

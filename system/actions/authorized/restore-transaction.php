@@ -16,78 +16,66 @@ try {
     $stmt = $pdo->prepare("
     SELECT * 
     FROM `fin_transactions` 
-    WHERE `id` = :transaction_id
+    WHERE `id` = :transaction_id AND `operation_type` = 0
+    FOR UPDATE
     ");
-    $stmt->execute([
-        ':transaction_id' => $transaction_id
-    ]);
+    $stmt->execute([':transaction_id' => $transaction_id]);
 
     if ($stmt->rowCount() === 0) {
-        message('Ошибка', 'Транзакция не найдена!', 'error', '');
+        message('Ошибка', 'Транзакция не найдена или не является отмененной!', 'error', '');
     }
 
     $transaction_data = $stmt->fetch(PDO::FETCH_ASSOC);
+    $amount = (float) $transaction_data['amount'];
 
-    if ($transaction_data['operation_type'] > '0') {
-        message('Ошибка', 'Транзакции не требуется восстановление!', 'error', '');
-    }
+    // Шаг 1: Восстанавливаем баланс кассы (возвращаем сумму транзакции).
+    $stmt_cash = $pdo->prepare("UPDATE `fin_cashes` SET `balance` = `balance` + :amount WHERE `id` = :cash_id");
+    $stmt_cash->execute([':amount' => $amount, ':cash_id' => $transaction_data['cash_id']]);
 
-    $operation_type = 2;
-    if($transaction_data['agent_id'] !== NULL) {
+    // Шаг 2: Восстанавливаем балансы агента/поставщика и оплаты по анкетам.
+    if ($transaction_data['agent_id'] !== NULL) { // Это была транзакция ПРИХОДА от агента
+        
+        // Шаг 2а: Используем центральную финансовую функцию для восстановления.
+        // Она получит сумму транзакции, добавит ее к балансу агента и АВТОМАТИЧЕСКИ
+        // попытается оплатить все неоплаченные/кредитные анкеты этого агента.
+        // Это элегантно решает все сложные сценарии.
+        process_agent_repayments($pdo, $transaction_data['agent_id'], $amount);
+
+        // Определяем исходный тип операции для восстановления
         $operation_type = 1;
+
+    } elseif ($transaction_data['supplier_id'] !== NULL) { // Это была транзакция РАСХОДА поставщику
+        
+        // Восстанавливаем баланс поставщика. Сумма расхода отрицательная, 
+        // поэтому вычитание отрицательной суммы приведет к ее прибавлению.
+        $stmt_supplier = $pdo->prepare("UPDATE `fin_suppliers` SET `balance` = `balance` + :amount WHERE `id` = :id");
+        $stmt_supplier->execute([':amount' => $amount, ':id' => $transaction_data['supplier_id']]);
+
+        // Определяем исходный тип операции для восстановления
+        $operation_type = 2;
+    } else {
+        // На случай, если транзакция была странной (например, внутренний перевод)
+        $operation_type = $transaction_data['amount'] > 0 ? 1 : 2;
     }
-
-    $stmt = $pdo->prepare("
-        UPDATE `fin_cashes` 
-        SET `balance` = `balance` + :amount 
-        WHERE `id`   = :cash_id
-    ");
-    $stmt->execute([
-        ':amount' => $transaction_data['amount'],
-        ':cash_id' => $transaction_data['cash_id']
-    ]);
-
-    if($transaction_data['agent_id'] !== NULL) {
-        $stmt = $pdo->prepare("
-        UPDATE `users` 
-        SET `user_balance` = `user_balance` - :amount 
-        WHERE `user_id`   = :user_id
-    ");
-    $stmt->execute([
-        ':amount' => $transaction_data['amount'],
-        ':user_id' => $transaction_data['agent_id']
-    ]);
-    }
-
-    if($transaction_data['supplier_id'] !== NULL) {
-        $stmt = $pdo->prepare("
-        UPDATE `fin_suppliers` 
-        SET `balance` = `balance` - :amount 
-        WHERE `id`   = :id
-    ");
-    $stmt->execute([
-        ':amount' => $transaction_data['amount'],
-        ':id' => $transaction_data['supplier_id']
-    ]);
-    }
-
-    $stmt = $pdo->prepare("
+    
+    // Шаг 3: Восстанавливаем саму транзакцию.
+    $stmt_restore = $pdo->prepare("
         UPDATE `fin_transactions` 
         SET `operation_type` = :operation_type 
-        WHERE `id`   = :transaction_id
+        WHERE `id` = :transaction_id
     ");
-    $stmt->execute([
+    $stmt_restore->execute([
         ':operation_type' => $operation_type,
         ':transaction_id' => $transaction_id
     ]);
 
     $pdo->commit();
-    message('Уведомление', 'Восстановление выполнено!', 'success', 'finance');
+    message('Уведомление', 'Транзакция успешно восстановлена!', 'success', 'finance');
 
 } catch (PDOException $e) {
     if ($pdo->inTransaction()) {
         $pdo->rollBack();
     }
-    error_log('DB Error: ' . $e->getMessage());
-    message('Ошибка', 'Не удалось восстановить транзакцию. Попробуйте позже.', 'error', '');
+    error_log('DB Error on restore-transaction: ' . $e->getMessage());
+    message('Ошибка', 'Не удалось восстановить транзакцию: ' . $e->getMessage(), 'error', '');
 }

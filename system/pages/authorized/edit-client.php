@@ -897,13 +897,12 @@ require_once SYSTEM . '/layouts/head.php';
                 loaderBTN('#btn-save', 'true');
 
                 $.ajax({
-                    url: '/?page=edit-client&form=edit-client',
+                    url: '/?form=edit-client',
                     type: 'POST',
-                    dataType: 'html',
+                    dataType: 'json',
                     data: form.serialize(),
-                    success: function (response) {
+                    success: function (result) {
                         loaderBTN('#btn-save', 'false');
-                        let result = $.parseJSON(response);
                         if (result.success_type == 'message') {
                             let redirectUrl = result.msg_url;
                             if (result.new_status) {
@@ -912,9 +911,10 @@ require_once SYSTEM . '/layouts/head.php';
                             message(result.msg_title, result.msg_text, result.msg_type, redirectUrl);
                         }
                     },
-                    error: function () {
+                    error: function (jqXHR, textStatus, errorThrown) {
                         loaderBTN('#btn-save', 'false');
-                        message('Ошибка', 'Ошибка отправки формы!', 'error', '');
+                        console.log('AJAX Error:', textStatus, errorThrown, jqXHR.responseText);
+                        message('Ошибка', 'Произошла ошибка на сервере. Пожалуйста, проверьте консоль браузера для деталей.', 'error', '');
                     }
                 });
             });

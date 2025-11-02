@@ -152,7 +152,9 @@ try {
                           <th>№ кассы</th>
                           <th>Тип</th>
                           <th>Сумма</th>
+                          <?php if ($user_data['user_group'] != 2): // Руководитель не видит колонку действий ?>
                           <th style="width: 75px;">Действия</th>
+                          <?php endif; ?>
                         </tr>
                       </thead>
                       <tbody>
@@ -218,6 +220,7 @@ try {
                             <td><span class="badge badge-<?= $operation_type_css ?>-lighten"><?= $operation_type_text ?></span></td>
                             <td><span class="text-<?= $transaction_amount_css ?> fw-semibold"><i class="mdi mdi-currency-usd"></i><?= $transaction_amount_plus . number_format($transaction['amount'], 2, '.', ' ') ?></span></td>
                             
+                            <?php if ($user_data['user_group'] != 2): // Руководитель не видит колонку действий ?>
                             <td>
                               <?php if($transaction['operation_type'] === 0): ?>
                                 <a href="#" class="font-18 text-warning" onclick="sendRestoreTransactionForm('<?= $transaction['id'] ?>')"><i class="mdi mdi-cached"></i></a>
@@ -225,6 +228,7 @@ try {
                                 <a href="#" class="font-18 text-danger" data-bs-toggle="modal" data-bs-target="#del-transaction-modal" onclick="modalDelTransactionForm('<?= $transaction['id'] ?>', '<?= $transaction_display_name ?>')"><i class="uil uil-trash"></i></a>
                               <?php endif; ?>
                             </td>
+                            <?php endif; ?>
                           </tr>
                         <?php endforeach; endif; ?>
                       </tbody>
@@ -979,6 +983,11 @@ try {
     }
   </script>
   
+  
+  <script>
+    // Передаем в JavaScript информацию о том, видна ли колонка "Действия"
+    const isActionsColumnVisible = <?= ($user_data['user_group'] != 2) ? 'true' : 'false' ?>;
+  </script>
   
   <?php
   require_once SYSTEM . '/layouts/scripts.php';

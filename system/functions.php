@@ -200,7 +200,7 @@ function process_agent_repayments($pdo, $agent_id, $transaction_amount) {
     // Шаг 2: Фаза 1 — Погашение кредитных анкет (статус 2).
     if ($funds_to_spend > 0) {
         $stmt_credits = $pdo->prepare(
-            "SELECT `client_id`, `paid_from_credit` FROM `clients` 
+            "SELECT `client_id`, `paid_from_credit`, `recording_uid` FROM `clients` 
             WHERE `agent_id` = :agent_id AND `payment_status` = 2 
             ORDER BY `client_id` ASC FOR UPDATE"
         );
@@ -226,7 +226,7 @@ function process_agent_repayments($pdo, $agent_id, $transaction_amount) {
             ]);
             
             $funds_to_spend -= $payment_for_debt;
-            $affected_log[] = ['client_id' => $client['client_id'], 'type' => 'credit_repayment', 'amount' => $payment_for_debt];
+            $affected_log[] = ['client_id' => $client['client_id'], 'recording_uid' => $client['recording_uid'], 'type' => 'credit_repayment', 'amount' => $payment_for_debt];
 
             if (abs($credit_part - $payment_for_debt) < 0.01) {
                 $pdo->prepare("UPDATE `clients` SET `payment_status` = 1 WHERE `client_id` = :client_id")->execute([':client_id' => $client['client_id']]);
@@ -237,7 +237,7 @@ function process_agent_repayments($pdo, $agent_id, $transaction_amount) {
     // Шаг 3: Фаза 2 — Оплата неоплаченных анкет (статус 0), которые ожидают оплаты (статус 2).
     if ($funds_to_spend > 0) {
         $stmt_unpaid = $pdo->prepare(
-            "SELECT `client_id`, `sale_price` FROM `clients` 
+            "SELECT `client_id`, `sale_price`, `recording_uid` FROM `clients` 
             WHERE `agent_id` = :agent_id AND `payment_status` = 0 AND `client_status` = 2
             ORDER BY `client_id` ASC FOR UPDATE"
         );
@@ -260,7 +260,7 @@ function process_agent_repayments($pdo, $agent_id, $transaction_amount) {
                 $funds_to_spend -= $sale_price;
                 $spent_on_new_clients += $sale_price;
 
-                $affected_log[] = ['client_id' => $client['client_id'], 'type' => 'full_payment', 'amount' => $sale_price];
+                $affected_log[] = ['client_id' => $client['client_id'], 'recording_uid' => $client['recording_uid'], 'type' => 'full_payment', 'amount' => $sale_price];
             }
         }
     }
@@ -269,7 +269,10 @@ function process_agent_repayments($pdo, $agent_id, $transaction_amount) {
     $final_balance = $current_balance + (float) $transaction_amount - $spent_on_new_clients;
 
     $stmt_update_balance = $pdo->prepare("UPDATE `users` SET `user_balance` = :final_balance WHERE `user_id` = :agent_id");
-    $stmt_update_balance->execute([':final_balance' => $final_balance, ':agent_id' => $agent_id]);
+    $stmt_update_balance->execute([
+        ':final_balance' => $final_balance,
+        ':agent_id'      => $agent_id
+    ]);
 
     return $affected_log;
 }

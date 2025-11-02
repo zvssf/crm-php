@@ -220,37 +220,12 @@ require_once SYSTEM . '/layouts/head.php';
                 let countryId = $('#form-country input[name="country-edit-id"]');
                 let countryName = $('#form-country #country-name');
                 let btn = $('#form-country button[type=submit] .btn-text');
-                let fieldSettingsInput = $('#field-settings-json');
-                const configureBtn = document.getElementById('btn-configure-fields');
-                const fieldsModal = document.getElementById('modal-country-fields');
-
-                // --- НАЧАЛО БЛОКА ПОЛНОГО СБРОСА ---
+                
+                // Сбрасываем все поля
                 modalTitle.text('');
                 countryId.val('');
                 countryName.val('');
-                fieldSettingsInput.val('');
                 $('#form-country #select-country-status option').prop('selected', false);
-                
-                const icon = configureBtn ? configureBtn.querySelector('i.text-success') : null;
-                if (icon) {
-                    icon.remove();
-                }
-
-                // Принудительно сбрасываем все переключатели в модальном окне к состоянию по умолчанию
-                if (fieldsModal) {
-                    const switches = fieldsModal.querySelectorAll('.form-check-input');
-                    switches.forEach(s => {
-                        if (s.disabled) return;
-                        const requiredSwitch = document.getElementById('switch-required-' + s.dataset.field);
-                        if (s.dataset.type === 'visible') {
-                            s.checked = true;
-                            if (requiredSwitch) requiredSwitch.disabled = false;
-                        } else if (s.dataset.type === 'required') {
-                            s.checked = false;
-                        }
-                    });
-                }
-                // --- КОНЕЦ БЛОКА ПОЛНОГО СБРОСА ---
 
                 if(type == 'new') {
                     modalTitle.text('Добавление страны');
@@ -262,36 +237,6 @@ require_once SYSTEM . '/layouts/head.php';
                     countryName.val(name);
                     $('#form-country #select-country-status option[value="' + status + '"]').prop('selected', true);
                     btn.text('Сохранить');
-
-                    // Загружаем и применяем настройки полей для этой страны
-                    $.ajax({
-                        url:      '/?form=get-country-fields',
-                        type:     'POST',
-                        dataType: 'json',
-                        data:     { 'country_id': id },
-                        success:  function(settings) {
-                            if (fieldsModal && settings && Object.keys(settings).length > 0) {
-                                const switches = fieldsModal.querySelectorAll('.form-check-input');
-                                switches.forEach(s => {
-                                    const fieldName = s.dataset.field;
-                                    const type = s.dataset.type;
-                                    if (settings[fieldName] && !s.disabled) {
-                                        s.checked = settings[fieldName][type === 'visible' ? 'is_visible' : 'is_required'];
-                                        const event = new Event('change', { bubbles: true });
-                                        s.dispatchEvent(event);
-                                    }
-                                });
-                                if (configureBtn && !configureBtn.querySelector('i.text-success')) {
-                                    const checkIcon = document.createElement('i');
-                                    checkIcon.className = 'mdi mdi-check-circle text-success ms-1';
-                                    configureBtn.appendChild(checkIcon);
-                                }
-                            }
-                        },
-                        error: function() {
-                            message('Ошибка', 'Не удалось загрузить настройки полей.', 'error', '');
-                        }
-                    });
                 }
             }
 
