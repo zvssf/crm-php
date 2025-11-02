@@ -310,7 +310,7 @@ require_once SYSTEM . '/layouts/head.php';
                                                 <?php if ($user_data['user_group'] == 1 || $user_data['can_export'] == 1): ?>
                                                     <button type="button" class="btn btn-light mb-2 me-1" data-bs-toggle="modal" data-bs-target="#export-excel-modal">Экспорт в Excel</button>
                                                 <?php endif; ?>
-                                                <?php if ($user_data['user_group'] != 2): // Руководитель не видит массовые действия ?>
+                                                <?php if ($user_data['user_group'] != 2 && $current_status != 7): // Руководитель не видит массовые действия и они не нужны в "Отмененных" ?>
                                                 <div class="dropdown btn-group">
                                                     <button class="btn btn-light mb-2 dropdown-toggle" type="button"
                                                         data-bs-toggle="dropdown" aria-haspopup="true"
@@ -323,7 +323,7 @@ require_once SYSTEM . '/layouts/head.php';
                                                                 if ($user_group === 1) {
                                                                     echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'confirm\')">Записать</a>';
                                                                 }
-                                                                if (in_array($user_group, [1, 3, 4])) {
+                                                                if (in_array($user_group, [1, 3])) { // Убрали "4" (Агент) из массива
                                                                     echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'archive\')">В архив</a>';
                                                                 }
                                                                 break;
@@ -352,14 +352,12 @@ require_once SYSTEM . '/layouts/head.php';
                                                                 if ($user_group === 1) {
                                                                     echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'approve\')">Одобрить</a>';
                                                                     echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'decline\')">Отклонить</a>';
-                                                                    echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'archive\')">В архив</a>';
                                                                 }
                                                                 break;
                                                             case 6: // На рассмотрении у Менеджера
                                                                 if ($user_group === 3) {
                                                                     echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'approve_manager\')">Одобрить</a>';
                                                                     echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'decline\')">Отклонить</a>';
-                                                                    echo '<a class="dropdown-item" href="#" onclick="handleMassAction(\'archive\')">В архив</a>';
                                                                 }
                                                                 break;
                                                         }
@@ -596,8 +594,8 @@ require_once SYSTEM . '/layouts/head.php';
                                                                             echo '<a href="#" class="font-18 text-success me-2" onclick="sendConfirmClientForm(' . $client['client_id'] . ')" title="Записать"><i class="uil uil-check-circle"></i></a>';
                                                                         }
                                                                         
-                                                                        // "В архив" - для Директора и Агента (но не для Менеджера)
-                                                                        if (in_array($user_group, [1, 4])) {
+                                                                        // "В архив" - только для Директора
+                                                                        if ($user_group === 1) {
                                                                             echo '<a href="#" class="font-18 text-danger" title="В архив" onclick="modalDelClientForm(' . $client['client_id'] . ', \'' . $client_name_js . '\')"><i class="uil uil-trash"></i></a>';
                                                                         }
                                                                         break;
@@ -648,8 +646,7 @@ require_once SYSTEM . '/layouts/head.php';
                                                                         echo '<a href="/?page=edit-client&id=' . $client['client_id'] . '" class="font-18 text-info me-2" title="Просмотр"><i class="uil uil-eye"></i></a>';
                                                                         if ($user_group === 1) {
                                                                             echo '<a href="#" class="font-18 text-success me-2" onclick="sendApproveClientForm(' . $client['client_id'] . ')" title="Одобрить"><i class="uil uil-check-circle"></i></a>';
-                                                                            echo '<a href="#" class="font-18 text-danger me-2" onclick="modalDeclineClientForm(' . $client['client_id'] . ')" title="Отклонить"><i class="uil uil-times-circle"></i></a>';
-                                                                            echo '<a href="#" class="font-18 text-danger" title="В архив" onclick="modalDelClientForm(' . $client['client_id'] . ', \'' . $client_name_js . '\')"><i class="uil uil-trash"></i></a>';
+                                                                            echo '<a href="#" class="font-18 text-danger" onclick="modalDeclineClientForm(' . $client['client_id'] . ')" title="Отклонить"><i class="uil uil-times-circle"></i></a>';
                                                                         }
                                                                         break;
 
@@ -657,8 +654,7 @@ require_once SYSTEM . '/layouts/head.php';
                                                                         echo '<a href="/?page=edit-client&id=' . $client['client_id'] . '" class="font-18 text-info me-2" title="Просмотр"><i class="uil uil-eye"></i></a>';
                                                                         if ($user_group === 3) {
                                                                             echo '<a href="#" class="font-18 text-success me-2" onclick="sendApproveClientManagerForm(' . $client['client_id'] . ')" title="Одобрить"><i class="uil uil-check-circle"></i></a>';
-                                                                            echo '<a href="#" class="font-18 text-danger me-2" onclick="modalDeclineClientForm(' . $client['client_id'] . ')" title="Отклонить"><i class="uil uil-times-circle"></i></a>';
-                                                                            echo '<a href="#" class="font-18 text-danger" title="В архив" onclick="modalDelClientForm(' . $client['client_id'] . ', \'' . $client_name_js . '\')"><i class="uil uil-trash"></i></a>';
+                                                                            echo '<a href="#" class="font-18 text-danger" onclick="modalDeclineClientForm(' . $client['client_id'] . ')" title="Отклонить"><i class="uil uil-times-circle"></i></a>';
                                                                         }
                                                                         break;
 

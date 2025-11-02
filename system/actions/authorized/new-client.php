@@ -47,22 +47,12 @@ if ($user_data['user_group'] == 4) {
 
 // --- НАЧАЛО БЛОКА ВАЛИДАЦИИ ---
 
-// Получаем ID страны для загрузки настроек
-$country_id = null;
+// Загружаем настройки полей для этого визового центра
+$field_settings = [];
 if ($center_id) {
     $pdo_temp = db_connect();
-    $stmt_country = $pdo_temp->prepare("SELECT country_id FROM settings_centers WHERE center_id = ?");
-    $stmt_country->execute([$center_id]);
-    $country_id = $stmt_country->fetchColumn();
-    $pdo_temp = null;
-}
-
-// Загружаем настройки полей для этой страны
-$field_settings = [];
-if ($country_id) {
-    $pdo_temp = db_connect();
-    $stmt_fields = $pdo_temp->prepare("SELECT field_name, is_required FROM settings_country_fields WHERE country_id = ? AND is_required = 1");
-    $stmt_fields->execute([$country_id]);
+    $stmt_fields = $pdo_temp->prepare("SELECT field_name, is_required FROM settings_center_fields WHERE center_id = ? AND is_required = 1");
+    $stmt_fields->execute([$center_id]);
     $db_settings = $stmt_fields->fetchAll(PDO::FETCH_KEY_PAIR);
     if ($db_settings) {
         $field_settings = $db_settings;

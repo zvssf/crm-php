@@ -8,7 +8,7 @@ if (empty($client_id) || !preg_match('/^[0-9]{1,11}$/u', $client_id)) {
 try {
     $pdo = db_connect();
 
-    // Шаг 1: Проверка на заполненность
+    // Шаг 1: Получение данных анкеты
     $stmt_check = $pdo->prepare("SELECT * FROM `clients` WHERE `client_id` = :client_id");
     $stmt_check->execute([':client_id' => $client_id]);
     $client = $stmt_check->fetch(PDO::FETCH_ASSOC);
@@ -17,15 +17,36 @@ try {
         message('Ошибка', 'Анкета не найдена.', 'error', '');
     }
 
-    $required_fields = [
-        'first_name', 'last_name', 'gender', 'phone', 'email',
-        'passport_number', 'birth_date', 'passport_expiry_date', 'nationality',
-        'visit_date_start', 'visit_date_end', 'days_until_visit'
-    ];
-    foreach ($required_fields as $field) {
-        if (empty($client[$field])) {
+    // Шаг 2: Динамическая проверка на заполненность (дублирует логику check-client-completeness для надежности)
+    $center_id = $client['center_id'];
+
+    $stmt_fields = $pdo->prepare("SELECT `field_name` FROM `settings_center_fields` WHERE `center_id` = :center_id AND `is_required` = 1");
+    $stmt_fields->execute([':center_id' => $center_id]);
+    $required_center_fields = array_column($stmt_fields->fetchAll(PDO::FETCH_ASSOC), 'field_name');
+
+    $always_required = ['first_name', 'last_name', 'passport_number', 'sale_price'];
+    $fields_to_check = array_unique(array_merge($always_required, $required_center_fields));
+
+    foreach ($fields_to_check as $field) {
+        if ($field === 'phone' && (empty($client['phone_code']) || empty($client['phone_number']))) {
             message('Ошибка', 'Анкета заполнена не полностью. Отправка на рассмотрение невозможна.', 'error', '');
         }
+        if ($field === 'visit_dates' && (empty($client['visit_date_start']) || empty($client['visit_date_end']))) {
+            message('Ошибка', 'Анкета заполнена не полностью. Отправка на рассмотрение невозможна.', 'error', '');
+        }
+        if (!isset($client[$field]) || $client[$field] === '' || $client[$field] === null) {
+            message('Ошибка', 'Анкета заполнена не полностью. Отправка на рассмотрение невозможна.', 'error', '');
+        }
+    }
+
+    $stmt_cities = $pdo->prepare("SELECT COUNT(*) FROM `client_cities` WHERE `client_id` = :client_id");
+    $stmt_cities->execute([':client_id' => $client_id]);
+    if ($stmt_cities->fetchColumn() == 0) {
+        message('Ошибка', 'Анкета заполнена не полностью. Необходимо выбрать хотя бы одну категорию.', 'error', '');
+    }
+
+    if (empty($client['agent_id'])) {
+        message('Ошибка', 'Анкета заполнена не полностью. Необходимо назначить агента.', 'error', '');
     }
 
     // Шаг 2: Определяем следующий статус на основе того, КТО выполняет действие
