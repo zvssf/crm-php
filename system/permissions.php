@@ -6,7 +6,7 @@ return [
         'pages' => [
             'notfound', 'profile', 'dashboard', 'customers', 'finance', 'new-customer', 'edit-customer',
             'settings-centers', 'settings-countries', 'settings-cities', 'new-city', 'edit-city',
-            'settings-inputs', 'clients', 'new-client', 'edit-client',
+            'settings-inputs', 'clients', 'new-client', 'edit-client', 'settings-pdf-rules', 'pdf-upload',
         ],
         'forms' => [
             'profile-edit', 'profile-new-password', 'new-customer', 'edit-info-customer', 'edit-customer-new-password',
@@ -19,6 +19,7 @@ return [
             'check-client-completeness', 'get-client-categories', 'get-additional-fields',
             'get-min-sale-price', 'pay_client_credit', 'revert-recorded-client', 'get-center-fields', 'get_export_fields', 'export_clients_excel', 
             'mass-client-action', 'mass-center-action', 'mass-country-action', 'mass-city-action', 'mass-input-action', 'mass-customer-action',
+            'edit-pdf-rule', 'upload-client-pdfs', 'delete-pdf-rule',
         ],
     ],
     'supervisor' => [

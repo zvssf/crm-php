@@ -14,6 +14,11 @@ define('SYSTEM', ROOT . '/system');
 require_once SYSTEM . '/config.php';
 require_once SYSTEM . '/functions.php';
 
+// Подключаем автозагрузчик Composer для доступа к сторонним библиотекам
+if (file_exists(ROOT . '/vendor/autoload.php')) {
+    require_once ROOT . '/vendor/autoload.php';
+}
+
 $requestUri = $_SERVER['REQUEST_URI'] ?? '';
 
 if ($requestUri === '/') {

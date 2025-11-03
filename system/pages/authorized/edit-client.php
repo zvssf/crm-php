@@ -349,7 +349,7 @@ require_once SYSTEM . '/layouts/head.php';
                                                         паспорта</label>
                                                     <input type="text" class="form-control" id="passport_number"
                                                         name="passport_number" placeholder="Введите номер паспорта"
-                                                        value="<?= valid($client_data['passport_number']) ?>" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required
+                                                        value="<?= valid($client_data['passport_number']) ?>" required
                                                         <?= $is_readonly ? 'disabled' : '' ?>>
                                                 </div>
 

@@ -12,11 +12,11 @@ $email       = valid($_POST['email'] ?? null);
 
 $passport_number_raw  = valid($_POST['passport_number'] ?? null);
 
-if (!empty($passport_number_raw) && !preg_match('/^[0-9]+$/', $passport_number_raw)) {
-    message('Ошибка', 'Номер паспорта должен содержать только цифры!', 'error', '');
+if (!empty($passport_number_raw) && !preg_match('/^[a-zA-Z0-9]+$/', $passport_number_raw)) {
+    message('Ошибка', 'Номер паспорта должен содержать только латинские буквы и цифры!', 'error', '');
 }
 
-$passport_number      = preg_replace('/[^0-9]/', '', $passport_number_raw);
+$passport_number      = $passport_number_raw;
 $birth_date_raw       = valid($_POST['birth_date'] ?? null);
 $passport_expiry_raw  = valid($_POST['passport_expiry_date'] ?? null);
 $nationality          = valid($_POST['nationality'] ?? null);

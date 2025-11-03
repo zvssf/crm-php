@@ -164,6 +164,41 @@
         background-image: none !important;
         padding-right: 0.5rem;
     }
+
+    /* --- СТИЛИ ДЛЯ DROPZONE В ТЁМНОЙ ТЕМЕ --- */
+    html[data-theme="dark"] .dropzone {
+        background-color: #414d5f;
+        border: 2px dashed #536279;
+    }
+
+    html[data-theme="dark"] .dropzone .dz-message h3 {
+        color: #eef2f7;
+    }
+
+    html[data-theme="dark"] .dropzone .dz-message span {
+        color: #adb5bd;
+    }
+
+    html[data-theme="dark"] .dropzone.dz-drag-hover {
+        background-color: #4d5a6e;
+        border-color: #727cf5;
+    }
+    /* --- КОНЕЦ СТИЛЕЙ ДЛЯ DROPZONE --- */
+
+    /* --- СТИЛИ ДЛЯ SWEETALERT2 В ТЁМНОЙ ТЕМЕ --- */
+    html[data-theme="dark"] .swal2-popup {
+        background-color: #3b4452; /* Цвет фона модального окна */
+        color: #eef2f7; /* Цвет основного текста */
+    }
+
+    html[data-theme="dark"] .swal2-title {
+        color: #eef2f7; /* Цвет заголовка */
+    }
+
+    html[data-theme="dark"] .swal2-html-container {
+        color: #adb5bd; /* Цвет подтекста (чуть приглушенный) */
+    }
+    /* --- КОНЕЦ СТИЛЕЙ ДЛЯ SWEETALERT2 --- */
 </style>
 
 </head>

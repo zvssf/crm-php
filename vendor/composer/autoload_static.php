@@ -6,10 +6,18 @@ namespace Composer\Autoload;
 
 class ComposerStaticInitd076c82c2e20337ec8158f6621daa10f
 {
+    public static $files = array (
+        '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
+    );
+
     public static $prefixLengthsPsr4 = array (
         'Z' => 
         array (
             'ZipStream\\' => 10,
+        ),
+        'S' => 
+        array (
+            'Symfony\\Polyfill\\Mbstring\\' => 26,
         ),
         'P' => 
         array (
@@ -34,14 +42,18 @@ class ComposerStaticInitd076c82c2e20337ec8158f6621daa10f
         array (
             0 => __DIR__ . '/..' . '/maennchen/zipstream-php/src',
         ),
+        'Symfony\\Polyfill\\Mbstring\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-mbstring',
+        ),
         'Psr\\SimpleCache\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/simple-cache/src',
         ),
         'Psr\\Http\\Message\\' => 
         array (
-            0 => __DIR__ . '/..' . '/psr/http-message/src',
-            1 => __DIR__ . '/..' . '/psr/http-factory/src',
+            0 => __DIR__ . '/..' . '/psr/http-factory/src',
+            1 => __DIR__ . '/..' . '/psr/http-message/src',
         ),
         'Psr\\Http\\Client\\' => 
         array (
@@ -65,6 +77,16 @@ class ComposerStaticInitd076c82c2e20337ec8158f6621daa10f
         ),
     );
 
+    public static $prefixesPsr0 = array (
+        'S' => 
+        array (
+            'Smalot\\PdfParser\\' => 
+            array (
+                0 => __DIR__ . '/..' . '/smalot/pdfparser/src',
+            ),
+        ),
+    );
+
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
     );
@@ -74,6 +96,7 @@ class ComposerStaticInitd076c82c2e20337ec8158f6621daa10f
         return \Closure::bind(function () use ($loader) {
             $loader->prefixLengthsPsr4 = ComposerStaticInitd076c82c2e20337ec8158f6621daa10f::$prefixLengthsPsr4;
             $loader->prefixDirsPsr4 = ComposerStaticInitd076c82c2e20337ec8158f6621daa10f::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInitd076c82c2e20337ec8158f6621daa10f::$prefixesPsr0;
             $loader->classMap = ComposerStaticInitd076c82c2e20337ec8158f6621daa10f::$classMap;
 
         }, null, ClassLoader::class);

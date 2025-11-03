@@ -348,6 +348,15 @@
             </a>
         </li>
 
+        <?php if ($user_data['user_group'] == 1): // Только Директор видит загрузчик ?>
+        <li class="side-nav-item <?= ($page == 'pdf-upload') ? 'menuitem-active' : '' ?>">
+            <a href="/?page=pdf-upload" class="side-nav-link <?= ($page == 'pdf-upload') ? 'active' : '' ?>">
+                <i class="uil-file-upload-alt"></i>
+                <span>Загрузка PDF</span>
+            </a>
+        </li>
+        <?php endif; ?>
+
 
         <?php if (in_array($user_data['user_group'], [1, 2, 3])): // Только Директор, Руководитель и Менеджер видят сотрудников ?>
         <li class="side-nav-item <?= ($page == 'customers' or $page == 'new-customer' or $page == 'edit-customer') ? 'menuitem-active' : '' ?>">
@@ -370,14 +379,15 @@
         <?php endif; ?>
 
         <?php if ($user_data['user_group'] == 1): // Только Директор видит настройки ?>
-        <li class="side-nav-item <?= ($page == 'settings-centers' or $page == 'settings-countries' or $page == 'settings-cities' or $page == 'settings-inputs' or $page == 'settings-categories' or $page == 'new-cities' or $page == 'edit-cities') ? 'menuitem-active' : '' ?>">
-            <a data-bs-toggle="collapse" href="#sidebar-1" aria-expanded="false" aria-controls="sidebarPages" class="side-nav-link"><i class="uil-bright"></i><span>Настройки</span><span class="menu-arrow"></span></a>
-            <div class="collapse <?= ($page == 'settings-centers' or $page == 'settings-countries' or $page == 'settings-cities' or $page == 'settings-inputs' or $page == 'settings-categories' or $page == 'new-city' or $page == 'edit-city') ? 'show' : '' ?>" id="sidebar-1">
+        <li class="side-nav-item <?= ($page == 'settings-centers' or $page == 'settings-countries' or $page == 'settings-cities' or $page == 'settings-inputs' or $page == 'settings-pdf-rules' or $page == 'new-city' or $page == 'edit-city') ? 'menuitem-active' : '' ?>">
+            <a data-bs-toggle="collapse" href="#sidebar-1" aria-expanded="<?= ($page == 'settings-centers' or $page == 'settings-countries' or $page == 'settings-cities' or $page == 'settings-inputs' or $page == 'settings-pdf-rules' or $page == 'new-city' or $page == 'edit-city') ? 'true' : 'false' ?>" aria-controls="sidebarPages" class="side-nav-link"><i class="uil-bright"></i><span>Настройки</span><span class="menu-arrow"></span></a>
+            <div class="collapse <?= ($page == 'settings-centers' or $page == 'settings-countries' or $page == 'settings-cities' or $page == 'settings-inputs' or $page == 'settings-pdf-rules' or $page == 'new-city' or $page == 'edit-city') ? 'show' : '' ?>" id="sidebar-1">
                 <ul class="side-nav-second-level">
                     <li class="<?= ($page == 'settings-centers') ? 'menuitem-active' : '' ?>"><a href="/?page=settings-centers">Визовые центры</a></li>
                     <li class="<?= ($page == 'settings-countries') ? 'menuitem-active' : '' ?>"><a href="/?page=settings-countries">Страны</a></li>
                     <li class="<?= ($page == 'settings-cities' or $page == 'new-city' or $page == 'edit-city') ? 'menuitem-active' : '' ?>"><a href="/?page=settings-cities">Города</a></li>
                     <li class="<?= ($page == 'settings-inputs') ? 'menuitem-active' : '' ?>"><a href="/?page=settings-inputs">Дополнительные поля</a></li>
+                    <li class="<?= ($page == 'settings-pdf-rules') ? 'menuitem-active' : '' ?>"><a href="/?page=settings-pdf-rules">Правила обработки PDF</a></li>
                 </ul>
             </div>
         </li>
