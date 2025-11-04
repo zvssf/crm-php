@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 127.0.0.1:3306
--- Время создания: Ноя 03 2025 г., 02:14
+-- Время создания: Ноя 04 2025 г., 19:17
 -- Версия сервера: 8.0.30
 -- Версия PHP: 8.1.9
 
@@ -48,6 +48,7 @@ INSERT INTO `city_suppliers` (`id`, `city_id`, `supplier_id`) VALUES
 
 CREATE TABLE `clients` (
   `client_id` int NOT NULL,
+  `family_id` int DEFAULT NULL,
   `center_id` int NOT NULL,
   `agent_id` int DEFAULT NULL,
   `creator_id` int DEFAULT NULL,
@@ -74,23 +75,25 @@ CREATE TABLE `clients` (
   `payment_status` tinyint(1) NOT NULL DEFAULT '0',
   `client_status` int NOT NULL DEFAULT '1',
   `rejection_reason` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci,
-  `recording_uid` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL
+  `recording_uid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `pdf_file_path` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 
 --
 -- Дамп данных таблицы `clients`
 --
 
-INSERT INTO `clients` (`client_id`, `center_id`, `agent_id`, `creator_id`, `client_name`, `first_name`, `last_name`, `middle_name`, `gender`, `phone_code`, `phone_number`, `email`, `passport_number`, `birth_date`, `passport_expiry_date`, `nationality`, `visit_purpose`, `visit_date_start`, `visit_date_end`, `days_until_visit`, `notes`, `sale_price`, `paid_from_balance`, `paid_from_credit`, `payment_status`, `client_status`, `rejection_reason`, `recording_uid`) VALUES
-(17, 1, 19, 1, 'создал менеджер', 'менеджер', 'создал', NULL, 'male', '4', '352345', 'aa@a.r', '123', '4538-06-03', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '345.00', '0.00', '0.00', 0, 1, NULL, NULL),
-(18, 1, 33, 1, 'Функциональный за Агента Тест', 'Тест', 'Функциональный за Агента', NULL, 'male', '1', '23312', 'a@a.a', '123', NULL, NULL, NULL, NULL, NULL, NULL, 100, NULL, '4324.00', '0.00', '0.00', 0, 1, NULL, NULL),
-(19, 1, 33, 1, 'анкетовна анкета', 'анкета', 'анкетовна', NULL, 'male', '756', '756354', 'a@adsds.d', '657', '2008-03-04', '2025-10-16', 'AMERICAN', NULL, '2025-11-20', '2025-11-30', 38, NULL, '2000.00', '0.00', '0.00', 1, 4, NULL, NULL),
-(20, 1, 33, 1, 'тест тест', 'тест', 'тест', NULL, 'male', '4', '53654456', 'a@a.a', '12657897800', '2025-10-22', '2025-10-31', 'ALGERIAN', NULL, '2025-10-09', '2025-11-21', 0, NULL, '1000.00', '0.00', '0.00', 1, 4, NULL, NULL),
-(21, 1, 33, 1, '1 1', '1', '1', NULL, 'male', '6', '54243234', 'a@a.a', '234564243132', '2025-10-24', '2025-10-25', 'ALBANIAN', NULL, '2025-10-08', '2025-11-20', 2, NULL, '1000.00', '450.00', '550.00', 2, 2, NULL, '6907b2e2d3c89'),
-(22, 1, 33, 1, '2 2', '2', '2', NULL, 'male', '3', '45745867', 'a@a.a', '5687945326', '2025-10-08', '2025-10-25', 'ALBANIAN', NULL, '2025-10-15', '2025-11-21', 100, 'авпвапвапвапвапп', '50.00', '50.00', '0.00', 1, 2, NULL, '6907b2e4bec30'),
-(23, 1, 33, 1, '3 3', '3', '3', NULL, 'male', '7', '864558769', 'agA@a.a', '678955243', '2025-10-08', '2025-10-16', 'ALGERIAN', NULL, '2025-10-22', '2025-11-28', 8, NULL, '400.00', '1000.00', '0.00', 1, 1, NULL, NULL),
-(24, 1, 19, 1, '5 5', '5', '5', NULL, 'male', '4', '7564576', 'agA@a.a', '679802346523145', '2025-10-16', '2025-10-19', 'AMERICAN', NULL, '2025-10-17', '2025-11-28', 3, NULL, '1.00', '0.00', '0.00', 1, 1, NULL, NULL),
-(25, 7, 33, 1, 'Тест Тест', 'Тест', 'Тест', NULL, '', '1', '2314532435453', NULL, '1231233245543', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2000.00', '0.00', '0.00', 0, 3, NULL, NULL);
+INSERT INTO `clients` (`client_id`, `family_id`, `center_id`, `agent_id`, `creator_id`, `client_name`, `first_name`, `last_name`, `middle_name`, `gender`, `phone_code`, `phone_number`, `email`, `passport_number`, `birth_date`, `passport_expiry_date`, `nationality`, `visit_purpose`, `visit_date_start`, `visit_date_end`, `days_until_visit`, `notes`, `sale_price`, `paid_from_balance`, `paid_from_credit`, `payment_status`, `client_status`, `rejection_reason`, `recording_uid`, `pdf_file_path`) VALUES
+(17, NULL, 1, 19, 1, 'создал менеджер', 'менеджер', 'создал', NULL, 'male', '4', '352345', 'aa@a.r', '123', '4538-06-03', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '345.00', '0.00', '0.00', 0, 1, NULL, NULL, NULL),
+(18, NULL, 1, 33, 1, 'Функциональный за Агента Тест', 'Тест', 'Функциональный за Агента', NULL, 'male', '1', '23312', 'a@a.a', '123', NULL, NULL, NULL, NULL, NULL, NULL, 100, NULL, '4324.00', '0.00', '0.00', 0, 1, NULL, NULL, NULL),
+(19, NULL, 1, 33, 1, 'анкетовна анкета', 'анкета', 'анкетовна', NULL, 'male', '756', '756354', 'a@adsds.d', '657', '2008-03-04', '2025-10-16', 'AMERICAN', NULL, '2025-11-20', '2025-11-30', 38, NULL, '2000.00', '0.00', '0.00', 1, 4, NULL, NULL, NULL),
+(20, NULL, 1, 33, 1, 'тест тест', 'тест', 'тест', NULL, 'male', '4', '53654456', 'a@a.a', '12657897800', '2025-10-22', '2025-10-31', 'ALGERIAN', NULL, '2025-10-09', '2025-11-21', 0, NULL, '1000.00', '0.00', '0.00', 1, 4, NULL, NULL, NULL),
+(21, NULL, 1, 33, 1, '1 1', '1', '1', NULL, 'male', '6', '54243234', 'a@a.a', '234564243132', '2025-10-24', '2025-10-25', 'ALBANIAN', NULL, '2025-10-08', '2025-11-20', 2, NULL, '1000.00', '450.00', '550.00', 2, 2, NULL, '6907b2e2d3c89', NULL),
+(22, NULL, 1, 33, 1, '2 2', '2', '2', NULL, 'male', '3', '45745867', 'a@a.a', 'U33FF24519', '2025-10-08', '2025-10-25', 'ALBANIAN', NULL, '2025-10-15', '2025-11-21', 100, 'авпвапвапвапвапп', '50.00', '50.00', '0.00', 1, 2, NULL, '6907b2e4bec30', NULL),
+(23, NULL, 1, 33, 1, '3 3', '3', '3', NULL, 'male', '7', '864558769', 'agA@a.a', '678955243', '2025-10-08', '2025-10-16', 'ALGERIAN', NULL, '2025-10-22', '2025-11-28', 8, NULL, '400.00', '1000.00', '0.00', 1, 1, NULL, NULL, NULL),
+(24, NULL, 1, 19, 1, '5 5', '5', '5', NULL, 'male', '4', '7564576', 'agA@a.a', '679802346523145', '2025-10-16', '2025-10-19', 'AMERICAN', NULL, '2025-10-17', '2025-11-28', 3, NULL, '1.00', '0.00', '0.00', 1, 1, NULL, NULL, NULL),
+(25, NULL, 7, 33, 1, 'Тест Тест', 'Тест', 'Тест', NULL, '', '1', '2314532435453', NULL, '1231233245543', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2000.00', '0.00', '0.00', 0, 3, NULL, NULL, NULL),
+(26, NULL, 1, 33, 1, 'тест семьи', 'семьи', 'тест', NULL, 'male', '4325', '654765', 'fsdf@ff.f', '5345345tert', '2025-11-12', '2025-11-21', 'ALGERIAN', NULL, '2025-11-13', '2025-12-17', 9, NULL, '4000.00', '0.00', '0.00', 0, 3, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -137,7 +140,9 @@ INSERT INTO `client_cities` (`id`, `client_id`, `city_id`) VALUES
 (202, 19, 1),
 (241, 23, 1),
 (260, 21, 1),
-(262, 22, 1);
+(263, 22, 1),
+(280, 26, 1),
+(281, 26, 2);
 
 -- --------------------------------------------------------
 
@@ -148,6 +153,7 @@ INSERT INTO `client_cities` (`id`, `client_id`, `city_id`) VALUES
 CREATE TABLE `client_input_values` (
   `id` int NOT NULL,
   `client_id` int NOT NULL,
+  `relative_id` int DEFAULT NULL,
   `input_id` int NOT NULL,
   `value` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -156,12 +162,56 @@ CREATE TABLE `client_input_values` (
 -- Дамп данных таблицы `client_input_values`
 --
 
-INSERT INTO `client_input_values` (`id`, `client_id`, `input_id`, `value`) VALUES
-(60, 25, 11, '123'),
-(61, 25, 12, '2'),
-(62, 25, 13, 'Нет'),
-(74, 23, 13, 'Да'),
-(75, 22, 13, 'Да');
+INSERT INTO `client_input_values` (`id`, `client_id`, `relative_id`, `input_id`, `value`) VALUES
+(60, 25, NULL, 11, '123'),
+(61, 25, NULL, 12, '2'),
+(62, 25, NULL, 13, 'Нет'),
+(74, 23, NULL, 13, 'Да'),
+(76, 22, NULL, 13, 'Да'),
+(98, 26, NULL, 11, 'utyutyu'),
+(99, 26, NULL, 12, '1'),
+(100, 26, NULL, 13, 'Да');
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `client_relatives`
+--
+
+CREATE TABLE `client_relatives` (
+  `relative_id` int NOT NULL,
+  `family_id` int NOT NULL,
+  `first_name` varchar(100) DEFAULT NULL,
+  `last_name` varchar(100) DEFAULT NULL,
+  `middle_name` varchar(100) DEFAULT NULL,
+  `gender` varchar(10) DEFAULT NULL,
+  `phone_code` varchar(10) DEFAULT NULL,
+  `phone_number` varchar(20) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `passport_number` varchar(50) DEFAULT NULL,
+  `birth_date` date DEFAULT NULL,
+  `passport_expiry_date` date DEFAULT NULL,
+  `nationality` varchar(100) DEFAULT NULL,
+  `notes` text
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `families`
+--
+
+CREATE TABLE `families` (
+  `family_id` int NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+--
+-- Дамп данных таблицы `families`
+--
+
+INSERT INTO `families` (`family_id`, `created_at`) VALUES
+(1, '2025-11-03 22:26:54');
 
 -- --------------------------------------------------------
 
@@ -354,6 +404,27 @@ CREATE TABLE `login_attempts` (
   `attempts` int DEFAULT '1',
   `last_attempt` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `pdf_parsing_rules`
+--
+
+CREATE TABLE `pdf_parsing_rules` (
+  `rule_id` int NOT NULL,
+  `center_id` int NOT NULL,
+  `center_identifier_text` varchar(255) NOT NULL,
+  `passport_mask` varchar(255) DEFAULT NULL,
+  `rule_status` tinyint(1) NOT NULL DEFAULT '1'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+--
+-- Дамп данных таблицы `pdf_parsing_rules`
+--
+
+INSERT INTO `pdf_parsing_rules` (`rule_id`, `center_id`, `center_identifier_text`, `passport_mask`, `rule_status`) VALUES
+(6, 1, 'Group URN - FRR', 'NNxxxxxxNN', 1);
 
 -- --------------------------------------------------------
 
@@ -567,7 +638,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `user_login`, `user_password`, `user_group`, `user_status`, `user_session_key`, `user_firstname`, `user_lastname`, `user_tel`, `user_tel_2`, `user_balance`, `user_credit_limit`, `user_supervisor`, `can_export`, `user_address`, `user_website`, `user_messengers`, `user_comment`) VALUES
-(1, 'a@a.a', 'e10adc3949ba59abbe56e057f20f883e', 1, 1, 'KezBYaaiWksJjB7DVHgqe3Ntde48tWC1hvmNWidnjLyCov9g5D+nEsYRLIWJ9wwFdhWFm0kAyAVwEZLM7ocdCQLexZIevo2pBZujrlIIRvmNHUaXRVRbD8mkte/vQn44', 'Сергей', 'Фамилия', '+79009009090', NULL, '0.00', '0.00', 0, 0, NULL, NULL, NULL, NULL),
+(1, 'a@a.a', 'e10adc3949ba59abbe56e057f20f883e', 1, 1, 'QnGHQq8kyEmOexxSjulfBQoQt17VF8HCJzfsrlI5bieHPHgNxKvjJeI+ic7fatnfMwbOIYzSwCedK/Wxh/USQqI/jPGotdnqqd2T5MYY0aNJDf6nfm4k2czPDceY5NrP', 'Сергей', 'Фамилия', '+79009009090', NULL, '0.00', '0.00', 0, 0, NULL, NULL, NULL, NULL),
 (2, 'a@a.aa', '74b87337454200d4d33f80c4663dc5e5', 1, 1, '', 'Сергей', 'Фамилия', '+79009009091', NULL, '0.00', '0.00', 0, 0, NULL, NULL, NULL, NULL),
 (3, 'd@d.d', '74b87337454200d4d33f80c4663dc5e5', 2, 1, '', 'Имя', 'Фамилия', '+79009009092', NULL, '0.00', '0.00', 0, 0, NULL, NULL, NULL, NULL),
 (12, 's@s.ss', '74b87337454200d4d33f80c4663dc5e5', 3, 1, '', 'Олег', 'Фамилия', '+79009009093', NULL, '0.00', '0.00', 3, 0, NULL, NULL, NULL, NULL),
@@ -620,8 +691,9 @@ CREATE TABLE `user_export_settings` (
 --
 
 INSERT INTO `user_export_settings` (`id`, `user_id`, `center_id`, `settings`) VALUES
-(1, 1, 1, '{\"fields\":[\"c.middle_name\",\"phone_combined\",\"c.gender\",\"c.email\",\"c.birth_date\",\"c.passport_expiry_date\",\"c.nationality\",\"manager_name\",\"agent_name\",\"client_cities_list\",\"client_categories_list\",\"c.sale_price\",\"c.visit_date_start\",\"c.visit_date_end\",\"c.days_until_visit\",\"c.notes\",\"input_11\",\"input_12\",\"input_13\"],\"field_order\":{\"c.client_id\":\"\",\"c.last_name\":\"\",\"c.first_name\":\"\",\"c.middle_name\":\"\",\"phone_combined\":\"\",\"c.gender\":\"\",\"c.email\":\"\",\"c.passport_number\":\"\",\"c.birth_date\":\"\",\"c.passport_expiry_date\":\"\",\"c.nationality\":\"\",\"manager_name\":\"\",\"agent_name\":\"\",\"client_cities_list\":\"\",\"client_categories_list\":\"\",\"c.sale_price\":\"\",\"c.visit_date_start\":\"\",\"c.visit_date_end\":\"\",\"c.days_until_visit\":\"\",\"c.notes\":\"\",\"input_11\":\"\",\"input_12\":\"\",\"input_13\":\"\"}}'),
-(2, 33, 1, '{\"fields\":[\"c.middle_name\",\"phone_combined\",\"c.gender\",\"c.email\",\"manager_name\",\"agent_name\",\"client_cities_list\",\"client_categories_list\",\"c.sale_price\",\"c.visit_date_start\",\"c.visit_date_end\",\"c.days_until_visit\",\"c.notes\",\"input_11\",\"input_12\",\"input_13\"],\"field_order\":{\"c.client_id\":\"\",\"c.last_name\":\"\",\"c.first_name\":\"\",\"c.middle_name\":\"\",\"phone_combined\":\"\",\"c.gender\":\"\",\"c.email\":\"\",\"c.passport_number\":\"\",\"manager_name\":\"\",\"agent_name\":\"\",\"client_cities_list\":\"\",\"client_categories_list\":\"\",\"c.sale_price\":\"\",\"c.visit_date_start\":\"\",\"c.visit_date_end\":\"\",\"c.days_until_visit\":\"\",\"c.notes\":\"\",\"input_11\":\"\",\"input_12\":\"\",\"input_13\":\"\"}}');
+(1, 1, 1, '{\"fields\":[\"c.middle_name\",\"phone_combined\",\"c.birth_date\",\"c.passport_expiry_date\",\"c.nationality\",\"manager_name\",\"agent_name\",\"client_cities_list\",\"client_categories_list\",\"c.sale_price\",\"c.visit_date_start\",\"c.visit_date_end\",\"c.days_until_visit\",\"c.notes\",\"input_11\",\"input_12\",\"input_13\"],\"field_order\":{\"c.client_id\":\"\",\"c.last_name\":\"\",\"c.first_name\":\"\",\"c.middle_name\":\"\",\"phone_combined\":\"\",\"c.passport_number\":\"\",\"c.birth_date\":\"\",\"c.passport_expiry_date\":\"\",\"c.nationality\":\"\",\"manager_name\":\"\",\"agent_name\":\"\",\"client_cities_list\":\"\",\"client_categories_list\":\"\",\"c.sale_price\":\"\",\"c.visit_date_start\":\"\",\"c.visit_date_end\":\"\",\"c.days_until_visit\":\"\",\"c.notes\":\"\",\"input_11\":\"\",\"input_12\":\"\",\"input_13\":\"\"}}'),
+(2, 33, 1, '{\"fields\":[\"c.middle_name\",\"phone_combined\",\"c.gender\",\"c.email\",\"manager_name\",\"agent_name\",\"client_cities_list\",\"client_categories_list\",\"c.sale_price\",\"c.visit_date_start\",\"c.visit_date_end\",\"c.days_until_visit\",\"c.notes\",\"input_11\",\"input_12\",\"input_13\"],\"field_order\":{\"c.client_id\":\"\",\"c.last_name\":\"\",\"c.first_name\":\"\",\"c.middle_name\":\"\",\"phone_combined\":\"\",\"c.gender\":\"\",\"c.email\":\"\",\"c.passport_number\":\"\",\"manager_name\":\"\",\"agent_name\":\"\",\"client_cities_list\":\"\",\"client_categories_list\":\"\",\"c.sale_price\":\"\",\"c.visit_date_start\":\"\",\"c.visit_date_end\":\"\",\"c.days_until_visit\":\"\",\"c.notes\":\"\",\"input_11\":\"\",\"input_12\":\"\",\"input_13\":\"\"}}'),
+(6, 1, 2, '{\"fields\":[\"manager_name\",\"agent_name\",\"client_cities_list\",\"client_categories_list\",\"c.sale_price\",\"input_11\"],\"field_order\":{\"c.client_id\":\"\",\"c.last_name\":\"\",\"c.first_name\":\"\",\"c.passport_number\":\"\",\"manager_name\":\"\",\"agent_name\":\"\",\"client_cities_list\":\"\",\"client_categories_list\":\"\",\"c.sale_price\":\"\",\"input_11\":\"\"}}');
 
 --
 -- Индексы сохранённых таблиц
@@ -655,6 +727,19 @@ ALTER TABLE `client_input_values`
   ADD KEY `input_id_val_fk_idx` (`input_id`);
 
 --
+-- Индексы таблицы `client_relatives`
+--
+ALTER TABLE `client_relatives`
+  ADD PRIMARY KEY (`relative_id`),
+  ADD KEY `family_id` (`family_id`);
+
+--
+-- Индексы таблицы `families`
+--
+ALTER TABLE `families`
+  ADD PRIMARY KEY (`family_id`);
+
+--
 -- Индексы таблицы `fin_cashes`
 --
 ALTER TABLE `fin_cashes`
@@ -682,6 +767,13 @@ ALTER TABLE `login_attempts`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_login` (`user_login`),
   ADD KEY `ip_address` (`ip_address`);
+
+--
+-- Индексы таблицы `pdf_parsing_rules`
+--
+ALTER TABLE `pdf_parsing_rules`
+  ADD PRIMARY KEY (`rule_id`),
+  ADD UNIQUE KEY `center_id` (`center_id`);
 
 --
 -- Индексы таблицы `settings_centers`
@@ -760,19 +852,31 @@ ALTER TABLE `city_suppliers`
 -- AUTO_INCREMENT для таблицы `clients`
 --
 ALTER TABLE `clients`
-  MODIFY `client_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `client_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT для таблицы `client_cities`
 --
 ALTER TABLE `client_cities`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=263;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=282;
 
 --
 -- AUTO_INCREMENT для таблицы `client_input_values`
 --
 ALTER TABLE `client_input_values`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=76;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=101;
+
+--
+-- AUTO_INCREMENT для таблицы `client_relatives`
+--
+ALTER TABLE `client_relatives`
+  MODIFY `relative_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT для таблицы `families`
+--
+ALTER TABLE `families`
+  MODIFY `family_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT для таблицы `fin_cashes`
@@ -797,6 +901,12 @@ ALTER TABLE `fin_transactions`
 --
 ALTER TABLE `login_attempts`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+
+--
+-- AUTO_INCREMENT для таблицы `pdf_parsing_rules`
+--
+ALTER TABLE `pdf_parsing_rules`
+  MODIFY `rule_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT для таблицы `settings_centers`
@@ -850,7 +960,7 @@ ALTER TABLE `user_countries`
 -- AUTO_INCREMENT для таблицы `user_export_settings`
 --
 ALTER TABLE `user_export_settings`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- Ограничения внешнего ключа сохраненных таблиц
