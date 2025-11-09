@@ -35,6 +35,8 @@ if ($user_data['user_group'] != 4) {
     $agent_id = $user_data['user_id'];
 }
 
+$personas = $_POST['personas'] ?? [];
+
 // --- НАЧАЛО БЛОКА ВАЛИДАЦИИ ---
 
 $center_id = null;
@@ -255,6 +257,117 @@ try {
             }
         }
     }
+
+    // --- НАЧАЛО БЛОКА ОБРАБОТКИ ПЕРСОН ---
+    $family_id = $old_client_data['family_id'];
+
+    // 1. Создаем семью, если ее не было, а персоны появились
+    if (!empty($personas) && !$family_id) {
+        $stmt_family = $pdo->prepare("INSERT INTO `families` (`created_at`) VALUES (NOW())");
+        $stmt_family->execute();
+        $family_id = $pdo->lastInsertId();
+        $stmt_update_client_family = $pdo->prepare("UPDATE `clients` SET `family_id` = :family_id WHERE `client_id` = :client_id");
+        $stmt_update_client_family->execute([':family_id' => $family_id, ':client_id' => $client_id]);
+    } 
+    // 2. Удаляем семью, если она была, а все персоны удалены
+    elseif (empty($personas) && $family_id) {
+        // Сначала удаляем всех родственников и их доп. поля
+        $stmt_get_relatives = $pdo->prepare("SELECT relative_id FROM `client_relatives` WHERE `family_id` = :family_id");
+        $stmt_get_relatives->execute([':family_id' => $family_id]);
+        $relatives_to_delete_all = $stmt_get_relatives->fetchAll(PDO::FETCH_COLUMN);
+
+        if (!empty($relatives_to_delete_all)) {
+            $placeholders = implode(',', array_fill(0, count($relatives_to_delete_all), '?'));
+            $pdo->prepare("DELETE FROM `client_input_values` WHERE `relative_id` IN ($placeholders)")->execute($relatives_to_delete_all);
+            $pdo->prepare("DELETE FROM `client_relatives` WHERE `relative_id` IN ($placeholders)")->execute($relatives_to_delete_all);
+        }
+
+        // Затем отвязываем основную анкету и удаляем саму семью
+        $stmt_update_client_family = $pdo->prepare("UPDATE `clients` SET `family_id` = NULL WHERE `client_id` = :client_id");
+        $stmt_update_client_family->execute([':client_id' => $client_id]);
+        
+        $stmt_delete_family = $pdo->prepare("DELETE FROM `families` WHERE `family_id` = :family_id");
+        $stmt_delete_family->execute([':family_id' => $family_id]);
+        $family_id = null;
+    }
+
+    if ($family_id) {
+        // 3. Получаем ID всех существующих родственников и тех, что пришли из формы
+        $stmt_existing_relatives = $pdo->prepare("SELECT `relative_id` FROM `client_relatives` WHERE `family_id` = :family_id");
+        $stmt_existing_relatives->execute([':family_id' => $family_id]);
+        $existing_relative_ids = $stmt_existing_relatives->fetchAll(PDO::FETCH_COLUMN);
+
+        $submitted_relative_ids = [];
+        foreach ($personas as $p_data) {
+            if (!empty($p_data['relative_id'])) {
+                $submitted_relative_ids[] = (int)$p_data['relative_id'];
+            }
+        }
+        
+        // 4. Находим и удаляем тех, кого нет в форме
+        $relatives_to_delete = array_diff($existing_relative_ids, $submitted_relative_ids);
+        if (!empty($relatives_to_delete)) {
+            $placeholders = implode(',', array_fill(0, count($relatives_to_delete), '?'));
+            $pdo->prepare("DELETE FROM `client_input_values` WHERE `relative_id` IN ($placeholders)")->execute($relatives_to_delete);
+            $pdo->prepare("DELETE FROM `client_relatives` WHERE `relative_id` IN ($placeholders)")->execute($relatives_to_delete);
+        }
+
+        // 5. Обновляем и добавляем персон
+        foreach ($personas as $persona_data) {
+            $p_first_name = valid($persona_data['first_name'] ?? '');
+            $p_last_name = valid($persona_data['last_name'] ?? '');
+            
+            if (empty($p_first_name) || empty($p_last_name)) continue; // Пропускаем пустые
+
+            $p_relative_id = valid($persona_data['relative_id'] ?? null);
+            $p_middle_name = valid($persona_data['middle_name'] ?? null);
+            $p_gender = valid($persona_data['gender'] ?? 'male');
+            $p_phone_code = valid($persona_data['phone_code'] ?? null);
+            $p_phone_number = valid($persona_data['phone_number'] ?? null);
+            $p_email = valid($persona_data['email'] ?? null);
+            $p_passport_number = valid($persona_data['passport_number'] ?? '');
+            $p_birth_date_raw = valid($persona_data['birth_date'] ?? null);
+            $p_passport_expiry_raw = valid($persona_data['passport_expiry_date'] ?? null);
+            $p_nationality = valid($persona_data['nationality'] ?? null);
+            $p_additional_fields = $persona_data['additional_fields'] ?? [];
+            
+            $p_birth_date = !empty($p_birth_date_raw) ? DateTime::createFromFormat('d.m.Y', $p_birth_date_raw)->format('Y-m-d') : null;
+            $p_passport_expiry_date = !empty($p_passport_expiry_raw) ? DateTime::createFromFormat('d.m.Y', $p_passport_expiry_raw)->format('Y-m-d') : null;
+
+            $params = [
+                ':first_name' => $p_first_name, ':last_name' => $p_last_name, ':middle_name' => !empty($p_middle_name) ? $p_middle_name : null,
+                ':gender' => $p_gender, ':phone_code' => !empty($p_phone_code) ? preg_replace('/[^0-9]/', '', $p_phone_code) : null,
+                ':phone_number' => !empty($p_phone_number) ? preg_replace('/[^0-9]/', '', $p_phone_number) : null,
+                ':email' => !empty($p_email) ? $p_email : null, ':passport_number' => $p_passport_number, ':birth_date' => $p_birth_date,
+                ':passport_expiry_date' => $p_passport_expiry_date, ':nationality' => !empty($p_nationality) ? $p_nationality : null
+            ];
+
+            if (!empty($p_relative_id)) { // Обновление
+                $sql_relative = "UPDATE `client_relatives` SET `first_name`=:first_name, `last_name`=:last_name, `middle_name`=:middle_name, `gender`=:gender, `phone_code`=:phone_code, `phone_number`=:phone_number, `email`=:email, `passport_number`=:passport_number, `birth_date`=:birth_date, `passport_expiry_date`=:passport_expiry_date, `nationality`=:nationality WHERE `relative_id`=:relative_id";
+                $params[':relative_id'] = $p_relative_id;
+                $pdo->prepare($sql_relative)->execute($params);
+                $current_relative_id = $p_relative_id;
+            } else { // Добавление
+                $sql_relative = "INSERT INTO `client_relatives` (family_id, first_name, last_name, middle_name, gender, phone_code, phone_number, email, passport_number, birth_date, passport_expiry_date, nationality) VALUES (:family_id, :first_name, :last_name, :middle_name, :gender, :phone_code, :phone_number, :email, :passport_number, :birth_date, :passport_expiry_date, :nationality)";
+                $params[':family_id'] = $family_id;
+                $pdo->prepare($sql_relative)->execute($params);
+                $current_relative_id = $pdo->lastInsertId();
+            }
+
+            // Обновляем доп. поля для текущей персоны
+            $pdo->prepare("DELETE FROM `client_input_values` WHERE `relative_id` = ?")->execute([$current_relative_id]);
+            if (!empty($p_additional_fields)) {
+                $stmt_relative_inputs = $pdo->prepare("INSERT INTO `client_input_values` (`relative_id`, `input_id`, `value`) VALUES (:relative_id, :input_id, :value)");
+                foreach ($p_additional_fields as $input_id => $value) {
+                     $value = valid($value);
+                     if (!empty($value) && is_numeric($input_id)) {
+                        $stmt_relative_inputs->execute([':relative_id' => $current_relative_id, ':input_id' => $input_id, ':value' => $value]);
+                    }
+                }
+            }
+        }
+    }
+    // --- КОНЕЦ БЛОКА ОБРАБОТКИ ПЕРСОН ---
 
     $pdo->commit();
 

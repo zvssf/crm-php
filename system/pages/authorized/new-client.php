@@ -366,16 +366,112 @@ require_once SYSTEM . '/layouts/head.php';
                                             </div>
                                         </div>
 
+                                        <div id="personas-container">
+                                            <!-- Сюда будут добавляться блоки с новыми персонами -->
+                                        </div>
+
+                                        <!-- ШАБЛОН ДЛЯ НОВОЙ ПЕРСОНЫ (СКРЫТ) -->
+                                        <div id="persona-template" style="display: none;">
+                                            <div class="persona-block mt-4 pt-3 border-top">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <h4 class="header-title persona-title">Персона №</h4>
+                                                    <button type="button" class="btn btn-danger btn-sm btn-remove-persona"><i class="mdi mdi-trash-can-outline"></i> Удалить</button>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-xl-4">
+                                                        <h5 class="mb-4 text-uppercase"><i class="mdi mdi-account-circle me-1"></i> Основная информация</h5>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Фамилия</label>
+                                                            <input type="text" class="form-control" name="last_name" placeholder="Введите фамилию" required disabled>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Имя</label>
+                                                            <input type="text" class="form-control" name="first_name" placeholder="Введите имя" required disabled>
+                                                        </div>
+                                                        <?php if ($field_settings['middle_name']['is_visible']): ?>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Отчество</label>
+                                                            <input type="text" class="form-control" name="middle_name" placeholder="Введите отчество" <?php if ($field_settings['middle_name']['is_required']): ?>required<?php endif; ?> disabled>
+                                                        </div>
+                                                        <?php endif; ?>
+                                                        <?php if ($field_settings['phone']['is_visible']): ?>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Мобильный телефон</label>
+                                                            <div class="input-group">
+                                                                <span class="input-group-text">+</span>
+                                                                <input type="text" class="form-control" placeholder="Код" name="phone_code" style="max-width: 80px;" oninput="this.value = this.value.replace(/[^0-9]/g, '')" <?php if ($field_settings['phone']['is_required']): ?>required<?php endif; ?> disabled>
+                                                                <input type="text" class="form-control" placeholder="Номер телефона" name="phone_number" oninput="this.value = this.value.replace(/[^0-9]/g, '')" <?php if ($field_settings['phone']['is_required']): ?>required<?php endif; ?> disabled>
+                                                            </div>
+                                                        </div>
+                                                        <?php endif; ?>
+                                                        <?php if ($field_settings['gender']['is_visible']): ?>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Пол</label>
+                                                            <select class="form-select" name="gender" <?php if ($field_settings['gender']['is_required']): ?>required<?php endif; ?> disabled>
+                                                                <option value="male">Мужской</option>
+                                                                <option value="female">Женский</option>
+                                                            </select>
+                                                        </div>
+                                                        <?php endif; ?>
+                                                        <?php if ($field_settings['email']['is_visible']): ?>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Email</label>
+                                                            <input type="email" class="form-control" name="email" placeholder="Введите email" <?php if ($field_settings['email']['is_required']): ?>required<?php endif; ?> disabled>
+                                                        </div>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                    <div class="col-xl-4">
+                                                        <h5 class="mb-4 text-uppercase"><i class="mdi mdi-card-account-details-outline me-1"></i> Документы</h5>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Номер паспорта</label>
+                                                            <input type="text" class="form-control" name="passport_number" placeholder="Введите номер паспорта" required disabled>
+                                                        </div>
+                                                        <?php if ($field_settings['birth_date']['is_visible']): ?>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Дата рождения</label>
+                                                            <input type="text" class="form-control datepicker" name="birth_date" placeholder="ДД.ММ.ГГГГ" <?php if ($field_settings['birth_date']['is_required']): ?>required<?php endif; ?> disabled>
+                                                        </div>
+                                                        <?php endif; ?>
+                                                        <?php if ($field_settings['passport_expiry_date']['is_visible']): ?>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Срок действия паспорта</label>
+                                                            <input type="text" class="form-control datepicker" name="passport_expiry_date" placeholder="ДД.ММ.ГГГГ" <?php if ($field_settings['passport_expiry_date']['is_required']): ?>required<?php endif; ?> disabled>
+                                                        </div>
+                                                        <?php endif; ?>
+                                                        <?php if ($field_settings['nationality']['is_visible']): ?>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Национальность</label>
+                                                            <select class="form-control" data-toggle="select2" name="nationality" <?php if ($field_settings['nationality']['is_required']): ?>required<?php endif; ?> disabled>
+                                                                <option value="">Выберите национальность...</option>
+                                                                <?php foreach($nationalities_list as $nationality): ?>
+                                                                    <option value="<?= $nationality ?>"><?= $nationality ?></option>
+                                                                <?php endforeach; ?>
+                                                            </select>
+                                                        </div>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                    <div class="col-xl-4 persona-additional-fields-container">
+                                                        <!-- Сюда будут загружаться доп. поля -->
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    
+
                                         <div class="row">
                                             <div class="col-12">
-                                                <div class="text-end mt-2">
-                                                <button class="btn btn-success" type="submit" name="create-client" id="btn-create">
-                                                    <span class="spinner-border spinner-border-sm me-1 btn-loader visually-hidden" role="status" aria-hidden="true"></span>
-                                                    <span class="btn-icon"><i class="mdi mdi-content-save me-1"></i></span>
-                                                    <span class="loader-text visually-hidden">Отправка...</span>
-                                                    <span class="btn-text">Создать анкету</span>
-                                                </button>
-                                            </div>
+                                                <div class="d-flex justify-content-between mt-2">
+                                                    <button class="btn btn-info" type="button" id="btn-add-persona">
+                                                        <span class="btn-icon"><i class="mdi mdi-account-plus-outline me-1"></i></span>
+                                                        <span class="btn-text">Добавить персону</span>
+                                                    </button>
+                                                    <button class="btn btn-success" type="submit" form="form-new-client" id="btn-create">
+                                                        <span class="spinner-border spinner-border-sm me-1 btn-loader visually-hidden" role="status" aria-hidden="true"></span>
+                                                        <span class="btn-icon"><i class="mdi mdi-content-save me-1"></i></span>
+                                                        <span class="loader-text visually-hidden">Отправка...</span>
+                                                        <span class="btn-text">Создать анкету</span>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </form>
@@ -505,34 +601,6 @@ require_once SYSTEM . '/layouts/head.php';
                 });
             }
 
-            // При изменении выбора в select2 убираем подсветку ошибки
-            $('#select-agent, #select-manager, #nationality').on('change', function() {
-                $(this).next('.select2-container').removeClass('is-invalid');
-            });
-
-            $('#visit_dates').daterangepicker({
-                autoUpdateInput: false,
-                locale: { "format": "DD.MM.YYYY", "separator": " - ", "applyLabel": "Применить", "cancelLabel": "Отмена", "fromLabel": "С", "toLabel": "По", "weekLabel": "Н", "daysOfWeek": ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"], "monthNames": ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"], "firstDay": 1 }
-            });
-            $('#visit_dates').on('apply.daterangepicker', function(ev, picker) { 
-                $(this).val(picker.startDate.format('DD.MM.YYYY') + ' - ' + picker.endDate.format('DD.MM.YYYY')); 
-                
-                // Автоматический расчет дней
-                const startDate = picker.startDate;
-                const today = moment().startOf('day');
-                const diffDays = startDate.diff(today, 'days');
-                $('#days_until_visit').val(diffDays >= 0 ? diffDays : 0).trigger("change");
-            });
-            $('#visit_dates').on('cancel.daterangepicker', function(ev, picker) { 
-                $(this).val(''); 
-                $('#days_until_visit').val(0).trigger("change");
-            });
-            $('#visit_dates').val('');
-
-            $('#nationality').on('select2:open', function(e) {
-                document.querySelector('.select2-container--open .select2-search__field').setAttribute('placeholder', 'Поиск...');
-            });
-
             const datepickerOptions = {
                 singleDatePicker: true,
                 showDropdowns: true,
@@ -540,17 +608,50 @@ require_once SYSTEM . '/layouts/head.php';
                 locale: { "format": "DD.MM.YYYY", "applyLabel": "Применить", "cancelLabel": "Отмена", "fromLabel": "С", "toLabel": "По", "weekLabel": "Н", "daysOfWeek": ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"], "monthNames": ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"], "firstDay": 1 }
             };
 
-            $('#birth_date, #passport_expiry_date').daterangepicker(datepickerOptions);
+            function initializePlugins(context) {
+                // Инициализация Select2
+                context.find('[data-toggle="select2"]').not('#persona-template *').select2();
+                context.find('#select-agent, #select-manager, #nationality').on('change', function() {
+                    $(this).next('.select2-container').removeClass('is-invalid');
+                });
+                context.find('#nationality').on('select2:open', function(e) {
+                    document.querySelector('.select2-container--open .select2-search__field').setAttribute('placeholder', 'Поиск...');
+                });
 
-            $('#birth_date, #passport_expiry_date').on('apply.daterangepicker', function (ev, picker) {
-                $(this).val(picker.startDate.format('DD.MM.YYYY'));
-            });
+                // Инициализация Touchspin
+                context.find('[data-toggle="touchspin"]').not('#persona-template *').each(function() { $(this).TouchSpin($(this).data()); });
 
-            $('#birth_date, #passport_expiry_date').on('cancel.daterangepicker', function (ev, picker) {
-                $(this).val('');
-            });
+                // Инициализация DateRangePicker для одиночных дат
+                context.find('#birth_date, #passport_expiry_date, .datepicker').not('#persona-template *').daterangepicker(datepickerOptions)
+                    .on('apply.daterangepicker', function (ev, picker) { $(this).val(picker.startDate.format('DD.MM.YYYY')); })
+                    .on('cancel.daterangepicker', function (ev, picker) { $(this).val(''); });
 
-            $('#select-manager').on('change', function() {
+                // Инициализация DateRangePicker для диапазона дат
+                const visitDatesInput = context.find('#visit_dates').not('#persona-template *');
+                if (visitDatesInput.length > 0) {
+                    visitDatesInput.daterangepicker({
+                        autoUpdateInput: false,
+                        locale: { "format": "DD.MM.YYYY", "separator": " - ", "applyLabel": "Применить", "cancelLabel": "Отмена", "fromLabel": "С", "toLabel": "По", "weekLabel": "Н", "daysOfWeek": ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"], "monthNames": ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"], "firstDay": 1 }
+                    }).on('apply.daterangepicker', function(ev, picker) {
+                        $(this).val(picker.startDate.format('DD.MM.YYYY') + ' - ' + picker.endDate.format('DD.MM.YYYY'));
+                        const startDate = picker.startDate;
+                        const today = moment().startOf('day');
+                        const diffDays = startDate.diff(today, 'days');
+                        $('#days_until_visit').val(diffDays >= 0 ? diffDays : 0).trigger("change");
+                    }).on('cancel.daterangepicker', function(ev, picker) {
+                        $(this).val('');
+                        $('#days_until_visit').val(0).trigger("change");
+                    });
+                    if(context.is($(document))) { // Очищаем поле только при первой загрузке
+                        visitDatesInput.val('');
+                    }
+                }
+            }
+
+            // Первоначальная инициализация плагинов для всей страницы
+                initializePlugins($('#form-new-client'));
+
+                $('#select-manager').on('change', function() {
                 const managerId = $(this).val();
                 const agentSelect = $('#select-agent');
 
@@ -594,6 +695,93 @@ require_once SYSTEM . '/layouts/head.php';
                 }
                 agentSelect.trigger('change');
             });
+
+            // --- НАЧАЛО БЛОКА ЛОГИКИ ДЛЯ ПЕРСОН ---
+
+            let personaCount = 0;
+            const MAX_PERSONAS = 4;
+            const personasContainer = $('#personas-container');
+            const addPersonaBtn = $('#btn-add-persona');
+            const personaTemplate = $('#persona-template');
+
+            function reindexPersonas() {
+                personaCount = 0;
+                personasContainer.find('.persona-block').each(function() {
+                    const newIndex = personaCount;
+                    const block = $(this);
+                    block.find('.persona-title').text(`Персона №${newIndex + 1}`);
+
+                    block.find('input, select, textarea').each(function() {
+                        const el = $(this);
+                        const originalName = el.attr('data-original-name');
+                        if (originalName) {
+                            el.attr('name', `personas[${newIndex}][${originalName}]`);
+                        }
+                    });
+                    
+                    block.find('[name^="personas["][name*="[additional_fields]"]').each(function() {
+                        const el = $(this);
+                        const currentName = el.attr('name');
+                        const newName = currentName.replace(/personas\[\d+\]/, `personas[${newIndex}]`);
+                        el.attr('name', newName);
+                    });
+
+                    personaCount++;
+                });
+                addPersonaBtn.prop('disabled', personaCount >= MAX_PERSONAS);
+            }
+
+            function addPersona() {
+                if (personaCount >= MAX_PERSONAS) return;
+                const newIndex = personaCount;
+                const newPersonaBlock = personaTemplate.children('.persona-block').clone();
+
+                // --- НАЧАЛО НОВОГО БЛОКА ---
+                // Ищем все select-ы, которые уже были обработаны плагином (он добавляет им класс 'select2-hidden-accessible')
+                newPersonaBlock.find('select.select2-hidden-accessible').each(function() {
+                    const select_element = $(this);
+                    
+                    // 1. Удаляем визуальный дубликат (span-контейнер), который создал плагин
+                    select_element.next('.select2-container').remove();
+
+                    // 2. Возвращаем оригинальный <select> в его исходное состояние
+                    select_element.removeClass('select2-hidden-accessible');
+                    select_element.removeAttr('style'); // Убираем inline-стиль, который его скрывает
+                    select_element.removeAttr('aria-hidden');
+                    select_element.removeAttr('tabindex');
+                });
+                // --- КОНЕЦ НОВОГО БЛОКА ---
+
+                newPersonaBlock.find('input, select, textarea').prop('disabled', false); // ДОБАВЬТЕ ЭТУ СТРОКУ
+
+                newPersonaBlock.find('input, select, textarea').each(function() {
+                    const el = $(this);
+                    const originalName = el.attr('name');
+                    if(originalName) {
+                        el.attr('data-original-name', originalName);
+                        el.attr('name', `personas[${newIndex}][${originalName}]`);
+                    }
+                });
+
+                initializePlugins(newPersonaBlock);
+                personasContainer.append(newPersonaBlock);
+                reindexPersonas();
+                
+                const cityIds = [];
+                $('#hidden-city-inputs input').each(function() { cityIds.push($(this).val()); });
+                if (cityIds.length > 0) {
+                    loadAdditionalFields(cityIds, newPersonaBlock);
+                }
+            }
+
+            addPersonaBtn.on('click', addPersona);
+
+            personasContainer.on('click', '.btn-remove-persona', function() {
+                $(this).closest('.persona-block').remove();
+                reindexPersonas();
+            });
+
+            // --- КОНЕЦ БЛОКА ЛОГИКИ ДЛЯ ПЕРСОН ---
 
             const allCitiesData = <?= $cities_json ?>;
             const uniqueCityNames = <?= json_encode($unique_city_names) ?>;
@@ -716,27 +904,6 @@ require_once SYSTEM . '/layouts/head.php';
 
             updateSelectedCategoriesDisplay();
             
-            function sendAjaxRequest(formData) {
-                loaderBTN('#btn-create', 'true');
-                $.ajax({
-                    url:      '/?page=new-client&form=new-client',
-                    type:     'POST',
-                    dataType: 'html',
-                    data:     formData,
-                    success:  function(response) {
-                        loaderBTN('#btn-create', 'false');
-                        let result = $.parseJSON(response);
-                        if (result.success_type == 'message') {
-                            message(result.msg_title, result.msg_text, result.msg_type, result.msg_url);
-                        }
-                    },
-                    error: function() {
-                        loaderBTN('#btn-create', 'false');
-                        message('Ошибка', 'Ошибка отправки формы!', 'error', '');
-                    }
-                });
-            }
-
             // Отключаем отправку формы по нажатию Enter
             $('#form-new-client').on('keydown', 'input', function(event) {
                 if (event.key === 'Enter') {
@@ -744,6 +911,7 @@ require_once SYSTEM . '/layouts/head.php';
                 }
             });
 
+            // ЕДИНЫЙ ОБРАБОТЧИК ОТПРАВКИ ФОРМЫ
             $('#form-new-client').on('submit', function(event) {
                 event.preventDefault();
                 const form = $(this);
@@ -785,35 +953,73 @@ require_once SYSTEM . '/layouts/head.php';
                     message('Ошибка', 'Некорректная стоимость!', 'error');
                     return;
                 }
-                
-                sendAjaxRequest(form.serialize());
-            });
 
-            function loadAdditionalFields(cityIds) {
-                const container = $('#additional-fields-container');
-                const defaultText = '<hr><h5 class="mb-3 text-uppercase"><i class="mdi mdi-plus-box-outline me-1"></i> Дополнительные поля</h5><p class="text-muted">Выберите категории, чтобы увидеть доступные поля.</p>';
-
-                if (cityIds.length === 0) {
-                    container.html(defaultText);
-                    return;
-                }
-
+                // Если все проверки пройдены, отправляем AJAX
+                loaderBTN('#btn-create', 'true');
                 $.ajax({
-                    url: '/?form=get-additional-fields',
-                    type: 'POST',
-                    data: { city_ids: cityIds },
-                    success: function(response) {
-                        if (response.trim() !== '') {
-                            container.html(response);
-                        } else {
-                            container.html(defaultText);
+                    url:      '/?page=new-client&form=new-client',
+                    type:     'POST',
+                    dataType: 'html',
+                    data:     form.serialize(),
+                    success:  function(response) {
+                        loaderBTN('#btn-create', 'false');
+                        let result = $.parseJSON(response);
+                        if (result.success_type == 'message') {
+                            message(result.msg_title, result.msg_text, result.msg_type, result.msg_url);
                         }
                     },
                     error: function() {
-                        container.html('<hr><h5 class="mb-3 text-uppercase"><i class="mdi mdi-plus-box-outline me-1"></i> Дополнительные поля</h5><p class="text-danger">Ошибка загрузки дополнительных полей.</p>');
+                        loaderBTN('#btn-create', 'false');
+                        message('Ошибка', 'Ошибка отправки формы!', 'error', '');
                     }
                 });
+            });
+
+            function loadAdditionalFields(cityIds, context = null) {
+                const containers = context ? context.find('.persona-additional-fields-container') : $('.persona-additional-fields-container, #additional-fields-container');
+                const defaultText = '<h5 class="mb-3 text-uppercase"><i class="mdi mdi-plus-box-outline me-1"></i> Дополнительные поля</h5><p class="text-muted">Выберите категории, чтобы увидеть доступные поля.</p>';
+
+                if (cityIds.length === 0) {
+                    containers.html(defaultText);
+                    return;
+                }
+
+                containers.each(function() {
+                    const container = $(this);
+                    const personaBlock = container.closest('.persona-block');
+                    const personaIndex = personaBlock.length ? personasContainer.find('.persona-block').index(personaBlock) : -1;
+
+                    $.ajax({
+                        url: '/?form=get-additional-fields',
+                        type: 'POST',
+                        data: { city_ids: cityIds },
+                        success: function (response) {
+                            let finalHtml = '';
+                            const isMainContainer = container.is('#additional-fields-container');
+
+                            if (response.trim() !== '') {
+                                finalHtml = response;
+                                if (personaIndex !== -1) {
+                                    finalHtml = response.replace(/name="additional_fields\[/g, `name="personas[${personaIndex}][additional_fields][`);
+                                }
+                            } else {
+                                finalHtml = defaultText;
+                            }
+
+                            // Добавляем <hr> только для основного контейнера
+                            if (isMainContainer) {
+                                finalHtml = '<hr>' + finalHtml;
+                            }
+
+                            container.html(finalHtml);
+                        },
+                        error: function () {
+                            container.html('<hr><h5 class="mb-3 text-uppercase"><i class="mdi mdi-plus-box-outline me-1"></i> Дополнительные поля</h5><p class="text-danger">Ошибка загрузки.</p>');
+                        }
+                    });
+                });
             }
+
             function loadSalePrice(cityIds) {
                 // Функция оставлена для обратной совместимости вызовов,
                 // но поле "Стоимость" теперь всегда активно.
