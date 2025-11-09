@@ -45,7 +45,7 @@ try {
     }
 
     if ($inputs) {
-        echo '<hr><h5 class="mb-3 text-uppercase"><i class="mdi mdi-plus-box-outline me-1"></i> Дополнительные поля</h5>';
+        echo '<h5 class="mb-3 text-uppercase"><i class="mdi mdi-plus-box-outline me-1"></i> Дополнительные поля</h5>';
         
         foreach ($inputs as $input) {
             $input_id = $input['input_id'];

@@ -167,7 +167,6 @@ try {
     $sql_clients = "
         SELECT 
             c.*,
-            (SELECT COUNT(*) FROM `client_relatives` cr WHERE cr.family_id = c.family_id) as relatives_count,
             agent.user_firstname as agent_firstname,
             agent.user_lastname as agent_lastname,
             agent.user_group as agent_group,
@@ -444,7 +443,6 @@ require_once SYSTEM . '/layouts/head.php';
                                                     <th>Телефон</th>
                                                     <th>Номер паспорта</th>
                                                     <th>Города</th>
-                                                    <th>Семья</th>
                                                     <th>Категории</th>
                                                     <?php if (in_array($user_data['user_group'], [1, 2])): ?>
                                                         <th>Менеджер</th>
@@ -523,13 +521,6 @@ require_once SYSTEM . '/layouts/head.php';
                                                             </td>
                                                             <td><span
                                                                     style="display:none;"><?= $base_cities ?></span><?= valid($client['client_cities_list']) ?>
-                                                            </td>
-                                                            <td>
-                                                                <?php if ($client['family_id']): ?>
-                                                                    №<?= $client['family_id'] ?> (<?= $client['relatives_count'] + 1 ?> чел.)
-                                                                <?php else: ?>
-                                                                    —
-                                                                <?php endif; ?>
                                                             </td>
                                                             <td><span
                                                                     style="display:none;"><?= $base_categories ?></span><?= valid($client['client_categories_list']) ?>

@@ -50,9 +50,3 @@ if (empty($login)) {
     error_log('DB Error: ' . $e->getMessage());
     message('Ошибка', 'Произошла ошибка. Попробуйте позже.', 'error', '');
   }
-
-
-
-
-
-    
