@@ -167,6 +167,7 @@ try {
     $sql_clients = "
         SELECT 
             c.*,
+            fam.relative_count,
             agent.user_firstname as agent_firstname,
             agent.user_lastname as agent_lastname,
             agent.user_group as agent_group,
@@ -176,6 +177,11 @@ try {
             GROUP_CONCAT(DISTINCT sc.city_name ORDER BY sc.city_name SEPARATOR ', ') as client_cities_list,
             GROUP_CONCAT(DISTINCT sc.city_category ORDER BY sc.city_category SEPARATOR ', ') as client_categories_list
         " . $base_sql_from . "
+        LEFT JOIN (
+            SELECT `family_id`, COUNT(`relative_id`) AS relative_count 
+            FROM `client_relatives` 
+            GROUP BY `family_id`
+        ) fam ON c.family_id = fam.family_id
         LEFT JOIN `client_cities` cc ON c.client_id = cc.client_id
         LEFT JOIN `settings_cities` sc ON cc.city_id = sc.city_id
         " . $final_where_conditions . "
@@ -444,6 +450,7 @@ require_once SYSTEM . '/layouts/head.php';
                                                     <th>Номер паспорта</th>
                                                     <th>Города</th>
                                                     <th>Категории</th>
+                                                    <th>Семья</th>
                                                     <?php if (in_array($user_data['user_group'], [1, 2])): ?>
                                                         <th>Менеджер</th>
                                                         <th>Агент</th>
@@ -523,7 +530,16 @@ require_once SYSTEM . '/layouts/head.php';
                                                                     style="display:none;"><?= $base_cities ?></span><?= valid($client['client_cities_list']) ?>
                                                             </td>
                                                             <td><span
-                                                                    style="display:none;"><?= $base_categories ?></span><?= valid($client['client_categories_list']) ?>
+                                                                style="display:none;"><?= $base_categories ?></span><?= valid($client['client_categories_list']) ?>
+                                                            </td>
+                                                            <td>
+                                                                <span style="display:none;"><?= $client['family_id'] ?? 0 ?></span>
+                                                                <?php if (!empty($client['family_id'])):
+                                                                    $total_members = 1 + ($client['relative_count'] ?? 0); // 1 - это сам основной клиент
+                                                                    echo '№' . $client['family_id'] . ', ' . $total_members . ' чел.';
+                                                                else:
+                                                                    echo '—';
+                                                                endif; ?>
                                                             </td>
                                                             <?php if (in_array($user_data['user_group'], [1, 2])): ?>
                                                                 <td><span

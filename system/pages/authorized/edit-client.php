@@ -46,6 +46,13 @@ try {
     if (!$client_data) {
         exit('Анкета не найдена!');
     }
+
+    $relatives_data = [];
+    if (!empty($client_data['family_id'])) {
+        $stmt_relatives = $pdo->prepare("SELECT * FROM `client_relatives` WHERE `family_id` = :family_id ORDER BY `relative_id` ASC");
+        $stmt_relatives->execute([':family_id' => $client_data['family_id']]);
+        $relatives_data = $stmt_relatives->fetchAll(PDO::FETCH_ASSOC);
+    }
 } catch (PDOException $e) {
     error_log('DB Error: ' . $e->getMessage());
     exit('Ошибка при загрузке данных анкеты.');
@@ -492,9 +499,194 @@ require_once SYSTEM . '/layouts/head.php';
                                             </div>
                                         </div>
 
+                                        <div id="personas-container">
+                                            <?php if (!empty($relatives_data)): foreach ($relatives_data as $index => $relative): ?>
+                                                <div class="persona-block mt-4 pt-3 border-top">
+                                                    <input type="hidden" name="personas[<?= $index ?>][relative_id]" value="<?= $relative['relative_id'] ?>">
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <h4 class="header-title persona-title">Персона №<?= $index + 1 ?></h4>
+                                                        <button type="button" class="btn btn-danger btn-sm btn-remove-persona" <?= $is_readonly ? 'disabled' : '' ?>><i class="mdi mdi-trash-can-outline"></i> Удалить</button>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-xl-4">
+                                                            <h5 class="mb-4 text-uppercase"><i class="mdi mdi-account-circle me-1"></i> Основная информация</h5>
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Фамилия</label>
+                                                                <input type="text" class="form-control" name="personas[<?= $index ?>][last_name]" placeholder="Введите фамилию" value="<?= valid($relative['last_name']) ?>" required <?= $is_readonly ? 'disabled' : '' ?>>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Имя</label>
+                                                                <input type="text" class="form-control" name="personas[<?= $index ?>][first_name]" placeholder="Введите имя" value="<?= valid($relative['first_name']) ?>" required <?= $is_readonly ? 'disabled' : '' ?>>
+                                                            </div>
+                                                            <?php if ($field_settings['middle_name']['is_visible']): ?>
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Отчество</label>
+                                                                <input type="text" class="form-control" name="personas[<?= $index ?>][middle_name]" placeholder="Введите отчество" value="<?= valid($relative['middle_name']) ?>" <?php if ($field_settings['middle_name']['is_required'] && !$is_readonly): ?>required<?php endif; ?> <?= $is_readonly ? 'disabled' : '' ?>>
+                                                            </div>
+                                                            <?php endif; ?>
+                                                            <?php if ($field_settings['phone']['is_visible']): ?>
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Мобильный телефон</label>
+                                                                <div class="input-group">
+                                                                    <span class="input-group-text">+</span>
+                                                                    <input type="text" class="form-control" placeholder="Код" name="personas[<?= $index ?>][phone_code]" value="<?= valid($relative['phone_code']) ?>" style="max-width: 80px;" oninput="this.value = this.value.replace(/[^0-9]/g, '')" <?php if ($field_settings['phone']['is_required'] && !$is_readonly): ?>required<?php endif; ?> <?= $is_readonly ? 'disabled' : '' ?>>
+                                                                    <input type="text" class="form-control" placeholder="Номер телефона" name="personas[<?= $index ?>][phone_number]" value="<?= valid($relative['phone_number']) ?>" oninput="this.value = this.value.replace(/[^0-9]/g, '')" <?php if ($field_settings['phone']['is_required'] && !$is_readonly): ?>required<?php endif; ?> <?= $is_readonly ? 'disabled' : '' ?>>
+                                                                </div>
+                                                            </div>
+                                                            <?php endif; ?>
+                                                            <?php if ($field_settings['gender']['is_visible']): ?>
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Пол</label>
+                                                                <select class="form-select" name="personas[<?= $index ?>][gender]" <?php if ($field_settings['gender']['is_required'] && !$is_readonly): ?>required<?php endif; ?> <?= $is_readonly ? 'disabled' : '' ?>>
+                                                                    <option value="male" <?= ($relative['gender'] == 'male') ? 'selected' : '' ?>>Мужской</option>
+                                                                    <option value="female" <?= ($relative['gender'] == 'female') ? 'selected' : '' ?>>Женский</option>
+                                                                </select>
+                                                            </div>
+                                                            <?php endif; ?>
+                                                            <?php if ($field_settings['email']['is_visible']): ?>
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Email</label>
+                                                                <input type="email" class="form-control" name="personas[<?= $index ?>][email]" placeholder="Введите email" value="<?= valid($relative['email']) ?>" <?php if ($field_settings['email']['is_required'] && !$is_readonly): ?>required<?php endif; ?> <?= $is_readonly ? 'disabled' : '' ?>>
+                                                            </div>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                        <div class="col-xl-4">
+                                                            <h5 class="mb-4 text-uppercase"><i class="mdi mdi-card-account-details-outline me-1"></i> Документы</h5>
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Номер паспорта</label>
+                                                                <input type="text" class="form-control" name="personas[<?= $index ?>][passport_number]" placeholder="Введите номер паспорта" value="<?= valid($relative['passport_number']) ?>" required <?= $is_readonly ? 'disabled' : '' ?>>
+                                                            </div>
+                                                            <?php if ($field_settings['birth_date']['is_visible']): ?>
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Дата рождения</label>
+                                                                <input type="text" class="form-control datepicker" name="personas[<?= $index ?>][birth_date]" value="<?= !empty($relative['birth_date']) ? date('d.m.Y', strtotime($relative['birth_date'])) : '' ?>" placeholder="ДД.ММ.ГГГГ" <?php if ($field_settings['birth_date']['is_required'] && !$is_readonly): ?>required<?php endif; ?> <?= $is_readonly ? 'disabled' : '' ?>>
+                                                            </div>
+                                                            <?php endif; ?>
+                                                            <?php if ($field_settings['passport_expiry_date']['is_visible']): ?>
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Срок действия паспорта</label>
+                                                                <input type="text" class="form-control datepicker" name="personas[<?= $index ?>][passport_expiry_date]" value="<?= !empty($relative['passport_expiry_date']) ? date('d.m.Y', strtotime($relative['passport_expiry_date'])) : '' ?>" placeholder="ДД.ММ.ГГГГ" <?php if ($field_settings['passport_expiry_date']['is_required'] && !$is_readonly): ?>required<?php endif; ?> <?= $is_readonly ? 'disabled' : '' ?>>
+                                                            </div>
+                                                            <?php endif; ?>
+                                                            <?php if ($field_settings['nationality']['is_visible']): ?>
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Национальность</label>
+                                                                <select class="form-control" data-toggle="select2" name="personas[<?= $index ?>][nationality]" <?php if ($field_settings['nationality']['is_required'] && !$is_readonly): ?>required<?php endif; ?> <?= $is_readonly ? 'disabled' : '' ?>>
+                                                                    <option value="">Выберите национальность...</option>
+                                                                    <?php foreach($nationalities_list as $nationality): ?>
+                                                                        <option value="<?= $nationality ?>" <?= ($nationality == valid($relative['nationality'])) ? 'selected' : '' ?>><?= $nationality ?></option>
+                                                                    <?php endforeach; ?>
+                                                                </select>
+                                                            </div>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                        <div class="col-xl-4 persona-additional-fields-container" data-relative-id="<?= $relative['relative_id'] ?>">
+                                                            <!-- Сюда будут загружаться доп. поля -->
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            <?php endforeach; endif; ?>
+                                        </div>
+
+                                        <!-- ШАБЛОН ДЛЯ НОВОЙ ПЕРСОНЫ (СКРЫТ) -->
+                                        <div id="persona-template" style="display: none;">
+                                            <div class="persona-block mt-4 pt-3 border-top">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <h4 class="header-title persona-title">Персона №</h4>
+                                                    <button type="button" class="btn btn-danger btn-sm btn-remove-persona"><i class="mdi mdi-trash-can-outline"></i> Удалить</button>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-xl-4">
+                                                        <h5 class="mb-4 text-uppercase"><i class="mdi mdi-account-circle me-1"></i> Основная информация</h5>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Фамилия</label>
+                                                            <input type="text" class="form-control" name="last_name" placeholder="Введите фамилию" required disabled>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Имя</label>
+                                                            <input type="text" class="form-control" name="first_name" placeholder="Введите имя" required disabled>
+                                                        </div>
+                                                        <?php if ($field_settings['middle_name']['is_visible']): ?>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Отчество</label>
+                                                            <input type="text" class="form-control" name="middle_name" placeholder="Введите отчество" <?php if ($field_settings['middle_name']['is_required']): ?>required<?php endif; ?> disabled>
+                                                        </div>
+                                                        <?php endif; ?>
+                                                        <?php if ($field_settings['phone']['is_visible']): ?>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Мобильный телефон</label>
+                                                            <div class="input-group">
+                                                                <span class="input-group-text">+</span>
+                                                                <input type="text" class="form-control" placeholder="Код" name="phone_code" style="max-width: 80px;" oninput="this.value = this.value.replace(/[^0-9]/g, '')" <?php if ($field_settings['phone']['is_required']): ?>required<?php endif; ?> disabled>
+                                                                <input type="text" class="form-control" placeholder="Номер телефона" name="phone_number" oninput="this.value = this.value.replace(/[^0-9]/g, '')" <?php if ($field_settings['phone']['is_required']): ?>required<?php endif; ?> disabled>
+                                                            </div>
+                                                        </div>
+                                                        <?php endif; ?>
+                                                        <?php if ($field_settings['gender']['is_visible']): ?>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Пол</label>
+                                                            <select class="form-select" name="gender" <?php if ($field_settings['gender']['is_required']): ?>required<?php endif; ?> disabled>
+                                                                <option value="male">Мужской</option>
+                                                                <option value="female">Женский</option>
+                                                            </select>
+                                                        </div>
+                                                        <?php endif; ?>
+                                                        <?php if ($field_settings['email']['is_visible']): ?>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Email</label>
+                                                            <input type="email" class="form-control" name="email" placeholder="Введите email" <?php if ($field_settings['email']['is_required']): ?>required<?php endif; ?> disabled>
+                                                        </div>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                    <div class="col-xl-4">
+                                                        <h5 class="mb-4 text-uppercase"><i class="mdi mdi-card-account-details-outline me-1"></i> Документы</h5>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Номер паспорта</label>
+                                                            <input type="text" class="form-control" name="passport_number" placeholder="Введите номер паспорта" required disabled>
+                                                        </div>
+                                                        <?php if ($field_settings['birth_date']['is_visible']): ?>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Дата рождения</label>
+                                                            <input type="text" class="form-control datepicker" name="birth_date" placeholder="ДД.ММ.ГГГГ" <?php if ($field_settings['birth_date']['is_required']): ?>required<?php endif; ?> disabled>
+                                                        </div>
+                                                        <?php endif; ?>
+                                                        <?php if ($field_settings['passport_expiry_date']['is_visible']): ?>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Срок действия паспорта</label>
+                                                            <input type="text" class="form-control datepicker" name="passport_expiry_date" placeholder="ДД.ММ.ГГГГ" <?php if ($field_settings['passport_expiry_date']['is_required']): ?>required<?php endif; ?> disabled>
+                                                        </div>
+                                                        <?php endif; ?>
+                                                        <?php if ($field_settings['nationality']['is_visible']): ?>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Национальность</label>
+                                                            <select class="form-control" data-toggle="select2" name="nationality" <?php if ($field_settings['nationality']['is_required']): ?>required<?php endif; ?> disabled>
+                                                                <option value="">Выберите национальность...</option>
+                                                                <?php foreach($nationalities_list as $nationality): ?>
+                                                                    <option value="<?= $nationality ?>"><?= $nationality ?></option>
+                                                                <?php endforeach; ?>
+                                                            </select>
+                                                        </div>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                    <div class="col-xl-4 persona-additional-fields-container">
+                                                        <!-- Сюда будут загружаться доп. поля -->
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <div class="row">
                                             <div class="col-12">
-                                                <div class="text-end mt-2">
+                                                <div class="d-flex justify-content-between mt-2">
+                                                    <?php if (!$is_readonly): ?>
+                                                        <button class="btn btn-info" type="button" id="btn-add-persona">
+                                                            <span class="btn-icon"><i class="mdi mdi-account-plus-outline me-1"></i></span>
+                                                            <span class="btn-text">Добавить персону</span>
+                                                        </button>
+                                                    <?php else: ?>
+                                                        <div></div> <!-- Пустой div для сохранения верстки -->
+                                                    <?php endif; ?>
+
                                                     <?php if (!$is_readonly): ?>
                                                         <button class="btn btn-success" type="submit" id="btn-save">
                                                             <span
@@ -919,34 +1111,61 @@ require_once SYSTEM . '/layouts/head.php';
                 });
             });
 
-            function loadAdditionalFields(cityIds) {
-                const container = $('#additional-fields-container');
+            function loadAdditionalFields(cityIds, context = null, relativeId = null) {
+                const containers = context ? $(context) : $('.persona-additional-fields-container, #additional-fields-container');
                 const clientId = $('input[name="client_id"]').val();
-                const defaultText = '<hr><h5 class="mb-3 text-uppercase"><i class="mdi mdi-plus-box-outline me-1"></i> Дополнительные поля</h5><p class="text-muted">Выберите категории, чтобы увидеть доступные поля.</p>';
+                const defaultText = '<h5 class="mb-3 text-uppercase"><i class="mdi mdi-plus-box-outline me-1"></i> Дополнительные поля</h5><p class="text-muted">Выберите категории, чтобы увидеть доступные поля.</p>';
 
                 if (cityIds.length === 0) {
-                    container.html(defaultText);
+                    containers.html(isReadonly ? '' : defaultText);
+                    if ($('#additional-fields-container').is(containers)) {
+                        $('#additional-fields-container').prepend('<hr>');
+                    }
                     return;
                 }
 
-                $.ajax({
-                    url: '/?form=get-additional-fields',
-                    type: 'POST',
-                    data: {
-                        city_ids: cityIds,
-                        client_id: clientId,
-                        is_readonly: isReadonly
-                    },
-                    success: function (response) {
-                        if (response.trim() !== '') {
-                            container.html(response);
-                        } else {
-                            container.html(defaultText);
+                containers.each(function() {
+                    const container = $(this);
+                    const personaBlock = container.closest('.persona-block');
+                    const personaIndex = personaBlock.length ? personasContainer.find('.persona-block').index(personaBlock) : -1;
+                    const currentRelativeId = relativeId || container.data('relative-id') || null;
+
+                    $.ajax({
+                        url: '/?form=get-additional-fields',
+                        type: 'POST',
+                        data: {
+                            city_ids: cityIds,
+                            client_id: currentRelativeId ? null : clientId, // Отправляем client_id только для основной анкеты
+                            relative_id: currentRelativeId, // Отправляем ID родственника
+                            is_readonly: isReadonly
+                        },
+                        success: function (response) {
+                            let finalHtml = '';
+                            const isMainContainer = container.is('#additional-fields-container');
+
+                            if (response.trim() !== '') {
+                                finalHtml = response;
+                                if (personaIndex !== -1) {
+                                    finalHtml = response.replace(/name="additional_fields\[/g, `name="personas[${personaIndex}][additional_fields][`);
+                                }
+                            } else {
+                                finalHtml = isReadonly ? '' : defaultText;
+                            }
+
+                            if (isMainContainer) {
+                                finalHtml = '<hr>' + finalHtml;
+                            }
+
+                            container.html(finalHtml);
+                        },
+                        error: function () {
+                            let errorHtml = '<h5 class="mb-3 text-uppercase"><i class="mdi mdi-plus-box-outline me-1"></i> Дополнительные поля</h5><p class="text-danger">Ошибка загрузки.</p>';
+                            if (container.is('#additional-fields-container')) {
+                                errorHtml = '<hr>' + errorHtml;
+                            }
+                            container.html(errorHtml);
                         }
-                    },
-                    error: function () {
-                        container.html('<hr><h5 class="mb-3 text-uppercase"><i class="mdi mdi-plus-box-outline me-1"></i> Дополнительные поля</h5><p class="text-danger">Ошибка загрузки дополнительных полей.</p>');
-                    }
+                    });
                 });
             }
 
@@ -957,6 +1176,125 @@ require_once SYSTEM . '/layouts/head.php';
                 $('#sale_price').data('min-price', 0);
             }
         });
+        const datepickerOptions = {
+            singleDatePicker: true,
+            showDropdowns: true,
+            autoUpdateInput: false,
+            locale: { "format": "DD.MM.YYYY", "applyLabel": "Применить", "cancelLabel": "Отмена", "fromLabel": "С", "toLabel": "По", "weekLabel": "Н", "daysOfWeek": ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"], "monthNames": ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"], "firstDay": 1 }
+        };
+
+        function initializePlugins(context) {
+            context.find('[data-toggle="select2"]').not('#persona-template *').select2();
+            context.find('#select-agent, #select-manager, #nationality').on('change', function() { $(this).next('.select2-container').removeClass('is-invalid'); });
+            context.find('#nationality, [name*="[nationality]"]').on('select2:open', function(e) { document.querySelector('.select2-container--open .select2-search__field').setAttribute('placeholder', 'Поиск...'); });
+            context.find('[data-toggle="touchspin"]').not('#persona-template *').each(function() { $(this).TouchSpin($(this).data()); });
+            context.find('#birth_date, #passport_expiry_date, .datepicker').not('#persona-template *').daterangepicker(datepickerOptions)
+                .on('apply.daterangepicker', function (ev, picker) { $(this).val(picker.startDate.format('DD.MM.YYYY')); })
+                .on('cancel.daterangepicker', function (ev, picker) { $(this).val(''); });
+            const visitDatesInput = context.find('#visit_dates').not('#persona-template *');
+            if (visitDatesInput.length > 0) {
+                visitDatesInput.daterangepicker({
+                    autoUpdateInput: false,
+                    locale: { "format": "DD.MM.YYYY", "separator": " - ", "applyLabel": "Применить", "cancelLabel": "Отмена", "fromLabel": "С", "toLabel": "По", "weekLabel": "Н", "daysOfWeek": ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"], "monthNames": ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"], "firstDay": 1 }
+                }).on('apply.daterangepicker', function(ev, picker) {
+                    $(this).val(picker.startDate.format('DD.MM.YYYY') + ' - ' + picker.endDate.format('DD.MM.YYYY'));
+                    const startDate = picker.startDate;
+                    const today = moment().startOf('day');
+                    const diffDays = startDate.diff(today, 'days');
+                    $('#days_until_visit').val(diffDays >= 0 ? diffDays : 0).trigger("change");
+                }).on('cancel.daterangepicker', function(ev, picker) {
+                    $(this).val('');
+                    $('#days_until_visit').val(0).trigger("change");
+                });
+            }
+        }
+
+        initializePlugins($('#form-edit-client'));
+
+        let personaCount = <?= count($relatives_data) ?>;
+        const MAX_PERSONAS = 4;
+        const personasContainer = $('#personas-container');
+        const addPersonaBtn = $('#btn-add-persona');
+        const personaTemplate = $('#persona-template');
+
+        function reindexPersonas() {
+            let currentPersonas = 0;
+            personasContainer.find('.persona-block').each(function(index) {
+                const block = $(this);
+                block.find('.persona-title').text(`Персона №${index + 1}`);
+                
+                // Находим все элементы формы, у которых есть исходное имя в data-атрибуте
+                block.find('[data-original-name]').each(function() {
+                    const el = $(this);
+                    const originalName = el.data('original-name');
+                    const newName = `personas[${index}][${originalName}]`;
+                    el.attr('name', newName);
+                });
+
+                // Отдельно обрабатываем доп. поля, которые подгружаются динамически
+                block.find('[name*="[additional_fields]"]').each(function() {
+                    const el = $(this);
+                    const currentName = el.attr('name');
+                    const newName = currentName.replace(/personas\[\d+\]/, `personas[${index}]`);
+                    el.attr('name', newName);
+                });
+
+                currentPersonas++;
+            });
+            personaCount = currentPersonas;
+            addPersonaBtn.prop('disabled', personaCount >= MAX_PERSONAS);
+        }
+
+        function addPersona() {
+            if (personaCount >= MAX_PERSONAS) return;
+            const newPersonaBlock = personaTemplate.children('.persona-block').clone();
+            
+            newPersonaBlock.find('select.select2-hidden-accessible').each(function() {
+                const select_element = $(this);
+                select_element.next('.select2-container').remove();
+                select_element.removeClass('select2-hidden-accessible').removeAttr('style').removeAttr('aria-hidden').removeAttr('tabindex');
+            });
+            
+            newPersonaBlock.find('input, select, textarea').prop('disabled', false);
+
+            newPersonaBlock.find('input, select, textarea').each(function() {
+                const el = $(this);
+                const originalName = el.attr('name');
+                if(originalName) {
+                    el.attr('data-original-name', originalName);
+                }
+            });
+
+            initializePlugins(newPersonaBlock);
+            personasContainer.append(newPersonaBlock);
+            reindexPersonas();
+            
+            const cityIds = [];
+            $('#hidden-city-inputs input').each(function() { cityIds.push($(this).val()); });
+            if (cityIds.length > 0) {
+                loadAdditionalFields(cityIds, newPersonaBlock);
+            }
+        }
+
+        addPersonaBtn.on('click', addPersona);
+        personasContainer.on('click', '.btn-remove-persona', function() {
+            $(this).closest('.persona-block').remove();
+            reindexPersonas();
+        });
+
+        // При загрузке страницы, вызываем loadAdditionalFields для уже существующих персон
+        $('.persona-additional-fields-container').each(function(){
+            const container = $(this);
+            const relativeId = container.data('relative-id');
+            const cityIds = [];
+            $('#hidden-city-inputs input').each(function() { cityIds.push($(this).val()); });
+            
+            if(cityIds.length > 0) {
+                loadAdditionalFields(cityIds, container, relativeId);
+            }
+        });
+
+        reindexPersonas(); // Первичная проверка и отключение кнопки, если нужно
     </script>
 </body>
 

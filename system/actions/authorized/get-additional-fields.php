@@ -6,6 +6,7 @@ $disabled_attr = $is_readonly ? 'disabled' : '';
 
 $city_ids = $_POST['city_ids'] ?? [];
 $client_id = valid($_POST['client_id'] ?? null);
+$relative_id = valid($_POST['relative_id'] ?? null);
 
 if (empty($city_ids) || !is_array($city_ids)) {
     exit;
@@ -39,8 +40,12 @@ try {
 
     $saved_values = [];
     if (!empty($client_id)) {
-        $stmt_values = $pdo->prepare("SELECT `input_id`, `value` FROM `client_input_values` WHERE `client_id` = ?");
-        $stmt_values->execute([$client_id]);
+        $stmt_values = $pdo->prepare("SELECT `input_id`, `value` FROM `client_input_values` WHERE `client_id` = :id AND `relative_id` IS NULL");
+        $stmt_values->execute([':id' => $client_id]);
+        $saved_values = $stmt_values->fetchAll(PDO::FETCH_KEY_PAIR);
+    } elseif (!empty($relative_id)) {
+        $stmt_values = $pdo->prepare("SELECT `input_id`, `value` FROM `client_input_values` WHERE `relative_id` = :id");
+        $stmt_values->execute([':id' => $relative_id]);
         $saved_values = $stmt_values->fetchAll(PDO::FETCH_KEY_PAIR);
     }
 
