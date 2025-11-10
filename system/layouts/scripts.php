@@ -1,6 +1,16 @@
 <!-- Vendor js -->
 <script src="assets/js/vendor.min.js?v=<?= $crm_version ?>"></script>
 
+<!-- Dropzone auto-discovery disable -->
+<script>
+    // Глобально отключаем автоматический поиск и инициализацию Dropzone
+    // Это нужно сделать ПОСЛЕ загрузки vendor.js (где живет библиотека)
+    // и ДО загрузки app.js (где живет инициализатор темы)
+    if (typeof Dropzone !== 'undefined') {
+        Dropzone.autoDiscover = false;
+    }
+</script>
+
 
 
 <script src="assets/vendor/jquery-toast-plugin/jquery.toast.min.js?v=<?= $crm_version ?>"></script>
@@ -62,7 +72,14 @@
     <!-- Clients App js -->
     <script src="assets/js/pages/clients.js?v=<?= $crm_version ?>"></script>
 
+    <?php elseif($page == 'pdf-upload'): ?>
+
+    <!-- PDF Upload App js -->
+    <script src="assets/js/pages/pdf-upload.js?v=<?= $crm_version ?>"></script>
+
     <?php endif; ?>
+
+    
 
 
 

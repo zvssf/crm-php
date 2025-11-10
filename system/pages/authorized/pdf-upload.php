@@ -30,15 +30,15 @@ require_once SYSTEM . '/layouts/head.php';
                     </div>
 
                     <div class="row">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-body">
+                        <!-- Левая колонка - Загрузка -->
+                        <div class="col-lg-5 d-flex flex-column">
+                            <div class="card flex-grow-1">
+                                <div class="card-body d-flex flex-column">
                                     <h4 class="header-title">Загрузка файлов</h4>
                                     <p class="text-muted font-14">
-                                        Перетащите файлы в область ниже или кликните для выбора. Система автоматически попытается распознать и прикрепить каждый файл к соответствующей анкете на основе настроенных правил.
+                                        Перетащите файлы в область ниже или кликните для выбора.
                                     </p>
-
-                                    <form action="/?form=upload-client-pdfs" class="dropzone" id="my-awesome-dropzone" data-plugin="dropzone" data-previews-container="#file-previews" data-upload-preview-template="#uploadPreviewTemplate">
+                                    <form action="/?form=upload-client-pdfs" class="dropzone flex-grow-1" id="my-awesome-dropzone">
                                         <div class="fallback">
                                             <input name="client_pdfs" type="file" multiple />
                                         </div>
@@ -48,85 +48,51 @@ require_once SYSTEM . '/layouts/head.php';
                                             <span class="text-muted font-13">(Файлы будут обработаны автоматически после загрузки)</span>
                                         </div>
                                     </form>
+                                </div>
+                            </div>
+                        </div>
 
-                                    <!-- Preview -->
-                                    <div class="dropzone-previews mt-3" id="file-previews"></div>
-
-                                    <!-- File Preview Template -->
-                                    <div class="d-none" id="uploadPreviewTemplate">
-                                        <div class="card mt-1 mb-0 shadow-none border">
-                                            <div class="p-2">
-                                                <div class="row align-items-center">
-                                                    <div class="col-auto">
-                                                        <img data-dz-thumbnail class="avatar-sm rounded bg-light" alt="">
-                                                    </div>
-                                                    <div class="col ps-0">
-                                                        <a href="javascript:void(0);" class="text-muted fw-bold" data-dz-name></a>
-                                                        <p class="mb-0" data-dz-size></p>
-                                                    </div>
-                                                    <div class="col-auto">
-                                                        <!-- "Дополнительно" кнопка -->
-                                                        <a href="" class="btn btn-link btn-lg text-muted" data-dz-remove></a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                        <!-- Правая колонка - Результаты -->
+                        <div class="col-lg-7 d-flex flex-column">
+                            <div class="card flex-grow-1">
+                                <div class="card-body d-flex flex-column">
+                                    <h4 class="header-title">Результаты обработки</h4>
+                                    <p class="text-muted font-14">
+                                        Статус привязки каждого загруженного файла будет отображен здесь.
+                                    </p>
+                                    <div class="table-responsive flex-grow-1">
+                                        <table class="table table-centered table-striped dt-responsive nowrap w-100" id="upload-results-datatable">
+                                            <thead>
+                                                <tr>
+                                                    <th>Имя файла</th>
+                                                    <th>Размер</th>
+                                                    <th>Статус</th>
+                                                    <th style="width: 150px;">Действия</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- Строки будут добавляться через JavaScript -->
+                                            </tbody>
+                                        </table>
                                     </div>
-
-                                </div> <!-- end card-body-->
-                            </div> <!-- end card-->
-                        </div> <!-- end col-->
+                                </div>
+                            </div>
+                        </div>
                     </div> <!-- end row -->
+
+                    <!-- Скрытый шаблон для превью в Dropzone (если понадобится) -->
+                    <div class="d-none" id="file-previews"></div>
+                    <div class="d-none" id="uploadPreviewTemplate"></div>
                 </div>
             </div>
             <?php require_once SYSTEM . '/layouts/footer.php'; ?>
         </div>
     </div>
 
-    <?php require_once SYSTEM . '/layouts/scripts.php'; ?>
     <!-- Dropzone js -->
     <script src="assets/vendor/dropzone/min/dropzone.min.js"></script>
 
-    <script>
-        // Отключаем автообнаружение Dropzone, чтобы настроить его вручную
-        Dropzone.autoDiscover = false;
+    <?php require_once SYSTEM . '/layouts/scripts.php'; ?>
 
-        $(document).ready(function() {
-            // Инициализация Dropzone с нашими параметрами
-            var myDropzone = new Dropzone("#my-awesome-dropzone", {
-                paramName: "client_pdfs", // Имя, под которым файлы будут отправлены на сервер
-                acceptedFiles: "application/pdf", // Принимать только PDF
-                autoProcessQueue: true, // Начинать загрузку сразу после добавления
-                parallelUploads: 5, // Загружать по 5 файлов одновременно
-                dictDefaultMessage: "Перетащите файлы сюда для загрузки",
-                dictInvalidFileType: "Разрешены только PDF-файлы.",
-                
-                // Обработка ответа от сервера после загрузки каждого файла
-                init: function() {
-                    this.on("success", function(file, response) {
-                        try {
-                            var result = JSON.parse(response);
-                            // Обновляем внешний вид файла в списке в зависимости от ответа
-                            if (result.status === 'success') {
-                                $(file.previewElement).find('.col-auto a').html('<i class="mdi mdi-check-circle text-success"></i>');
-                                $(file.previewElement).find('.col-ps-0').append('<p class="mb-0 text-success">Привязан к анкете #' + result.client_id + '</p>');
-                            } else {
-                                $(file.previewElement).find('.col-auto a').html('<i class="mdi mdi-close-circle text-danger"></i>');
-                                $(file.previewElement).find('.col-ps-0').append('<p class="mb-0 text-danger">' + result.message + '</p>');
-                            }
-                        } catch (e) {
-                            $(file.previewElement).find('.col-auto a').html('<i class="mdi mdi-close-circle text-danger"></i>');
-                            $(file.previewElement).find('.col-ps-0').append('<p class="mb-0 text-danger">Ошибка ответа сервера.</p>');
-                        }
-                    });
-
-                    this.on("error", function(file, errorMessage) {
-                        $(file.previewElement).find('.col-auto a').html('<i class="mdi mdi-close-circle text-danger"></i>');
-                        $(file.previewElement).find('.col-ps-0').append('<p class="mb-0 text-danger">' + (errorMessage.error || errorMessage) + '</p>');
-                    });
-                }
-            });
-        });
-    </script>
 </body>
 </html>
