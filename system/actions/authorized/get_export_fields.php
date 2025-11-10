@@ -25,6 +25,7 @@ if (empty($country_id)) {
 
 $fields = [
     'c.client_id' => 'ID',
+    'c.family_id' => '№ семьи',
     'c.first_name' => 'Имя',
     'c.last_name' => 'Фамилия',
     'c.middle_name' => 'Отчество',
@@ -59,6 +60,11 @@ try {
         $saved_data = json_decode($saved_settings_json, true);
         $saved_fields = $saved_data['fields'] ?? null;
         $saved_order = $saved_data['field_order'] ?? null;
+    }
+
+    // Принудительно добавляем '№ семьи' в список для отображения, если его там нет
+    if ($saved_fields !== null && !in_array('c.family_id', $saved_fields)) {
+        $saved_fields[] = 'c.family_id';
     }
 } catch (PDOException $e) {
     error_log('DB Error getting user export settings: ' . $e->getMessage());
@@ -103,11 +109,6 @@ function render_switch($key, $label, $default_checked, $is_disabled) {
     } else {
         $is_checked = $default_checked;
     }
-    
-    // Поля, которые нельзя отключить, всегда должны быть отмечены
-    if ($is_disabled) {
-        $is_checked = true;
-    }
 
     $order_value = $saved_order[$key] ?? '';
 
@@ -151,6 +152,7 @@ echo '<div class="row">';
 echo '<div class="col-xl-4">';
 echo '<h5 class="mb-3 text-uppercase"><i class="mdi mdi-account-circle me-1"></i> Основная информация</h5>';
 render_switch('c.client_id', 'ID', true, true);
+render_switch('c.family_id', '№ семьи', true, true); // Добавили сюда и сделали обязательным
 render_switch('c.last_name', 'Фамилия', true, true);
 render_switch('c.first_name', 'Имя', true, true);
 if (in_array('middle_name', $visible_fields)) render_switch('c.middle_name', 'Отчество', true, false);
@@ -190,6 +192,7 @@ if (!empty($additional_inputs)) {
         render_switch('input_' . $id, $name, true, false);
     }
 }
+
 echo '</div>';
 
 echo '</div>';

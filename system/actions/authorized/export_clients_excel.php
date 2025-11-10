@@ -11,6 +11,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 // Валидация входных данных
 $center_id = valid($_POST['center_id'] ?? '');
@@ -21,7 +22,7 @@ $fields = $_POST['fields'] ?? [];
 $field_order = $_POST['field_order'] ?? [];
 
 // Вручную добавляем поля, которые всегда включены, но не отправляются формой, так как они disabled
-$always_on_fields = ['c.client_id', 'c.first_name', 'c.last_name', 'c.passport_number'];
+$always_on_fields = ['c.client_id', 'c.family_id', 'c.first_name', 'c.last_name', 'c.passport_number'];
 $fields = array_merge($always_on_fields, $fields);
 $fields = array_unique($fields); // На случай, если что-то пойдет не так
 
@@ -32,7 +33,7 @@ if (empty($center_id) || empty($status_id) || empty($fields)) {
 
 // Словарь для перевода ключей полей в человекочитаемые названия
 $field_labels = [
-    'c.client_id' => 'ID', 'c.first_name' => 'Имя', 'c.last_name' => 'Фамилия', 'c.middle_name' => 'Отчество',
+    'c.client_id' => 'ID', 'c.family_id' => '№ семьи', 'c.first_name' => 'Имя', 'c.last_name' => 'Фамилия', 'c.middle_name' => 'Отчество',
     'phone_combined' => 'Телефон', 'c.email' => 'Email', 'c.gender' => 'Пол', 'c.passport_number' => 'Номер паспорта',
     'c.birth_date' => 'Дата рождения', 'c.passport_expiry_date' => 'Срок действия паспорта', 'c.nationality' => 'Национальность',
     'c.visit_date_start' => 'Дата визита (начало)', 'c.visit_date_end' => 'Дата визита (конец)', 'c.days_until_visit' => 'Дней до визита',
@@ -63,7 +64,6 @@ try {
     }
 
     // --- ФОРМИРОВАНИЕ ОСНОВНОГО ЗАПРОСА ---
-    // (Этот блок остается без изменений, так как он корректно получает данные)
     $sql = "
         SELECT 
             c.*,
@@ -100,13 +100,25 @@ try {
     $stmt->execute($params);
     $clients = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Получаем значения доп. полей
+    $family_ids = array_filter(array_column($clients, 'family_id'));
+    $relatives_by_family = [];
+    if (!empty($family_ids)) {
+        $placeholders = implode(',', array_fill(0, count($family_ids), '?'));
+        $stmt_relatives = $pdo->prepare("SELECT * FROM `client_relatives` WHERE `family_id` IN ($placeholders)");
+        // ИСПРАВЛЕНИЕ: Используем array_values для переиндексации массива ключей
+        $stmt_relatives->execute(array_values($family_ids));
+        while ($row = $stmt_relatives->fetch(PDO::FETCH_ASSOC)) {
+            $relatives_by_family[$row['family_id']][] = $row;
+        }
+    }
+    
+    // Получаем значения доп. полей для ОСНОВНЫХ анкет
     if (!empty($additional_input_ids) && !empty($clients)) {
         $client_ids = array_column($clients, 'client_id');
         $placeholders_clients = implode(',', array_fill(0, count($client_ids), '?'));
         $placeholders_inputs = implode(',', array_fill(0, count($additional_input_ids), '?'));
         
-        $stmt_values = $pdo->prepare("SELECT `client_id`, `input_id`, `value` FROM `client_input_values` WHERE `client_id` IN ($placeholders_clients) AND `input_id` IN ($placeholders_inputs)");
+        $stmt_values = $pdo->prepare("SELECT `client_id`, `input_id`, `value` FROM `client_input_values` WHERE `client_id` IN ($placeholders_clients) AND `input_id` IN ($placeholders_inputs) AND `relative_id` IS NULL");
         $stmt_values->execute(array_merge($client_ids, $additional_input_ids));
         $values_raw = $stmt_values->fetchAll(PDO::FETCH_ASSOC);
 
@@ -121,6 +133,30 @@ try {
         unset($client);
     }
 
+    // НОВЫЙ БЛОК: Получаем значения доп. полей для ПЕРСОН
+    $relative_input_values = [];
+    if (!empty($additional_input_ids) && !empty($relatives_by_family)) {
+        $all_relative_ids = [];
+        foreach ($relatives_by_family as $family) {
+            $all_relative_ids = array_merge($all_relative_ids, array_column($family, 'relative_id'));
+        }
+
+        if (!empty($all_relative_ids)) {
+            $placeholders_rel = implode(',', array_fill(0, count($all_relative_ids), '?'));
+            $placeholders_in = implode(',', array_fill(0, count($additional_input_ids), '?'));
+
+            $stmt_rel_values = $pdo->prepare("SELECT `relative_id`, `input_id`, `value` FROM `client_input_values` WHERE `relative_id` IN ($placeholders_rel) AND `input_id` IN ($placeholders_in)");
+            $stmt_rel_values->execute(array_merge($all_relative_ids, $additional_input_ids));
+            $rel_values_raw = $stmt_rel_values->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach($rel_values_raw as $val) {
+                $relative_input_values[$val['relative_id']][$val['input_id']] = $val['value'];
+            }
+        }
+    }
+
+
+
 } catch (PDOException $e) {
     error_log('DB Error export_clients_excel: ' . $e->getMessage());
     exit("Ошибка базы данных при экспорте.");
@@ -128,7 +164,7 @@ try {
 
 // --- ОБРАБОТКА И СОРТИРОВКА ПОЛЕЙ ДЛЯ ЭКСПОРТА ---
 $all_possible_fields = [
-    'c.client_id', 'c.last_name', 'c.first_name', 'c.middle_name', 'phone_combined', 'c.gender', 'c.email', 'c.passport_number', 
+    'c.client_id', 'c.family_id', 'c.last_name', 'c.first_name', 'c.middle_name', 'phone_combined', 'c.gender', 'c.email', 'c.passport_number', 
     'c.birth_date', 'c.passport_expiry_date', 'c.nationality', 'manager_name', 'agent_name', 'client_cities_list', 
     'client_categories_list', 'c.sale_price', 'c.visit_date_start', 'c.visit_date_end', 'c.days_until_visit', 'c.notes'
 ];
@@ -143,7 +179,7 @@ $unnumbered_fields_keys = [];
 foreach ($fields as $field_key) {
     $order = $field_order[$field_key] ?? '';
     if ($order !== '' && is_numeric($order)) {
-        $order_num = (int)$order;
+        $order_num = (float)$order; // Используем float для дробных ключей
         while(isset($numbered_fields[$order_num])) { $order_num += 0.01; }
         $numbered_fields[$order_num] = $field_key;
     } else {
@@ -154,21 +190,20 @@ ksort($numbered_fields);
 
 foreach ($numbered_fields as $field_key) { $final_fields[] = $field_key; }
 foreach ($all_possible_fields as $possible_key) {
-    if (in_array($possible_key, $unnumbered_fields_keys)) { $final_fields[] = $possible_key; }
+    if (in_array($possible_key, $unnumbered_fields_keys) && !in_array($possible_key, $final_fields)) { $final_fields[] = $possible_key; }
 }
 
 // --- НАЧАЛО БЛОКА СОХРАНЕНИЯ НАСТРОЕК (ФИНАЛЬНАЯ ВЕРСИЯ) ---
 try {
     // Собираем для сохранения только те данные, что пришли из формы.
     $settings_to_save = [
-        'fields'      => $_POST['fields'] ?? [],
+        'fields'      => $fields, // Сохраняем итоговый массив полей, включая обязательные
         'field_order' => $field_order,
     ];
 
     $settings_json = json_encode($settings_to_save);
 
     if ($settings_json) {
-        // $pdo уже определен в этом месте
         $sql_save = "
             INSERT INTO `user_export_settings` (`user_id`, `center_id`, `settings`)
             VALUES (:user_id, :center_id, :settings_insert)
@@ -183,7 +218,6 @@ try {
         ]);
     }
 } catch (PDOException $e) {
-    // Не прерываем скачивание файла, просто логируем ошибку для анализа
     error_log('DB Error on saving user export settings: ' . $e->getMessage());
 }
 // --- КОНЕЦ БЛОКА СОХРАНЕНИЯ НАСТРОЕК ---
@@ -210,46 +244,111 @@ foreach ($final_fields as $field_key) {
 
 // Записываем данные
 $rowIndex++;
+$seen_passports = [];
 foreach ($clients as $client) {
-    $colIndex = 1;
-    foreach ($final_fields as $field_key) {
-        $db_key = str_replace('c.', '', $field_key);
-        $value = $client[$db_key] ?? '';
+    $rows_to_generate = [];
 
-        // --- Специальная обработка для отдельных полей ---
-        $date_fields = ['birth_date', 'passport_expiry_date', 'visit_date_start', 'visit_date_end'];
-        if (in_array($db_key, $date_fields) && !empty($value)) {
-            try {
-                $date = new DateTime($value);
-                $value = $date->format('d.m.Y');
-            } catch (Exception $e) {}
+    // 1. Подготовка основной анкеты
+    $client['_is_main_client'] = true; // Метка для основной анкеты
+    $rows_to_generate[] = $client;
+
+    // 2. Подготовка персон из семьи
+    if (!empty($client['family_id']) && isset($relatives_by_family[$client['family_id']])) {
+        foreach ($relatives_by_family[$client['family_id']] as $relative) {
+            $relative_row = $client; // Копируем все "информационные" поля
+            // Перезаписываем "персональные" поля
+            $relative_row['first_name'] = $relative['first_name'];
+            $relative_row['last_name'] = $relative['last_name'];
+            $relative_row['middle_name'] = $relative['middle_name'];
+            $relative_row['phone_code'] = $relative['phone_code'];
+            $relative_row['phone_number'] = $relative['phone_number'];
+            $relative_row['email'] = $relative['email'];
+            $relative_row['passport_number'] = $relative['passport_number'];
+            $relative_row['birth_date'] = $relative['birth_date'];
+            $relative_row['passport_expiry_date'] = $relative['passport_expiry_date'];
+            $relative_row['nationality'] = $relative['nationality'];
+            $relative_row['_is_main_client'] = false; // Это не основная анкета
+            // Подставляем доп. поля для родственника
+            foreach ($additional_input_ids as $id) {
+                $relative_row['input_' . $id] = $relative_input_values[$relative['relative_id']][$id] ?? '';
+            }
+            
+            $rows_to_generate[] = $relative_row;
         }
-        if ($field_key === 'phone_combined') {
-            $value = (!empty($client['phone_code'])) ? '+' . $client['phone_code'] . ' ' . $client['phone_number'] : '';
-        }
-        if ($db_key === 'gender') {
-            if ($value === 'male') $value = 'Мужской';
-            if ($value === 'female') $value = 'Женский';
-        }
-        
-        // Устанавливаем значение и формат ячейки
-        $cell = $sheet->getCell(Coordinate::stringFromColumnIndex($colIndex) . $rowIndex);
-        if ($field_key === 'c.passport_number') {
-            // Принудительно устанавливаем текстовый формат для номера паспорта
-            $cell->setValueExplicit($value, DataType::TYPE_STRING);
-        } else {
-            $cell->setValue($value);
-        }
-        
-        $colIndex++;
     }
-    $rowIndex++;
+
+    // 3. Генерация строк в Excel
+    foreach($rows_to_generate as $row_data) {
+        $colIndex = 1;
+        
+        $passport = $row_data['passport_number'] ?? null;
+        $is_duplicate = !empty($passport) && isset($seen_passports[$passport]);
+        $is_family = !empty($row_data['family_id']);
+        
+        foreach ($final_fields as $field_key) {
+            $db_key = str_replace('c.', '', $field_key);
+            $value = $row_data[$db_key] ?? '';
+
+            if ($field_key === 'c.family_id') {
+                $value = !empty($row_data['family_id']) ? $row_data['family_id'] : '—';
+            }
+            if ($field_key === 'c.client_id') {
+                // ID показываем только для основной анкеты, для персон - прочерк
+                $value = $row_data['_is_main_client'] ? ($row_data['client_id'] ?: '—') : '—';
+            }
+
+            $date_fields = ['birth_date', 'passport_expiry_date', 'visit_date_start', 'visit_date_end'];
+            if (in_array($db_key, $date_fields) && !empty($value)) {
+                try { $value = (new DateTime($value))->format('d.m.Y'); } catch (Exception $e) {}
+            }
+            if ($field_key === 'phone_combined') {
+                $value = (!empty($row_data['phone_code'])) ? '+' . $row_data['phone_code'] . ' ' . $row_data['phone_number'] : '';
+            }
+            if ($db_key === 'gender') {
+                if ($value === 'male') $value = 'Мужской';
+                if ($value === 'female') $value = 'Женский';
+            }
+            
+            $cell = $sheet->getCell(Coordinate::stringFromColumnIndex($colIndex) . $rowIndex);
+            if ($field_key === 'c.passport_number') {
+                $cell->setValueExplicit($value, DataType::TYPE_STRING);
+            } else {
+                $cell->setValue($value);
+            }
+            
+            $colIndex++;
+        }
+
+        if ($is_duplicate) {
+            // Подсвечиваем и исходную строку, если это дубликат
+            $original_row_index = $seen_passports[$passport] ?? null;
+            if ($original_row_index) {
+                $sheet->getStyle('A' . $original_row_index . ':' . $lastColumnLetter . $original_row_index)
+                      ->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFFFFF00'); // Желтый
+            }
+        }
+
+        // Применяем стили
+        $lastColumnLetter = Coordinate::stringFromColumnIndex($colIndex - 1);
+        if ($is_duplicate) {
+            $sheet->getStyle('A' . $rowIndex . ':' . $lastColumnLetter . $rowIndex)
+                  ->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFFFFF00'); // Желтый
+        } elseif ($is_family) {
+            $sheet->getStyle('A' . $rowIndex . ':' . $lastColumnLetter . $rowIndex)
+                  ->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFE0EFFF'); // Светло-голубой
+        }
+
+        if (!empty($passport) && !$is_duplicate) {
+            $seen_passports[$passport] = $rowIndex;
+        }
+        $rowIndex++;
+    }
 }
 
 // Устанавливаем ширину для всех колонок
 $lastColumn = $sheet->getHighestColumn();
 for ($col = 'A'; $col <= $lastColumn; $col++) {
-    $sheet->getColumnDimension($col)->setWidth(18);
+    $sheet->getColumnDimension($col)->setWidth(20);
 }
 
 // Отправляем файл в браузер
@@ -257,8 +356,6 @@ $filename = "export_clients_" . date('Y-m-d') . ".xlsx";
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Content-Disposition: attachment;filename="' . $filename . '"');
 header('Cache-Control: max-age=0');
-
-
 
 $writer = new Xlsx($spreadsheet);
 $writer->save('php://output');
