@@ -29,6 +29,7 @@ return [
         ],
         'forms' => [
             'profile-edit', 'profile-new-password', 'get-additional-fields', 'get_export_fields', 'export_clients_excel',
+            'new-transaction', 'new-cash', 'edit-cash', 'del-cash', 'restore-cash', 'new-supplier', 'edit-supplier', 'del-supplier', 'restore-supplier',
         ],
     ],
     'manager' => [

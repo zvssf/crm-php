@@ -369,7 +369,6 @@ function find_matching_clients($pdf_passports, $potential_clients, $parser_type,
     return $found;
 }
 
-$response['message'] .= "<br><br><hr style='border-top: 1px solid #555;'><b style='color: #727cf5;'>Отладочная информация:</b><br><div style='font-size: 11px; font-family: monospace;'>" . implode("<br>", $debug_log) . "</div>";
 echo json_encode($response);
 
 exit;
