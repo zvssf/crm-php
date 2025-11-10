@@ -130,6 +130,13 @@ try {
                                                         data-toggle="maxlength" required>
                                                     <div class="invalid-feedback">Введите email!</div>
                                                 </div>
+                                                
+                                                <div class="mb-3">
+                                                    <label for="usertel" class="form-label">Номер телефона</label>
+                                                    <input type="text" class="form-control" id="usertel" placeholder="Введите номер телефона" name="user-tel" data-toggle="input-mask" data-mask-format="+#" required>
+                                                    <div class="invalid-feedback">Введите номер телефона!</div>
+                                                </div>
+
                                                 <div class="mb-3">
                                                     <label for="usertel2" class="form-label">Второй номер (опционально)</label>
                                                     <input type="text" class="form-control" id="usertel2"
@@ -443,15 +450,14 @@ try {
             jQuery.ajax({
                 url: '/?page=<?= $page ?>&form=new-customer',
                 type: 'POST',
-                dataType: 'html',
+                dataType: 'json',
                 data: jQuery('#form-new-customer').serialize(),
                 success: function (response) {
                     loaderBTN(btn, 'false');
-                    result = jQuery.parseJSON(response);
-                    if (result.success_type == 'message') {
-                        message(result.msg_title, result.msg_text, result.msg_type, result.msg_url);
-                    } else if (result.success_type == 'redirect') {
-                        redirect(result.url);
+                    if (response.success_type == 'message') {
+                        message(response.msg_title, response.msg_text, response.msg_type, response.msg_url);
+                    } else if (response.success_type == 'redirect') {
+                        redirect(response.url);
                     }
                 },
                 error: function () {

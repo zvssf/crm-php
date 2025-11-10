@@ -153,6 +153,10 @@
     .select2-results__options.scrolling-with-wheel .select2-results__option {
         pointer-events: none;
     }
+
+    .daterangepicker {
+        z-index: 9999 !important;
+    }
 </style>
 
 <style>

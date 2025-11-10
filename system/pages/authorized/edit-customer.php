@@ -450,15 +450,14 @@ try {
             jQuery.ajax({
                 url:      '/?page=<?= $page ?>&form=edit-info-customer&user-id=<?= $edit_user_id ?>',
                 type:     'POST',
-                dataType: 'html',
+                dataType: 'json',
                 data:     jQuery('#form-edit-info-customer').serialize(),
                 success:  function(response) {
                     loaderBTN(btn, 'false');
-                    result = jQuery.parseJSON(response);
-                    if(result.success_type == 'message') {
-                        message(result.msg_title, result.msg_text, result.msg_type, result.msg_url);
-                    } else if(result.success_type == 'redirect') {
-                        redirect(result.url);
+                    if(response.success_type == 'message') {
+                        message(response.msg_title, response.msg_text, response.msg_type, response.msg_url);
+                    } else if(response.success_type == 'redirect') {
+                        redirect(response.url);
                     }
                 },
                 error:  function() {

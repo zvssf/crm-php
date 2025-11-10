@@ -19,7 +19,7 @@ return [
             'check-client-completeness', 'get-client-categories', 'get-additional-fields',
             'get-min-sale-price', 'pay_client_credit', 'revert-recorded-client', 'get-center-fields', 'get_export_fields', 'export_clients_excel', 
             'mass-client-action', 'mass-center-action', 'mass-country-action', 'mass-city-action', 'mass-input-action', 'mass-customer-action',
-            'edit-pdf-rule', 'upload-client-pdfs', 'delete-pdf-rule',
+            'edit-pdf-rule', 'upload-client-pdfs', 'delete-pdf-rule', 'manual-attach-pdf',
         ],
     ],
     'supervisor' => [
@@ -51,7 +51,7 @@ return [
         'forms' => [
             'profile-edit', 'profile-new-password', 'new-client', 'edit-client', 'del-client', 'restore-client',
             'review-client', 'revert-rejection-client', 'check-client-completeness', 
-            'get-additional-fields', 'get-min-sale-price', 'get_export_fields', 'export_clients_excel', 'mass-client-action',
+            'get-additional-fields', 'get-min-sale-price', 'get_export_fields', 'export_clients_excel', 'mass-client-action', 'download-client-pdf',
         ],
     ],
 ];

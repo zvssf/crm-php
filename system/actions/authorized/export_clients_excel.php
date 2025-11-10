@@ -14,6 +14,20 @@ use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 // Валидация входных данных
+
+/**
+ * Генерирует случайный светлый цвет в формате ARGB для PhpSpreadsheet.
+ * @return string - Цвет в формате 'FFxxxxxx'.
+ */
+function generate_light_color() {
+    // Генерируем случайные значения для R, G, B компонентов в светлом диапазоне (200-255)
+    $r = mt_rand(200, 255);
+    $g = mt_rand(200, 255);
+    $b = mt_rand(200, 255);
+    // Форматируем цвет в HEX-строку с префиксом 'FF' для альфа-канала (непрозрачный)
+    return 'FF' . sprintf('%02x%02x%02x', $r, $g, $b);
+}
+
 $center_id = valid($_POST['center_id'] ?? '');
 $status_id = valid($_POST['status_id'] ?? '');
 $manager_id = valid($_POST['manager_id'] ?? '');
@@ -33,7 +47,7 @@ if (empty($center_id) || empty($status_id) || empty($fields)) {
 
 // Словарь для перевода ключей полей в человекочитаемые названия
 $field_labels = [
-    'c.client_id' => 'ID', 'c.family_id' => '№ семьи', 'c.first_name' => 'Имя', 'c.last_name' => 'Фамилия', 'c.middle_name' => 'Отчество',
+    'c.client_id' => 'ID', 'c.family_id' => '№ семьи', 'c.first_name' => 'Имя', 'c.last_name' => 'Фамилия', 'c.middle_name' => 'Отчество', 'c.appointment_datetime' => 'Дата и время записи',
     'phone_combined' => 'Телефон', 'c.email' => 'Email', 'c.gender' => 'Пол', 'c.passport_number' => 'Номер паспорта',
     'c.birth_date' => 'Дата рождения', 'c.passport_expiry_date' => 'Срок действия паспорта', 'c.nationality' => 'Национальность',
     'c.visit_date_start' => 'Дата визита (начало)', 'c.visit_date_end' => 'Дата визита (конец)', 'c.days_until_visit' => 'Дней до визита',
@@ -163,8 +177,40 @@ try {
 }
 
 // --- ОБРАБОТКА И СОРТИРОВКА ПОЛЕЙ ДЛЯ ЭКСПОРТА ---
+
+// --- ГРУППИРОВКА ДАННЫХ ДЛЯ ГАРАНТИРОВАННОГО СОХРАНЕНИЯ ПОРЯДКА ---
+$grouped_clients = [];
+$single_clients = [];
+
+foreach ($clients as $client) {
+    $passport = !empty($client['passport_number']) ? trim($client['passport_number']) : null;
+    if ($passport) {
+        $grouped_clients[$passport][] = $client;
+    } else {
+        // Анкеты без паспорта не могут быть дубликатами, обрабатываем их отдельно
+        $single_clients[] = $client;
+    }
+}
+
+$final_clients_list = [];
+foreach ($grouped_clients as $passport_group) {
+    // Внутри группы дубликатов сортируем по ID семьи, чтобы семьи не разрывались
+    usort($passport_group, function($a, $b) {
+        $family_a = $a['family_id'] ?? 0;
+        $family_b = $b['family_id'] ?? 0;
+        if ($family_a != $family_b) {
+            return $family_a <=> $family_b;
+        }
+        return $a['client_id'] <=> $b['client_id'];
+    });
+    $final_clients_list = array_merge($final_clients_list, $passport_group);
+}
+// Добавляем одиночные анкеты (без паспортов) в конец
+$clients = array_merge($final_clients_list, $single_clients);
+// --- КОНЕЦ БЛОКА ГРУППИРОВКИ ---
+
 $all_possible_fields = [
-    'c.client_id', 'c.family_id', 'c.last_name', 'c.first_name', 'c.middle_name', 'phone_combined', 'c.gender', 'c.email', 'c.passport_number', 
+    'c.client_id', 'c.family_id', 'c.last_name', 'c.first_name', 'c.middle_name', 'c.appointment_datetime', 'phone_combined', 'c.gender', 'c.email', 'c.passport_number', 
     'c.birth_date', 'c.passport_expiry_date', 'c.nationality', 'manager_name', 'agent_name', 'client_cities_list', 
     'client_categories_list', 'c.sale_price', 'c.visit_date_start', 'c.visit_date_end', 'c.days_until_visit', 'c.notes'
 ];
@@ -245,6 +291,7 @@ foreach ($final_fields as $field_key) {
 // Записываем данные
 $rowIndex++;
 $seen_passports = [];
+$family_colors = []; // Массив для хранения цветов семей
 foreach ($clients as $client) {
     $rows_to_generate = [];
 
@@ -296,10 +343,16 @@ foreach ($clients as $client) {
                 // ID показываем только для основной анкеты, для персон - прочерк
                 $value = $row_data['_is_main_client'] ? ($row_data['client_id'] ?: '—') : '—';
             }
+            if ($field_key === 'c.appointment_datetime') {
+                $value = !empty($row_data['appointment_datetime']) ? $row_data['appointment_datetime'] : '—';
+            }
 
             $date_fields = ['birth_date', 'passport_expiry_date', 'visit_date_start', 'visit_date_end'];
             if (in_array($db_key, $date_fields) && !empty($value)) {
                 try { $value = (new DateTime($value))->format('d.m.Y'); } catch (Exception $e) {}
+            }
+            if ($db_key === 'appointment_datetime' && !empty($value)) {
+                try { $value = (new DateTime($value))->format('d.m.Y H:i'); } catch (Exception $e) {}
             }
             if ($field_key === 'phone_combined') {
                 $value = (!empty($row_data['phone_code'])) ? '+' . $row_data['phone_code'] . ' ' . $row_data['phone_number'] : '';
@@ -319,23 +372,25 @@ foreach ($clients as $client) {
             $colIndex++;
         }
 
+        // Применяем стили
+        $lastColumnLetter = Coordinate::stringFromColumnIndex($colIndex - 1);
+        
         if ($is_duplicate) {
-            // Подсвечиваем и исходную строку, если это дубликат
+            // Подсвечиваем и исходную строку, и текущую
             $original_row_index = $seen_passports[$passport] ?? null;
             if ($original_row_index) {
                 $sheet->getStyle('A' . $original_row_index . ':' . $lastColumnLetter . $original_row_index)
-                      ->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFFFFF00'); // Желтый
+                      ->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFFFE0E0'); // Розовый
             }
-        }
-
-        // Применяем стили
-        $lastColumnLetter = Coordinate::stringFromColumnIndex($colIndex - 1);
-        if ($is_duplicate) {
             $sheet->getStyle('A' . $rowIndex . ':' . $lastColumnLetter . $rowIndex)
-                  ->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFFFFF00'); // Желтый
+                  ->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFFFE0E0'); // Розовый
         } elseif ($is_family) {
+            $family_id = $row_data['family_id'];
+            if (!isset($family_colors[$family_id])) {
+                $family_colors[$family_id] = generate_light_color();
+            }
             $sheet->getStyle('A' . $rowIndex . ':' . $lastColumnLetter . $rowIndex)
-                  ->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFE0EFFF'); // Светло-голубой
+                  ->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB($family_colors[$family_id]);
         }
 
         if (!empty($passport) && !$is_duplicate) {

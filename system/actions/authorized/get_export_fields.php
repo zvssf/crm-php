@@ -29,6 +29,7 @@ $fields = [
     'c.first_name' => 'Имя',
     'c.last_name' => 'Фамилия',
     'c.middle_name' => 'Отчество',
+    'c.appointment_datetime' => 'Дата и записи записи',
     'phone_combined' => 'Телефон', // Используем виртуальный ключ
     'c.email' => 'Email',
     'c.gender' => 'Пол',
@@ -156,6 +157,7 @@ render_switch('c.family_id', '№ семьи', true, true); // Добавили 
 render_switch('c.last_name', 'Фамилия', true, true);
 render_switch('c.first_name', 'Имя', true, true);
 if (in_array('middle_name', $visible_fields)) render_switch('c.middle_name', 'Отчество', true, false);
+render_switch('c.appointment_datetime', 'Дата и время записи', true, false);
 render_switch('phone_combined', 'Телефон', true, false);
 if (in_array('gender', $visible_fields)) render_switch('c.gender', 'Пол', true, false);
 if (in_array('email', $visible_fields)) render_switch('c.email', 'Email', true, false);

@@ -446,6 +446,9 @@ require_once SYSTEM . '/layouts/head.php';
                                                     </th>
                                                     <th>ID</th>
                                                     <th>ФИО</th>
+                                                    <?php if ($current_status == 2): ?>
+                                                        <th>Дата и время записи</th>
+                                                    <?php endif; ?>
                                                     <th>Телефон</th>
                                                     <th>Номер паспорта</th>
                                                     <th>Города</th>
@@ -520,6 +523,16 @@ require_once SYSTEM . '/layouts/head.php';
                                                             <td><span
                                                                     style="display:none;"><?= $base_client_name ?></span><?= valid(trim($client['last_name'] . ' ' . $client['first_name'] . ' ' . $client['middle_name'])) ?>
                                                             </td>
+                                                            <?php if ($current_status == 2): ?>
+                                                            <td>
+                                                                <?php if (!empty($client['appointment_datetime'])): ?>
+                                                                    <span style="display:none;"><?= $client['appointment_datetime'] ?></span>
+                                                                    <?= date('d.m.Y H:i', strtotime($client['appointment_datetime'])) ?>
+                                                                <?php else:
+                                                                    echo '—';
+                                                                endif; ?>
+                                                            </td>
+                                                            <?php endif; ?>
                                                             <td><span
                                                                     style="display:none;"><?= $base_phone ?></span><?= (!empty($client['phone_code'])) ? '+' . valid($client['phone_code']) . ' ' . valid($client['phone_number']) : '' ?>
                                                             </td>
@@ -593,23 +606,19 @@ require_once SYSTEM . '/layouts/head.php';
 
                                                                 switch ($client_status) {
                                                                     case 1: // В работе
-                                                                        // Для Руководителя и Менеджера - только просмотр
                                                                         if (in_array($user_group, [2, 3])) {
-                                                                            echo '<a href="/?page=edit-client&id=' . $client['client_id'] . '" class="font-18 text-info me-2" title="Просмотр"><i class="uil uil-eye"></i></a>';
-                                                                        } 
-                                                                        // Для остальных (Директор, Агент) - редактирование
-                                                                        else {
+                                                                            echo '<a href="/?page=edit-client&id=' . $client['client_id'] . '" class="font-18 text-info" title="Просмотр"><i class="uil uil-eye"></i></a>';
+                                                                        } else {
                                                                             echo '<a href="/?page=edit-client&id=' . $client['client_id'] . '" class="font-18 text-info me-2" title="Редактировать"><i class="uil uil-pen"></i></a>';
                                                                         }
 
-                                                                        // "Записать" - только для Директора
                                                                         if ($user_group === 1) {
                                                                             echo '<a href="#" class="font-18 text-success me-2" onclick="sendConfirmClientForm(' . $client['client_id'] . ')" title="Записать"><i class="uil uil-check-circle"></i></a>';
+                                                                            echo '<a href="#" class="font-18 text-danger me-2" title="В архив" onclick="modalDelClientForm(' . $client['client_id'] . ', \'' . $client_name_js . '\')"><i class="uil uil-trash"></i></a>';
                                                                         }
-                                                                        
-                                                                        // "В архив" - только для Директора
-                                                                        if ($user_group === 1) {
-                                                                            echo '<a href="#" class="font-18 text-danger" title="В архив" onclick="modalDelClientForm(' . $client['client_id'] . ', \'' . $client_name_js . '\')"><i class="uil uil-trash"></i></a>';
+
+                                                                        if ($user_group === 1 && empty($client['pdf_file_path'])) {
+                                                                            echo '<a href="#" class="font-18 text-secondary" onclick="modalAttachPdfForm(' . $client['client_id'] . ')" title="Прикрепить PDF"><i class="uil uil-paperclip"></i></a>';
                                                                         }
                                                                         break;
 
@@ -622,7 +631,15 @@ require_once SYSTEM . '/layouts/head.php';
                                                                             echo '<a href="#" class="font-18 text-warning me-2" onclick="sendPayByCreditForm(' . $client['client_id'] . ')" title="Оплатить в кредит"><i class="mdi mdi-credit-card-plus-outline"></i></a>';
                                                                         }
                                                                         if ($user_group === 1) {
-                                                                            echo '<a href="#" class="font-18 text-primary" title="Вернуть в работу" onclick="sendRevertRecordedForm(' . $client['client_id'] . ')"><i class="mdi mdi-backup-restore"></i></a>';
+                                                                            echo '<a href="#" class="font-18 text-primary me-2" title="Вернуть в работу" onclick="sendRevertRecordedForm(' . $client['client_id'] . ')"><i class="mdi mdi-backup-restore"></i></a>';
+                                                                        }
+                                                                        
+                                                                        if ($user_group === 1 && empty($client['pdf_file_path'])) {
+                                                                            echo '<a href="#" class="font-18 text-secondary" onclick="modalAttachPdfForm(' . $client['client_id'] . ')" title="Прикрепить PDF"><i class="uil uil-paperclip"></i></a>';
+                                                                        }
+
+                                                                        if ($user_group === 4 && in_array((int)$client['payment_status'], [1, 2]) && !empty($client['pdf_file_path'])) {
+                                                                            echo '<a href="/?form=download-client-pdf&id=' . $client['client_id'] . '" class="font-18 text-success" title="Скачать PDF"><i class="uil uil-file-download-alt"></i></a>';
                                                                         }
                                                                         break;
 
@@ -779,12 +796,64 @@ require_once SYSTEM . '/layouts/head.php';
                         <div id="final-category-list" class="mb-3">
                             <!-- Сюда будут загружаться радиокнопки -->
                         </div>
+                        <div class="mb-3">
+                            <label for="appointment-datetime" class="form-label">Дата и время записи</label>
+                            <input type="text" class="form-control" id="appointment-datetime" name="appointment_datetime" placeholder="Выберите дату и время" required>
+                            <div class="invalid-feedback">Пожалуйста, укажите дату и время.</div>
+                        </div>
                         <div class="text-end">
                             <button type="button" class="btn btn-light" data-bs-dismiss="modal">Отмена</button>
                             <button type="button" class="btn btn-success"
                                 onclick="sendFinalCategoryForm()">Записать</button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div><!-- /.modal -->
+
+    <!-- Modal Manual Attach PDF -->
+    <div id="modal-manual-attach" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modal-manual-attach-title" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal-manual-attach-title">Ручное прикрепление PDF к анкете №<span id="attach-modal-client-id"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-5">
+                            <h5 class="mb-3">1. Выберите файл</h5>
+                            <form id="manual-attach-form" action="#">
+                                <input type="hidden" name="client_id" id="manual-attach-client-id-input">
+                                <div class="mb-3">
+                                    <label for="manual-pdf-file" class="form-label">Выберите PDF-документ</label>
+                                    <input type="file" class="form-control" id="manual-pdf-file" name="manual_pdf_file" accept="application/pdf" required>
+                                    <div class="invalid-feedback">Пожалуйста, выберите PDF-файл.</div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-lg-7">
+                             <h5 class="mb-3">2. Предварительный просмотр</h5>
+                             <div class="w-100 position-relative" style="height: 60vh;">
+                                <iframe id="pdf-preview-iframe" src="about:blank" width="100%" height="100%" frameborder="0" style="display: none; border: 1px solid #dee2e6;">
+                                    Ваш браузер не поддерживает предпросмотр.
+                                </iframe>
+                                <div id="pdf-preview-placeholder" class="d-flex align-items-center justify-content-center w-100 h-100" style="border: 2px dashed #ced4da;">
+                                    <p class="text-muted">Предпросмотр появится здесь после выбора файла.</p>
+                                </div>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-success" id="manual-attach-confirm-btn">
+                        <span class="spinner-border spinner-border-sm me-1 btn-loader visually-hidden" role="status" aria-hidden="true"></span>
+                        <span class="btn-icon"><i class="mdi mdi-attachment me-1"></i></span>
+                        <span class="loader-text visually-hidden">Привязка...</span>
+                        <span class="btn-text">Подтвердить</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -1069,9 +1138,15 @@ require_once SYSTEM . '/layouts/head.php';
         function sendFinalCategoryForm() {
             const clientId = $('#final-category-client-id').val();
             const finalCityId = $('input[name="final-city-id"]:checked').val();
+            const appointmentDateTime = $('#appointment-datetime').val(); // Получаем значение даты
 
             if (!finalCityId) {
                 message('Внимание', 'Пожалуйста, выберите одну категорию.', 'warning');
+                return;
+            }
+
+            if (!appointmentDateTime) {
+                message('Внимание', 'Пожалуйста, укажите дату и время записи.', 'warning');
                 return;
             }
 
@@ -1081,7 +1156,8 @@ require_once SYSTEM . '/layouts/head.php';
                 dataType: 'json',
                 data: {
                     'client-id': clientId,
-                    'final-city-id': finalCityId
+                    'final-city-id': finalCityId,
+                    'appointment_datetime': appointmentDateTime // Отправляем дату на сервер
                 },
                 success: function (response) {
                     $('#modal-final-category').modal('hide');
@@ -1303,6 +1379,110 @@ require_once SYSTEM . '/layouts/head.php';
                 }
             });
         }
+
+        function modalAttachPdfForm(clientId) {
+            const modal = $('#modal-manual-attach');
+            const form = $('#manual-attach-form');
+            const fileInput = $('#manual-pdf-file');
+            const iframe = $('#pdf-preview-iframe');
+            const placeholder = $('#pdf-preview-placeholder');
+            const confirmBtn = $('#manual-attach-confirm-btn');
+
+            // Сбрасываем состояние модального окна
+            form[0].reset();
+            fileInput.removeClass('is-invalid');
+            iframe.attr('src', 'about:blank').hide();
+            placeholder.removeClass('d-none').addClass('d-flex');
+            
+            // Устанавливаем ID анкеты
+            modal.find('#attach-modal-client-id').text(clientId);
+            modal.find('#manual-attach-client-id-input').val(clientId);
+
+            // Переназначаем обработчик клика на кнопку "Подтвердить"
+            confirmBtn.off('click').on('click', function() {
+                sendManualAttachForm('#manual-attach-confirm-btn');
+            });
+
+            modal.modal('show');
+        }
+
+        // Выносим AJAX-запрос в отдельную функцию, как в других частях проекта
+        function sendManualAttachForm(btn) {
+            const fileInput = $('#manual-pdf-file');
+            const clientId = $('#manual-attach-client-id-input').val();
+            
+            if (!fileInput.val() || !fileInput[0].files[0]) {
+                fileInput.addClass('is-invalid');
+                message('Ошибка', 'Пожалуйста, выберите PDF-файл для прикрепления.', 'error');
+                return;
+            }
+            fileInput.removeClass('is-invalid');
+
+            const formData = new FormData();
+            formData.append('client_id', clientId);
+            formData.append('manual_pdf_file', fileInput[0].files[0]);
+            
+            loaderBTN(btn, 'true');
+
+            $.ajax({
+                url: '/?form=manual-attach-pdf',
+                type: 'POST',
+                data: formData,
+                processData: false, // Обязательно для FormData
+                contentType: false, // Обязательно для FormData
+                dataType: 'json',
+                success: function(response) {
+                    loaderBTN(btn, 'false');
+                    $('#modal-manual-attach').modal('hide');
+                    if(response.success_type == 'message') {
+                        message(response.msg_title, response.msg_text, response.msg_type, 'reload');
+                    }
+                },
+                error: function() {
+                    loaderBTN(btn, 'false');
+                    message('Ошибка', 'Произошла ошибка при загрузке файла.', 'error');
+                }
+            });
+        }
+
+        // Используем делегирование событий для элемента, который может не существовать на момент загрузки DOM
+        $(document).on('change', '#manual-pdf-file', function(event) {
+            const file = event.target.files[0];
+            const iframe = $('#pdf-preview-iframe');
+            const placeholder = $('#pdf-preview-placeholder');
+            
+            if (file && file.type === 'application/pdf') {
+                const fileURL = URL.createObjectURL(file);
+                iframe.attr('src', fileURL);
+                placeholder.removeClass('d-flex').addClass('d-none');
+                iframe.show();
+            } else {
+                iframe.attr('src', 'about:blank').hide();
+                placeholder.removeClass('d-none').addClass('d-flex');
+            }
+        });
+
+        $(document).ready(function() {
+            $('#appointment-datetime').daterangepicker({
+                singleDatePicker: true,
+                timePicker: true,
+                timePicker24Hour: true,
+                autoUpdateInput: false,
+                locale: {
+                    "format": "DD.MM.YYYY HH:mm",
+                    "applyLabel": "Применить",
+                    "cancelLabel": "Отмена",
+                    "weekLabel": "Н",
+                    "daysOfWeek": ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
+                    "monthNames": ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
+                    "firstDay": 1
+                }
+            }).on('apply.daterangepicker', function(ev, picker) {
+                $(this).val(picker.startDate.format('DD.MM.YYYY HH:mm'));
+            }).on('cancel.daterangepicker', function(ev, picker) {
+                $(this).val('');
+            });
+        });
     </script>
 </body>
 

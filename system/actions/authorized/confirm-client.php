@@ -6,6 +6,20 @@ if (empty($client_id) || !preg_match('/^[0-9]{1,11}$/u', $client_id)) {
     message('Ошибка', 'Недопустимое значение ID анкеты!', 'error', '');
 }
 
+$appointment_datetime_raw = valid($_POST['appointment_datetime'] ?? '');
+$appointment_datetime_db = null;
+
+if (empty($appointment_datetime_raw)) {
+    message('Ошибка', 'Необходимо указать дату и время записи!', 'error', '');
+} else {
+    try {
+        $dt = new DateTime($appointment_datetime_raw);
+        $appointment_datetime_db = $dt->format('Y-m-d H:i:s');
+    } catch (Exception $e) {
+        message('Ошибка', 'Неверный формат даты и времени!', 'error', '');
+    }
+}
+
 if (empty($final_city_id) || !preg_match('/^[0-9]{1,11}$/u', $final_city_id)) {
     message('Ошибка', 'Необходимо выбрать финальную категорию!', 'error', '');
 }
@@ -59,13 +73,15 @@ try {
             `recording_uid` = :recording_uid,
             `payment_status` = :payment_status,
             `paid_from_balance` = :paid_from_balance,
-            `paid_from_credit` = 0.00
-         WHERE `client_id` = :client_id AND `client_status` = 1"
+            `paid_from_credit` = 0.00,
+            `appointment_datetime` = :appointment_datetime
+        WHERE `client_id` = :client_id AND `client_status` = 1"
     );
     $stmt_update_client->execute([
         ':recording_uid' => $recording_uid,
         ':payment_status' => $payment_status,
         ':paid_from_balance' => $paid_from_balance,
+        ':appointment_datetime' => $appointment_datetime_db,
         ':client_id' => $client_id
     ]);
 

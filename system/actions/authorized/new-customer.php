@@ -53,21 +53,13 @@ $validate = function($value, $pattern, $emptyMsg, $invalidMsg) {
 
 $validate($user_firstname,   '[a-zA-Zа-яА-Я0-9\s-]{2,25}',  'Введите имя!',                    'Недопустимое значение имени!');
 $validate($user_lastname,    '[a-zA-Zа-яА-Я0-9\s-]{2,25}',  'Введите фамилию!',                'Недопустимое значение фамилии!');
-$validate($cleanTel,         '[0-9]{7,15}',                 'Введите номер телефона!',         'Недопустимое значение номера телефона!');
+$validate($cleanTel,         '[0-9]{1,}',                   'Введите номер телефона!',         'Недопустимое значение номера телефона!');
 $validate($user_status,      '[0-9]',                       'Выберите статус!',                'Недопустимое значение статуса!');
 $validate($user_group,       '[1-4]',                       'Выберите группу пользователей!',  'Недопустимое значение группы!');
 
 if (!filter_var($user_login, FILTER_VALIDATE_EMAIL)) {
     message('Ошибка', 'Недопустимое значение email!', 'error', '');
 }
-
-
-
-
-
-
-
-
 
 $validate($new_password,     '[a-zA-Z0-9]{3,25}', 'Введите пароль!', 'Пароль может содержать только латинские буквы и цифры (3–25 символов)');
 $validate($confirm_password, '[a-zA-Z0-9]{3,25}', 'Повторите пароль!', 'Пароль может содержать только латинские буквы и цифры (3–25 символов)');
@@ -125,8 +117,8 @@ try {
             `user_website`,
             `user_messengers`,
             `user_comment`,
-            `user_credit_limit`
-            'can_export'
+            `user_credit_limit`,
+            `can_export`
         ) VALUES (
             :login,
             :password,
@@ -142,7 +134,7 @@ try {
             :website,
             :messengers,
             :comment,
-            :credit_limit
+            :credit_limit,
             :can_export
         )
     ");
