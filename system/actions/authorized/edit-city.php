@@ -41,16 +41,17 @@ try {
         FROM 
             `settings_cities` 
         WHERE 
-            `city_name` = :name AND `country_id` = :country_id
+            `city_name` = :name AND `city_category` = :category AND `country_id` = :country_id
     ");
     $stmt->execute([
-        ':name'       => $city_name, 
+        ':name'       => $city_name,
+        ':category'   => $city_category,
         ':country_id' => $country_id
     ]);
     $existing_city = $stmt->fetch();
 
     if ($existing_city && $existing_city['city_id'] != $city_id) {
-        message('Ошибка', 'Такой город уже добавлен для этой страны!', 'error', '');
+        message('Ошибка', 'Такой город с такой категорией уже добавлен для этой страны!', 'error', '');
     }
 
     $stmt = $pdo->prepare("
