@@ -1,0 +1,1 @@
+chmod +x ТУТ ПУТЬ К ПРОЕКТУ/python_parser/run_parser.sh

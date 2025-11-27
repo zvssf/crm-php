@@ -17,7 +17,6 @@ try {
             sc.center_status,
             pr.rule_id,
             pr.center_identifier_text,
-            pr.passport_mask,
             pr.rule_status
         FROM `settings_centers` sc
         LEFT JOIN `pdf_parsing_rules` pr ON sc.center_id = pr.center_id
@@ -80,7 +79,7 @@ try {
                                                         <td><span class="badge badge-<?= $rule_status_css ?>-lighten"><?= $rule_status_text ?></span></td>
                                                         <td>
                                                             <a href="#" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRightPdfRule" aria-controls="offcanvasRight" 
-                                                            onclick="modalOnPdfRule('<?= $item['center_id'] ?>', '<?= valid($item['center_name']) ?>', '<?= htmlspecialchars(valid($item['center_identifier_text'] ?? ''), ENT_QUOTES) ?>', '<?= htmlspecialchars(valid($item['passport_mask'] ?? ''), ENT_QUOTES) ?>')" 
+                                                            onclick="modalOnPdfRule('<?= $item['center_id'] ?>', '<?= valid($item['center_name']) ?>', '<?= htmlspecialchars(valid($item['center_identifier_text'] ?? ''), ENT_QUOTES) ?>')"
                                                             class="font-18 text-info me-2" title="Настроить"><i class="uil-cog"></i></a>
                                                         </td>
                                                     </tr>
@@ -114,12 +113,6 @@ try {
                     <input type="text" class="form-control" id="center-identifier-text" placeholder="Напр: Group URN - FRR" name="center_identifier_text" required>
                     <div class="form-text">Скопируйте из PDF-файла фразу, которая всегда присутствует в документах этого ВЦ.</div>
                     <div class="invalid-feedback">Это поле обязательно!</div>
-                </div>
-
-                <div class="mb-3">
-                    <label for="passport-mask" class="form-label">Маска для поиска номера паспорта</label>
-                    <input type="text" class="form-control" id="passport-mask" placeholder="Напр: NNxxxxxxNN" name="passport_mask" oninput="this.value = this.value.replace(/[^Nx]/ig, '')">
-                    <div class="form-text">Используйте 'N' для буквы/цифры и 'x' для пропущенного символа. Например, для `U8xxxxxx61` маска будет `NNxxxxxxNN`.</div>
                 </div>
 
                 <div class="d-flex justify-content-end">
@@ -164,7 +157,6 @@ try {
             $('#form-pdf-rule input[name="center_id"]').val(centerId);
             $('#rule-center-name').text('ВЦ: ' + centerName);
             $('#form-pdf-rule #center-identifier-text').val(identifier);
-            $('#form-pdf-rule #passport-mask').val(mask);
         }
 
         function sendPdfRuleForm(btn) {

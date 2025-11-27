@@ -2,7 +2,6 @@
 
 $center_id = valid($_POST['center_id'] ?? '');
 $identifier_text = valid($_POST['center_identifier_text'] ?? '');
-$passport_mask = valid($_POST['passport_mask'] ?? null);
 
 if (empty($center_id) || !preg_match('/^[0-9]{1,11}$/u', $center_id)) {
     message('Ошибка', 'Некорректный ID визового центра!', 'error', '');
@@ -15,19 +14,17 @@ if (empty($identifier_text)) {
 try {
     $pdo = db_connect();
 
-    // Используем INSERT ... ON DUPLICATE KEY UPDATE для атомарного добавления/обновления
+    // Убрали passport_mask из запроса
     $stmt = $pdo->prepare("
-        INSERT INTO `pdf_parsing_rules` (center_id, center_identifier_text, passport_mask)
-        VALUES (:center_id, :identifier_text, :passport_mask)
+        INSERT INTO `pdf_parsing_rules` (center_id, center_identifier_text)
+        VALUES (:center_id, :identifier_text)
         ON DUPLICATE KEY UPDATE 
-            center_identifier_text = VALUES(center_identifier_text),
-            passport_mask = VALUES(passport_mask)
+            center_identifier_text = VALUES(center_identifier_text)
     ");
 
     $stmt->execute([
         ':center_id' => $center_id,
-        ':identifier_text' => $identifier_text,
-        ':passport_mask' => !empty($passport_mask) ? $passport_mask : null
+        ':identifier_text' => $identifier_text
     ]);
 
     message('Уведомление', 'Правило успешно сохранено!', 'success', 'reload');
