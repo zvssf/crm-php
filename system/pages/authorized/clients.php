@@ -313,8 +313,19 @@ require_once SYSTEM . '/layouts/head.php';
                                         </div>
                                         <div class="col-sm-7">
                                             <div class="text-sm-end">
+                                                <?php if ($user_data['user_group'] == 1): ?>
+                                                    <button type="button"
+                                                            class="btn btn-light mb-2 me-1"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#import-excel-modal">
+                                                        Импорт из Excel
+                                                    </button>
+                                                <?php endif; ?>
+
                                                 <?php if ($user_data['user_group'] == 1 || $user_data['can_export'] == 1): ?>
-                                                    <button type="button" class="btn btn-light mb-2 me-1" data-bs-toggle="modal" data-bs-target="#export-excel-modal">Экспорт в Excel</button>
+                                                    <button type="button" class="btn btn-light mb-2 me-1" data-bs-toggle="modal" data-bs-target="#export-excel-modal">
+                                                        Экспорт в Excel
+                                                    </button>
                                                 <?php endif; ?>
                                                 <?php if ($user_data['user_group'] != 2 && $current_status != 7 && !(in_array((int)$user_data['user_group'], [3, 4]) && in_array((int)$current_status, [1, 2]))): ?>
                                                 <div class="dropdown btn-group">
@@ -638,8 +649,18 @@ require_once SYSTEM . '/layouts/head.php';
                                                                             echo '<a href="#" class="font-18 text-secondary" onclick="modalAttachPdfForm(' . $client['client_id'] . ')" title="Прикрепить PDF"><i class="uil uil-paperclip"></i></a>';
                                                                         }
 
-                                                                        if ($user_group === 4 && in_array((int)$client['payment_status'], [1, 2]) && !empty($client['pdf_file_path'])) {
-                                                                            echo '<a href="/?form=download-client-pdf&id=' . $client['client_id'] . '" class="font-18 text-success" title="Скачать PDF"><i class="uil uil-file-download-alt"></i></a>';
+                                                                        // Разрешаем просмотр Директору (1) и Агенту (4). Для Агента сохраняем проверку оплаты.
+                                                                        $can_view_pdf = false;
+                                                                        if (!empty($client['pdf_file_path'])) {
+                                                                            if ($user_group === 1) {
+                                                                                $can_view_pdf = true;
+                                                                            } elseif ($user_group === 4 && in_array((int)$client['payment_status'], [1, 2])) {
+                                                                                $can_view_pdf = true;
+                                                                            }
+                                                                        }
+
+                                                                        if ($can_view_pdf) {
+                                                                            echo '<a href="javascript:void(0);" onclick="viewClientPdf(' . $client['client_id'] . ')" class="font-18 text-success" title="Просмотр PDF"><i class="uil uil-file-search-alt"></i></a>';
                                                                         }
                                                                         break;
 
@@ -859,9 +880,39 @@ require_once SYSTEM . '/layouts/head.php';
         </div>
     </div><!-- /.modal -->
 
-    <?php require_once SYSTEM . '/layouts/scripts.php'; ?>
+    <!-- Modal View PDF -->
+    <div id="modal-view-pdf" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modal-view-pdf-title" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal-view-pdf-title">Просмотр PDF</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <!-- оставляем модалку большого размера, но сам просмотрщик сужаем -->
+                <div class="modal-body py-3">
+                    <div class="d-flex justify-content-center">
+                        <!-- контейнер просмотрщика: уже, чем вся модалка -->
+                        <div class="position-relative" style="height: 80vh; width: 100%; max-width: 900px;">
+                            <iframe
+                                id="view-pdf-iframe"
+                                src="about:blank"
+                                width="100%"
+                                height="100%"
+                                frameborder="0"
+                                style="border: 1px solid #dee2e6; border-radius: .25rem; background: #f8f9fa;">
+                                Ваш браузер не поддерживает предпросмотр.
+                            </iframe>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div><!-- /.modal -->
 
-    <!-- ... существующие модальные окна ... -->
+    <?php require_once SYSTEM . '/layouts/scripts.php'; ?>
 
     <!-- Modal Export to Excel -->
     <div id="export-excel-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="export-excel-modal-label" aria-hidden="true">
@@ -930,6 +981,164 @@ require_once SYSTEM . '/layouts/head.php';
             </div>
         </div>
     </div><!-- /.modal -->
+
+    <!-- Modal Import from Excel -->
+    <div id="import-excel-modal" class="modal fade" tabindex="-1" role="dialog"
+        aria-labelledby="import-excel-modal-label" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form id="form-import-excel" enctype="multipart/form-data" method="post" action="/?form=import-clients-excel">
+                    <input type="hidden" name="center_id" value="<?= $center_id ?>">
+
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="import-excel-modal-label">Импорт анкет из Excel</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <!-- Выбор файла -->
+                        <div class="mb-3">
+                            <label class="form-label">Файл Excel</label>
+                            <input type="file"
+                                class="form-control"
+                                name="import_file"
+                                accept=".xlsx,.xls,.csv"
+                                required>
+                        </div>
+
+                        <!-- Блок сопоставления колонок -->
+                        <hr class="my-3">
+
+                        <p class="mb-2">
+                            Укажите, как называются столбцы в Excel для каждого поля анкеты.
+                        </p>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <!-- 1 менеджер -->
+                                <div class="mb-2">
+                                    <label class="form-label">Менеджер</label>
+                                    <input type="text" class="form-control" name="map[manager]" placeholder="Введите значение для Менеджера">
+                                </div>
+
+                                <!-- 2 агент менеджера -->
+                                <div class="mb-2">
+                                    <label class="form-label">Агент менеджера</label>
+                                    <input type="text" class="form-control" name="map[agent]" placeholder="Введите значение для Агента">
+                                </div>
+
+                                <!-- 3 цена -->
+                                <div class="mb-2">
+                                    <label class="form-label">Цена (продажа)</label>
+                                    <input type="text" class="form-control" name="map[sale_price]" placeholder="Введите значение для Цены">
+                                </div>
+
+                                <!-- 4 город -->
+                                <div class="mb-2">
+                                    <label class="form-label">Город</label>
+                                    <input type="text" class="form-control" name="map[city]" placeholder="Введите значение для Города">
+                                </div>
+
+                                <!-- 5 категория -->
+                                <div class="mb-2">
+                                    <label class="form-label">Категория</label>
+                                    <input type="text" class="form-control" name="map[category]" placeholder="Введите значение для Категории">
+                                </div>
+
+                                <!-- 6 фамилия -->
+                                <div class="mb-2">
+                                    <label class="form-label">Фамилия</label>
+                                    <input type="text" class="form-control" name="map[last_name]" placeholder="Введите значение для Фамилии">
+                                </div>
+
+                                <!-- 7 имя -->
+                                <div class="mb-2">
+                                    <label class="form-label">Имя</label>
+                                    <input type="text" class="form-control" name="map[first_name]" placeholder="Введите значение для Имени">
+                                </div>
+
+                                <!-- 8 номер паспорта -->
+                                <div class="mb-2">
+                                    <label class="form-label">Номер паспорта</label>
+                                    <input type="text" class="form-control" name="map[passport_number]" placeholder="Введите значение для Номера паспорта">
+                                </div>
+
+                                <div class="mb-2">
+                                    <label class="form-label">Себестоимость</label>
+                                    <input type="text" class="form-control" name="map[cost_price]" placeholder="Введите значение для Себестоимости">
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <!-- 10 дата рождения -->
+                                <div class="mb-2">
+                                    <label class="form-label">Дата рождения</label>
+                                    <input type="text" class="form-control" name="map[birth_date]" placeholder="Введите значение для Даты рождения">
+                                </div>
+
+                                <!-- 11 годен пас до -->
+                                <div class="mb-2">
+                                    <label class="form-label">Срок действия паспорта</label>
+                                    <input type="text" class="form-control" name="map[passport_expiry_date]" placeholder="Введите значение для Срока действия паспорта">
+                                </div>
+
+                                <!-- 12 пол -->
+                                <div class="mb-2">
+                                    <label class="form-label">Пол</label>
+                                    <input type="text" class="form-control" name="map[gender]" placeholder="Введите значение для Пола">
+                                </div>
+
+                                <!-- 13 номер телефона -->
+                                <div class="mb-2">
+                                    <label class="form-label">Телефон</label>
+                                    <input type="text" class="form-control" name="map[phone]" placeholder="Введите значение для Телефона">
+                                </div>
+
+                                <!-- 14 национальность -->
+                                <div class="mb-2">
+                                    <label class="form-label">Национальность</label>
+                                    <input type="text" class="form-control" name="map[nationality]" placeholder="Введите значение для Национальности">
+                                </div>
+
+                                <!-- 15 даты мониторинга -->
+                                <div class="mb-2">
+                                    <label class="form-label">Даты мониторинга</label>
+                                    <input type="text" class="form-control" name="map[monitoring_dates]" placeholder="Введите значение для Дат мониторинга">
+                                </div>
+
+                                <!-- 16 дни на дорогу -->
+                                <div class="mb-2">
+                                    <label class="form-label">Дни на дорогу</label>
+                                    <input type="text" class="form-control" name="map[days_until_visit]" placeholder="Введите значение для Дней на дорогу">
+                                </div>
+
+                                <!-- 17 состав семьи -->
+                                <div class="mb-2">
+                                    <label class="form-label">Состав семьи (код)</label>
+                                    <input type="text" class="form-control" name="map[family_code]" placeholder="Введите значение для Семьи">
+                                </div>
+
+                                <div class="mb-2">
+                                    <label class="form-label">Поставщик</label>
+                                    <input type="text" class="form-control" name="map[supplier]" placeholder="Введите значение для Поставщика">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-success">
+                            <span class="spinner-border spinner-border-sm me-1 btn-loader visually-hidden" role="status" aria-hidden="true"></span>
+                            <span class="btn-icon"><i class="mdi mdi-database-import-outline me-1"></i></span>
+                            <span class="loader-text visually-hidden">Импорт...</span>
+                            <span class="btn-text">Подтвердить</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <?php require_once SYSTEM . '/layouts/scripts.php'; ?>
 
@@ -1406,6 +1615,27 @@ require_once SYSTEM . '/layouts/head.php';
             modal.modal('show');
         }
 
+        function viewClientPdf(clientId) {
+            const modal = $('#modal-view-pdf');
+            const iframe = $('#view-pdf-iframe');
+            
+            // Формируем ссылку на action, который теперь отдает файл как inline
+            const url = '/?form=download-client-pdf&id=' + clientId;
+            
+            // Устанавливаем заголовок
+            modal.find('#modal-view-pdf-title').text('Просмотр PDF анкеты №' + clientId);
+            
+            // Загружаем PDF в iframe
+            iframe.attr('src', url);
+            
+            modal.modal('show');
+            
+            // Очищаем iframe при закрытии, чтобы не висел старый файл
+            modal.off('hidden.bs.modal').on('hidden.bs.modal', function () {
+                iframe.attr('src', 'about:blank');
+            });
+        }
+
         // Выносим AJAX-запрос в отдельную функцию, как в других частях проекта
         function sendManualAttachForm(btn) {
             const fileInput = $('#manual-pdf-file');
@@ -1481,6 +1711,39 @@ require_once SYSTEM . '/layouts/head.php';
                 $(this).val(picker.startDate.format('DD.MM.YYYY HH:mm'));
             }).on('cancel.daterangepicker', function(ev, picker) {
                 $(this).val('');
+            });
+        });
+    </script>
+
+    <script>
+        $('#form-import-excel').on('submit', function (e) {
+            e.preventDefault();
+
+            const $form = $(this);
+            const btnSelector = '#form-import-excel button[type=submit]';
+
+            loaderBTN(btnSelector, 'true');
+
+            const formData = new FormData(this);
+
+            $.ajax({
+                url: $form.attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                dataType: 'json',
+                success: function (response) {
+                    loaderBTN(btnSelector, 'false');
+                    $('#import-excel-modal').modal('hide');
+
+                    // стандартная твоя функция message()
+                    message(response.msg_title, response.msg_text, response.msg_type, response.msg_url || 'reload');
+                },
+                error: function () {
+                    loaderBTN(btnSelector, 'false');
+                    message('Ошибка', 'Произошла ошибка при импорте файла.', 'error', '');
+                }
             });
         });
     </script>

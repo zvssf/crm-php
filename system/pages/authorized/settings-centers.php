@@ -427,6 +427,20 @@ require_once SYSTEM . '/layouts/head.php';
                             </div>
 
                             <div class="d-flex justify-content-between align-items-center mb-3">
+                                <label class="form-label mb-0">Даты мониторинга</label>
+                                <div class="d-flex gap-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input field-switch" type="checkbox" id="switch-visible-monitoring_dates" data-field="monitoring_dates" data-type="visible" checked>
+                                        <label class="form-check-label" for="switch-visible-monitoring_dates">Наличие</label>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input field-switch" type="checkbox" id="switch-required-monitoring_dates" data-field="monitoring_dates" data-type="required">
+                                        <label class="form-check-label" for="switch-required-monitoring_dates">Обязательность</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center mb-3">
                                 <label class="form-label mb-0">Даты визита</label>
                                 <div class="d-flex gap-3">
                                     <div class="form-check form-switch">

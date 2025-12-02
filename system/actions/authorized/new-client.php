@@ -21,6 +21,7 @@ $birth_date_raw       = valid($_POST['birth_date'] ?? null);
 $passport_expiry_raw  = valid($_POST['passport_expiry_date'] ?? null);
 $nationality          = valid($_POST['nationality'] ?? null);
 
+$monitoring_dates_raw = valid($_POST['monitoring_dates'] ?? null);
 $visit_dates_raw    = valid($_POST['visit_dates'] ?? null);
 $days_until_visit   = valid($_POST['days_until_visit'] ?? null);
 $notes              = valid($_POST['notes'] ?? null);
@@ -89,6 +90,7 @@ if (isset($field_settings['email'])) $validate($email, 'Поле "Email" обя�
 if (isset($field_settings['birth_date'])) $validate($birth_date_raw, 'Поле "Дата рождения" обязательно для заполнения!');
 if (isset($field_settings['passport_expiry_date'])) $validate($passport_expiry_raw, 'Поле "Срок действия паспорта" обязательно для заполнения!');
 if (isset($field_settings['nationality'])) $validate($nationality, 'Поле "Национальность" обязательно для заполнения!');
+if (isset($field_settings['monitoring_dates'])) $validate($monitoring_dates_raw, 'Поле "Даты мониторинга" обязательно для заполнения!');
 if (isset($field_settings['visit_dates'])) $validate($visit_dates_raw, 'Поле "Даты визита" обязательно для заполнения!');
 if (isset($field_settings['days_until_visit'])) $validate($days_until_visit, 'Поле "Дни до визита" обязательно для заполнения!');
 
@@ -106,6 +108,18 @@ $status = 3; // Все новые анкеты всегда отправляют
 $birth_date = !empty($birth_date_raw) ? DateTime::createFromFormat('d.m.Y', $birth_date_raw)->format('Y-m-d') : null;
 $passport_expiry_date = !empty($passport_expiry_raw) ? DateTime::createFromFormat('d.m.Y', $passport_expiry_raw)->format('Y-m-d') : null;
 
+// --- ДАТЫ МОНИТОРИНГА ---
+$monitoring_date_start = null;
+$monitoring_date_end = null;
+if (!empty($monitoring_dates_raw)) {
+    $dates = explode(' - ', $monitoring_dates_raw);
+    if (count($dates) == 2) {
+        $monitoring_date_start = DateTime::createFromFormat('d.m.Y', trim($dates[0]))->format('Y-m-d');
+        $monitoring_date_end = DateTime::createFromFormat('d.m.Y', trim($dates[1]))->format('Y-m-d');
+    }
+}
+
+// --- ДАТЫ ВИЗИТА ---
 $visit_date_start = null;
 $visit_date_end = null;
 if (!empty($visit_dates_raw)) {
@@ -146,11 +160,11 @@ try {
         INSERT INTO `clients` (
             `family_id`, `center_id`, `agent_id`, `creator_id`, `client_name`, `client_status`, `first_name`, `last_name`, `middle_name`, 
             `gender`, `phone_code`, `phone_number`, `email`, `passport_number`, `birth_date`, `passport_expiry_date`, 
-            `nationality`, `visit_date_start`, `visit_date_end`, `days_until_visit`, `notes`, `sale_price`
+            `nationality`, `monitoring_date_start`, `monitoring_date_end`, `visit_date_start`, `visit_date_end`, `days_until_visit`, `notes`, `sale_price`
         ) VALUES (
             :family_id, :center_id, :agent_id, :creator_id, :client_name, :status, :first_name, :last_name, :middle_name, 
             :gender, :phone_code, :phone_number, :email, :passport_number, :birth_date, :passport_expiry_date, 
-            :nationality, :visit_date_start, :visit_date_end, :days_until_visit, :notes, :sale_price
+            :nationality, :monitoring_date_start, :monitoring_date_end, :visit_date_start, :visit_date_end, :days_until_visit, :notes, :sale_price
         )
     ";
     
@@ -174,6 +188,8 @@ try {
         ':birth_date' => $birth_date,
         ':passport_expiry_date' => $passport_expiry_date,
         ':nationality' => $nationality,
+        ':monitoring_date_start' => $monitoring_date_start,
+        ':monitoring_date_end' => $monitoring_date_end,
         ':visit_date_start' => $visit_date_start,
         ':visit_date_end' => $visit_date_end,
         ':days_until_visit' => $days_until_visit,

@@ -1,6 +1,6 @@
 <?php
-// Проверяем права доступа: только Агент может выполнять это действие
-if ($user_data['user_group'] != 4) {
+// Проверяем права доступа: Директор (1) и Агент (4)
+if (!in_array($user_data['user_group'], [1, 4])) {
     exit('Доступ запрещен.');
 }
 
@@ -15,7 +15,13 @@ try {
 
     // 2. Получение данных анкеты из БД
     $stmt = $pdo->prepare("
-        SELECT `agent_id`, `client_status`, `payment_status`, `pdf_file_path` 
+        SELECT 
+            `agent_id`, 
+            `client_status`, 
+            `payment_status`, 
+            `pdf_file_path`,
+            `first_name`,
+            `last_name`
         FROM `clients` 
         WHERE `client_id` = :client_id
     ");
@@ -27,8 +33,8 @@ try {
         exit('Анкета не найдена.');
     }
 
-    // Убеждаемся, что текущий агент запрашивает анкету, которая ему принадлежит
-    if ($client['agent_id'] != $user_data['user_id']) {
+    // Убеждаемся, что текущий агент запрашивает анкету, которая ему принадлежит (Директор игнорирует проверку)
+    if ($user_data['user_group'] == 4 && $client['agent_id'] != $user_data['user_id']) {
         exit('У вас нет доступа к этой анкете.');
     }
 
@@ -47,6 +53,22 @@ try {
         exit('К этой анкете не прикреплен PDF-файл.');
     }
 
+    // Формируем имя файла: pdf_Имя_Фамилия.pdf
+    $first_name = valid(trim($client['first_name'] ?? ''));
+    $last_name = valid(trim($client['last_name'] ?? ''));
+
+    $filename = 'pdf';
+
+    if ($first_name || $last_name) {
+        $filename .= '_' . $last_name . '_' . $first_name;
+    }
+
+    // Убираем мусорные символы и оставляем только буквы/цифры/подчеркивание
+    $filename = preg_replace('/[^a-zа-я0-9_]/iu', '_', $filename);
+
+    // Финальное имя
+    $download_name = $filename . '.pdf';
+
     // 4. Формирование пути к файлу и проверка его существования
     $file_path = ROOT . '/private_uploads/client_pdfs/' . $client['pdf_file_path'];
     
@@ -58,7 +80,7 @@ try {
     // 5. Отправка файла браузеру для скачивания
     header('Content-Description: File Transfer');
     header('Content-Type: application/pdf');
-    header('Content-Disposition: attachment; filename="' . basename($file_path) . '"');
+    header('Content-Disposition: inline; filename="' . $download_name . '"');
     header('Expires: 0');
     header('Cache-Control: must-revalidate');
     header('Pragma: public');

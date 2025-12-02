@@ -89,6 +89,7 @@ $field_settings = [
     'agent_id' => ['is_visible' => true, 'is_required' => true],
     'city_ids' => ['is_visible' => true, 'is_required' => true],
     'sale_price' => ['is_visible' => true, 'is_required' => true],
+    'monitoring_dates' => ['is_visible' => true, 'is_required' => false],
     'visit_dates' => ['is_visible' => true, 'is_required' => false],
     'days_until_visit' => ['is_visible' => true, 'is_required' => false],
     'notes' => ['is_visible' => true, 'is_required' => false],
@@ -462,6 +463,19 @@ require_once SYSTEM . '/layouts/head.php';
                                                     <input type="text" class="form-control" id="sale_price" name="sale_price" value="<?= valid($client_data['sale_price'] ?? '') ?>" placeholder="Введите стоимость" data-toggle="touchspin" data-step="0.01" data-min="0" data-max="10000000" data-decimals="2" data-bts-prefix="$" <?= $is_readonly ? 'disabled' : '' ?> required>
                                                     <div class="invalid-feedback">Некорректная стоимость</div>
                                                 </div>
+
+                                                <?php if ($field_settings['monitoring_dates']['is_visible']): ?>
+                                                <div class="mb-3">
+                                                    <label for="monitoring_dates" class="form-label">Даты мониторинга</label>
+                                                    <?php
+                                                    $monitoring_dates_value = '';
+                                                    if (!empty($client_data['monitoring_date_start']) && !empty($client_data['monitoring_date_end'])) {
+                                                        $monitoring_dates_value = date('d.m.Y', strtotime($client_data['monitoring_date_start'])) . ' - ' . date('d.m.Y', strtotime($client_data['monitoring_date_end']));
+                                                    }
+                                                    ?>
+                                                    <input type="text" class="form-control" id="monitoring_dates" name="monitoring_dates" placeholder="Выберите даты" value="<?= $monitoring_dates_value ?>" <?php if ($field_settings['monitoring_dates']['is_required'] && !$is_readonly): ?>required<?php endif; ?> <?= $is_readonly ? 'disabled' : '' ?>>
+                                                </div>
+                                                <?php endif; ?>
                                                 
                                                 <?php if ($field_settings['visit_dates']['is_visible']): ?>
                                                 <div class="mb-3">
@@ -1191,6 +1205,19 @@ require_once SYSTEM . '/layouts/head.php';
             context.find('#birth_date, #passport_expiry_date, .datepicker').not('#persona-template *').daterangepicker(datepickerOptions)
                 .on('apply.daterangepicker', function (ev, picker) { $(this).val(picker.startDate.format('DD.MM.YYYY')); })
                 .on('cancel.daterangepicker', function (ev, picker) { $(this).val(''); });
+
+            const monitoringDatesInput = context.find('#monitoring_dates').not('#persona-template *');
+            if (monitoringDatesInput.length > 0) {
+                monitoringDatesInput.daterangepicker({
+                    autoUpdateInput: false,
+                    locale: { "format": "DD.MM.YYYY", "separator": " - ", "applyLabel": "Применить", "cancelLabel": "Отмена", "fromLabel": "С", "toLabel": "По", "weekLabel": "Н", "daysOfWeek": ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"], "monthNames": ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"], "firstDay": 1 }
+                }).on('apply.daterangepicker', function(ev, picker) {
+                    $(this).val(picker.startDate.format('DD.MM.YYYY') + ' - ' + picker.endDate.format('DD.MM.YYYY'));
+                }).on('cancel.daterangepicker', function(ev, picker) {
+                    $(this).val('');
+                });
+            }
+            
             const visitDatesInput = context.find('#visit_dates').not('#persona-template *');
             if (visitDatesInput.length > 0) {
                 visitDatesInput.daterangepicker({
