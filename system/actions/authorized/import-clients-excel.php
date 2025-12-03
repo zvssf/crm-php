@@ -168,6 +168,27 @@ try {
     $pdo = db_connect();
     $pdo->beginTransaction();
 
+    // --- ПОДГОТОВКА СПИСКА ГОРОДОВ ---
+    // 1. Получаем ID страны текущего ВЦ
+    $stmt_center_country = $pdo->prepare("SELECT `country_id` FROM `settings_centers` WHERE `center_id` = :center_id");
+    $stmt_center_country->execute([':center_id' => $center_id]);
+    $center_country_id = $stmt_center_country->fetchColumn();
+
+    // 2. Загружаем все активные города и категории для этой страны
+    // Создаем карту: $cities_map['название города']['название категории'] = city_id
+    $cities_map = [];
+    if ($center_country_id) {
+        $stmt_cities = $pdo->prepare("SELECT `city_id`, `city_name`, `city_category` FROM `settings_cities` WHERE `country_id` = :country_id AND `city_status` = 1");
+        $stmt_cities->execute([':country_id' => $center_country_id]);
+        $db_cities = $stmt_cities->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($db_cities as $c) {
+            $c_name = mb_strtolower(trim($c['city_name']));
+            $c_cat  = mb_strtolower(trim($c['city_category'] ?? ''));
+            $cities_map[$c_name][$c_cat] = $c['city_id'];
+        }
+    }
+
     // --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
 
     // Парсинг даты в формат Y-m-d
@@ -231,30 +252,37 @@ try {
     };
 
     // Поиск агента по строке из Excel
-    $find_agent_id = function ($agent_name) use ($pdo) {
-        $agent_name = trim((string)$agent_name);
-        if ($agent_name === '') {
-            return null;
-        }
+    // Поиск агента по строке из Excel
+$find_agent_id = function ($agent_name) use ($pdo) {
+    $agent_name = trim((string)$agent_name);
+    if ($agent_name === '') {
+        return null;
+    }
 
-        // Пытаемся найти по логину или ФИО (Имя Фамилия / Фамилия Имя)
-        $sql = "
-            SELECT `user_id`
-            FROM `users`
-            WHERE `user_group` = 4
-              AND (
-                    `user_login` = :name
-                 OR CONCAT_WS(' ', `user_firstname`, `user_lastname`) = :name
-                 OR CONCAT_WS(' ', `user_lastname`, `user_firstname`) = :name
-              )
-            LIMIT 1
-        ";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([':name' => $agent_name]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    // Пытаемся найти по логину или ФИО (Имя Фамилия / Фамилия Имя)
+    $sql = "
+        SELECT `user_id`
+        FROM `users`
+        WHERE `user_group` = 4
+          AND (
+                `user_login` = :name_login
+             OR CONCAT_WS(' ', `user_firstname`, `user_lastname`) = :name_fl
+             OR CONCAT_WS(' ', `user_lastname`, `user_firstname`) = :name_lf
+          )
+        LIMIT 1
+    ";
 
-        return $user ? (int)$user['user_id'] : null;
-    };
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([
+        ':name_login' => $agent_name,
+        ':name_fl'    => $agent_name,
+        ':name_lf'    => $agent_name,
+    ]);
+
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    return $user ? (int)$user['user_id'] : null;
+};
 
     // Нормализация пола
     $normalize_gender = function ($value) {
@@ -274,13 +302,45 @@ try {
         return null;
     };
 
-    // Нормализация телефона: кладём всё в number, код оставляем null
+    // Нормализация телефона: "код;номер" → [код, номер]
     $split_phone = function ($value) {
-        $digits = preg_replace('/\D+/', '', (string)$value);
-        if ($digits === '') {
+        $value = (string)$value;
+        $value = trim($value);
+
+        if ($value === '') {
             return [null, null];
         }
-        return [null, $digits];
+
+        $code  = null;
+        $phone = null;
+
+        // Если формат "код;номер"
+        if (strpos($value, ';') !== false) {
+            [$raw_code, $raw_phone] = explode(';', $value, 2);
+
+            $raw_code  = trim($raw_code);
+            $raw_phone = trim($raw_phone);
+
+            $code  = preg_replace('/\D+/', '', $raw_code);
+            $phone = preg_replace('/\D+/', '', $raw_phone);
+
+            if ($code === '') {
+                $code = null;
+            }
+            if ($phone === '') {
+                $phone = null;
+            }
+        } else {
+            // Фолбэк: как раньше — всё в номер
+            $digits = preg_replace('/\D+/', '', $value);
+            if ($digits === '') {
+                return [null, null];
+            }
+            $code  = null;
+            $phone = $digits;
+        }
+
+        return [$code, $phone];
     };
 
     // Подготовленные выражения для вставки
@@ -293,7 +353,7 @@ try {
             `gender`, `phone_code`, `phone_number`, `email`, `passport_number`,
             `birth_date`, `passport_expiry_date`,
             `nationality`, `monitoring_date_start`, `monitoring_date_end`,
-            `visit_date_start`, `visit_date_end`, `days_until_visit`,
+            `days_until_visit`,
             `notes`, `sale_price`
         ) VALUES (
             :family_id, :center_id, :agent_id, :creator_id, :client_name, :status,
@@ -301,7 +361,7 @@ try {
             :gender, :phone_code, :phone_number, :email, :passport_number,
             :birth_date, :passport_expiry_date,
             :nationality, :monitoring_date_start, :monitoring_date_end,
-            :visit_date_start, :visit_date_end, :days_until_visit,
+            :days_until_visit,
             :notes, :sale_price
         )
     ");
@@ -316,6 +376,11 @@ try {
             :phone_code, :phone_number, :email,
             :passport_number, :birth_date, :passport_expiry_date, :nationality
         )
+    ");
+
+    $stmt_insert_client_city = $pdo->prepare("
+        INSERT INTO `client_cities` (`client_id`, `city_id`) 
+        VALUES (:client_id, :city_id)
     ");
 
     $created_clients   = 0;
@@ -333,6 +398,8 @@ try {
         $normalize_gender,
         $split_phone,
         $stmt_insert_client,
+        $stmt_insert_client_city,
+        $cities_map,
         $pdo,
         &$created_clients
     ) {
@@ -391,6 +458,7 @@ try {
         // Статус: черновик
         $status = 3;
 
+        // Внимание: здесь ровно 22 параметра, совпадающих с SQL-запросом
         $stmt_insert_client->execute([
             ':family_id'             => $family_id ?: null,
             ':center_id'             => $center_id,
@@ -411,16 +479,38 @@ try {
             ':nationality'           => $nationality !== '' ? $nationality : null,
             ':monitoring_date_start' => $monitoring_start,
             ':monitoring_date_end'   => $monitoring_end,
-            ':visit_date_start'      => null,
-            ':visit_date_end'        => null,
             ':days_until_visit'      => $days_until_visit,
             ':notes'                 => null,
             ':sale_price'            => $sale_price,
         ]);
 
         $created_clients++;
+        $new_client_id = (int)$pdo->lastInsertId();
 
-        return (int)$pdo->lastInsertId();
+        // --- ПРИВЯЗКА ГОРОДА И КАТЕГОРИИ ---
+        $excel_city = mb_strtolower(trim((string)($row_data['city'] ?? '')));
+        $excel_cat  = mb_strtolower(trim((string)($row_data['category'] ?? '')));
+
+        if ($excel_city !== '' && isset($cities_map[$excel_city])) {
+            $found_city_id = null;
+
+            if (isset($cities_map[$excel_city][$excel_cat])) {
+                $found_city_id = $cities_map[$excel_city][$excel_cat];
+            } elseif ($excel_cat === '' && isset($cities_map[$excel_city][''])) {
+                 $found_city_id = $cities_map[$excel_city][''];
+            } elseif (!empty($cities_map[$excel_city])) {
+                $found_city_id = reset($cities_map[$excel_city]);
+            }
+
+            if ($found_city_id) {
+                $stmt_insert_client_city->execute([
+                    ':client_id' => $new_client_id,
+                    ':city_id'   => $found_city_id
+                ]);
+            }
+        }
+
+        return $new_client_id;
     };
 
     $create_relative_from_row = function (array $row_data, $family_id) use (
@@ -506,5 +596,6 @@ try {
         $pdo->rollBack();
     }
     error_log('Import clients from Excel error: ' . $e->getMessage());
-    message('Ошибка', 'Не удалось выполнить импорт анкет из Excel. Обратитесь к администратору.', 'error', '');
+    // ВРЕМЕННО ПОКАЗЫВАЕМ РЕАЛЬНУЮ ОШИБКУ
+    message('Ошибка', 'Детали: ' . $e->getMessage(), 'error', '');
 }

@@ -1014,113 +1014,97 @@ require_once SYSTEM . '/layouts/head.php';
                         </p>
 
                         <div class="row">
+                            <!-- Левая колонка: Персональные данные и Документы -->
                             <div class="col-md-6">
-                                <!-- 1 менеджер -->
-                                <div class="mb-2">
-                                    <label class="form-label">Менеджер</label>
-                                    <input type="text" class="form-control" name="map[manager]" placeholder="Введите значение для Менеджера">
-                                </div>
-
-                                <!-- 2 агент менеджера -->
-                                <div class="mb-2">
-                                    <label class="form-label">Агент менеджера</label>
-                                    <input type="text" class="form-control" name="map[agent]" placeholder="Введите значение для Агента">
-                                </div>
-
-                                <!-- 3 цена -->
-                                <div class="mb-2">
-                                    <label class="form-label">Цена (продажа)</label>
-                                    <input type="text" class="form-control" name="map[sale_price]" placeholder="Введите значение для Цены">
-                                </div>
-
-                                <!-- 4 город -->
-                                <div class="mb-2">
-                                    <label class="form-label">Город</label>
-                                    <input type="text" class="form-control" name="map[city]" placeholder="Введите значение для Города">
-                                </div>
-
-                                <!-- 5 категория -->
-                                <div class="mb-2">
-                                    <label class="form-label">Категория</label>
-                                    <input type="text" class="form-control" name="map[category]" placeholder="Введите значение для Категории">
-                                </div>
-
-                                <!-- 6 фамилия -->
+                                <h5 class="font-14 text-uppercase mb-2">Персональные данные</h5>
+                                
                                 <div class="mb-2">
                                     <label class="form-label">Фамилия</label>
-                                    <input type="text" class="form-control" name="map[last_name]" placeholder="Введите значение для Фамилии">
+                                    <input type="text" class="form-control" name="map[last_name]" placeholder="Название столбца в Excel">
                                 </div>
 
-                                <!-- 7 имя -->
                                 <div class="mb-2">
                                     <label class="form-label">Имя</label>
-                                    <input type="text" class="form-control" name="map[first_name]" placeholder="Введите значение для Имени">
+                                    <input type="text" class="form-control" name="map[first_name]" placeholder="Название столбца в Excel">
                                 </div>
 
-                                <!-- 8 номер паспорта -->
+                                <div class="mb-2">
+                                    <label class="form-label">Дата рождения</label>
+                                    <input type="text" class="form-control" name="map[birth_date]" placeholder="Название столбца в Excel">
+                                </div>
+
+                                <div class="mb-2">
+                                    <label class="form-label">Пол</label>
+                                    <input type="text" class="form-control" name="map[gender]" placeholder="Название столбца в Excel">
+                                </div>
+
+                                <div class="mb-2">
+                                    <label class="form-label">Национальность</label>
+                                    <input type="text" class="form-control" name="map[nationality]" placeholder="Название столбца в Excel">
+                                </div>
+
+                                <div class="mb-2">
+                                    <label class="form-label">Телефон</label>
+                                    <input type="text" class="form-control" name="map[phone]" placeholder="Название столбца в Excel">
+                                </div>
+
+                                <h5 class="font-14 text-uppercase mt-3 mb-2">Документы</h5>
+
                                 <div class="mb-2">
                                     <label class="form-label">Номер паспорта</label>
-                                    <input type="text" class="form-control" name="map[passport_number]" placeholder="Введите значение для Номера паспорта">
+                                    <input type="text" class="form-control" name="map[passport_number]" placeholder="Название столбца в Excel">
                                 </div>
 
                                 <div class="mb-2">
-                                    <label class="form-label">Себестоимость</label>
-                                    <input type="text" class="form-control" name="map[cost_price]" placeholder="Введите значение для Себестоимости">
+                                    <label class="form-label">Срок действия паспорта</label>
+                                    <input type="text" class="form-control" name="map[passport_expiry_date]" placeholder="Название столбца в Excel">
                                 </div>
                             </div>
 
+                            <!-- Правая колонка: Поездка, Финансы и Системные -->
                             <div class="col-md-6">
-                                <!-- 10 дата рождения -->
+                                <h5 class="font-14 text-uppercase mb-2">Поездка</h5>
+
                                 <div class="mb-2">
-                                    <label class="form-label">Дата рождения</label>
-                                    <input type="text" class="form-control" name="map[birth_date]" placeholder="Введите значение для Даты рождения">
+                                    <label class="form-label">Город</label>
+                                    <input type="text" class="form-control" name="map[city]" placeholder="Название столбца в Excel">
                                 </div>
 
-                                <!-- 11 годен пас до -->
                                 <div class="mb-2">
-                                    <label class="form-label">Срок действия паспорта</label>
-                                    <input type="text" class="form-control" name="map[passport_expiry_date]" placeholder="Введите значение для Срока действия паспорта">
+                                    <label class="form-label">Категория</label>
+                                    <input type="text" class="form-control" name="map[category]" placeholder="Название столбца в Excel">
                                 </div>
 
-                                <!-- 12 пол -->
-                                <div class="mb-2">
-                                    <label class="form-label">Пол</label>
-                                    <input type="text" class="form-control" name="map[gender]" placeholder="Введите значение для Пола">
-                                </div>
-
-                                <!-- 13 номер телефона -->
-                                <div class="mb-2">
-                                    <label class="form-label">Телефон</label>
-                                    <input type="text" class="form-control" name="map[phone]" placeholder="Введите значение для Телефона">
-                                </div>
-
-                                <!-- 14 национальность -->
-                                <div class="mb-2">
-                                    <label class="form-label">Национальность</label>
-                                    <input type="text" class="form-control" name="map[nationality]" placeholder="Введите значение для Национальности">
-                                </div>
-
-                                <!-- 15 даты мониторинга -->
                                 <div class="mb-2">
                                     <label class="form-label">Даты мониторинга</label>
-                                    <input type="text" class="form-control" name="map[monitoring_dates]" placeholder="Введите значение для Дат мониторинга">
+                                    <input type="text" class="form-control" name="map[monitoring_dates]" placeholder="Название столбца в Excel">
                                 </div>
 
-                                <!-- 16 дни на дорогу -->
                                 <div class="mb-2">
                                     <label class="form-label">Дни на дорогу</label>
-                                    <input type="text" class="form-control" name="map[days_until_visit]" placeholder="Введите значение для Дней на дорогу">
+                                    <input type="text" class="form-control" name="map[days_until_visit]" placeholder="Название столбца в Excel">
                                 </div>
 
-                                <!-- 17 состав семьи -->
                                 <div class="mb-2">
                                     <label class="form-label">Состав семьи (код)</label>
-                                    <input type="text" class="form-control" name="map[family_code]" placeholder="Введите значение для Семьи">
+                                    <input type="text" class="form-control" name="map[family_code]" placeholder="Название столбца в Excel">
+                                </div>
+
+                                <h5 class="font-14 text-uppercase mt-3 mb-2">Финансы и Сотрудники</h5>
+
+                                <div class="mb-2">
+                                    <label class="form-label">Цена (продажа)</label>
+                                    <input type="text" class="form-control" name="map[sale_price]" placeholder="Название столбца в Excel">
                                 </div>
 
                                 <div class="mb-2">
-                                    <label class="form-label">Поставщик</label>
-                                    <input type="text" class="form-control" name="map[supplier]" placeholder="Введите значение для Поставщика">
+                                    <label class="form-label">Менеджер</label>
+                                    <input type="text" class="form-control" name="map[manager]" placeholder="Название столбца в Excel">
+                                </div>
+
+                                <div class="mb-2">
+                                    <label class="form-label">Агент менеджера</label>
+                                    <input type="text" class="form-control" name="map[agent]" placeholder="Название столбца в Excel">
                                 </div>
                             </div>
                         </div>
