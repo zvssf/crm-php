@@ -21,7 +21,6 @@ $passport_expiry_raw = valid($_POST['passport_expiry_date'] ?? '');
 $nationality = valid($_POST['nationality'] ?? '');
 
 $monitoring_dates_raw = valid($_POST['monitoring_dates'] ?? '');
-$visit_dates_raw = valid($_POST['visit_dates'] ?? '');
 $days_until_visit = valid($_POST['days_until_visit'] ?? '');
 $notes = valid($_POST['notes'] ?? '');
 $city_ids = $_POST['city_ids'] ?? [];
@@ -89,8 +88,7 @@ if (isset($field_settings['birth_date'])) $validate($birth_date_raw, 'Поле "
 if (isset($field_settings['passport_expiry_date'])) $validate($passport_expiry_raw, 'Поле "Срок действия паспорта" обязательно для заполнения!');
 if (isset($field_settings['nationality'])) $validate($nationality, 'Поле "Национальность" обязательно для заполнения!');
 if (isset($field_settings['monitoring_dates'])) $validate($monitoring_dates_raw, 'Поле "Даты мониторинга" обязательно для заполнения!');
-if (isset($field_settings['visit_dates'])) $validate($visit_dates_raw, 'Поле "Даты визита" обязательно для заполнения!');
-if (isset($field_settings['days_until_visit'])) $validate($days_until_visit, 'Поле "Дни до визита" обязательно для заполнения!');
+if (isset($field_settings['days_until_visit'])) $validate($days_until_visit, 'Поле "Дни на дорогу до визита" обязательно для заполнения!');
 if (isset($field_settings['notes'])) $validate($notes, 'Поле "Ваши пометки" обязательно для заполнения!');
 
 // --- КОНЕЦ БЛОКА ВАЛИДАЦИИ ---
@@ -112,16 +110,8 @@ if (!empty($monitoring_dates_raw)) {
     }
 }
 
-// --- ДАТЫ ВИЗИТА ---
 $visit_date_start = null;
 $visit_date_end = null;
-if (!empty($visit_dates_raw)) {
-    $dates = explode(' - ', $visit_dates_raw);
-    if (count($dates) == 2) {
-        $visit_date_start = DateTime::createFromFormat('d.m.Y', trim($dates[0]))->format('Y-m-d');
-        $visit_date_end = DateTime::createFromFormat('d.m.Y', trim($dates[1]))->format('Y-m-d');
-    }
-}
 
 try {
     $pdo = db_connect();

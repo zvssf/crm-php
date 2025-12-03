@@ -441,21 +441,7 @@ require_once SYSTEM . '/layouts/head.php';
                             </div>
 
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <label class="form-label mb-0">Даты визита</label>
-                                <div class="d-flex gap-3">
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input field-switch" type="checkbox" id="switch-visible-visit_dates" data-field="visit_dates" data-type="visible" checked>
-                                        <label class="form-check-label" for="switch-visible-visit_dates">Наличие</label>
-                                    </div>
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input field-switch" type="checkbox" id="switch-required-visit_dates" data-field="visit_dates" data-type="required">
-                                        <label class="form-check-label" for="switch-required-visit_dates">Обязательность</label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <label class="form-label mb-0">Дни до визита</label>
+                                <label class="form-label mb-0">Дни на дорогу до визита</label>
                                 <div class="d-flex gap-3">
                                     <div class="form-check form-switch">
                                         <input class="form-check-input field-switch" type="checkbox" id="switch-visible-days_until_visit" data-field="days_until_visit" data-type="visible" checked>

@@ -351,17 +351,10 @@ require_once SYSTEM . '/layouts/head.php';
                                                 </div>
                                                 <?php endif; ?>
 
-                                                <?php if ($field_settings['visit_dates']['is_visible']): ?>
-                                                <div class="mb-3">
-                                                    <label for="visit_dates" class="form-label">Даты визита</label>
-                                                    <input type="text" class="form-control" id="visit_dates" name="visit_dates" placeholder="Выберите даты" <?php if ($field_settings['visit_dates']['is_required']): ?>required<?php endif; ?>>
-                                                </div>
-                                                <?php endif; ?>
-
                                                 <?php if ($field_settings['days_until_visit']['is_visible']): ?>
                                                 <div class="mb-3">
-                                                    <label for="days_until_visit" class="form-label">Дни до визита</label>
-                                                    <input type="text" class="form-control" id="days_until_visit" name="days_until_visit" placeholder="Введите дни до визита" data-toggle="touchspin" data-max="9999" <?php if ($field_settings['days_until_visit']['is_required']): ?>required<?php endif; ?>>
+                                                    <label for="days_until_visit" class="form-label">Дни на дорогу до визита</label>
+                                                    <input type="text" class="form-control" id="days_until_visit" name="days_until_visit" placeholder="Введите кол-во дней" data-toggle="touchspin" data-max="9999" <?php if ($field_settings['days_until_visit']['is_required']): ?>required<?php endif; ?>>
                                                 </div>
                                                 <?php endif; ?>
 
@@ -644,27 +637,6 @@ require_once SYSTEM . '/layouts/head.php';
                     }).on('cancel.daterangepicker', function(ev, picker) {
                         $(this).val('');
                     });
-                }
-
-
-                const visitDatesInput = context.find('#visit_dates').not('#persona-template *');
-                if (visitDatesInput.length > 0) {
-                    visitDatesInput.daterangepicker({
-                        autoUpdateInput: false,
-                        locale: { "format": "DD.MM.YYYY", "separator": " - ", "applyLabel": "Применить", "cancelLabel": "Отмена", "fromLabel": "С", "toLabel": "По", "weekLabel": "Н", "daysOfWeek": ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"], "monthNames": ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"], "firstDay": 1 }
-                    }).on('apply.daterangepicker', function(ev, picker) {
-                        $(this).val(picker.startDate.format('DD.MM.YYYY') + ' - ' + picker.endDate.format('DD.MM.YYYY'));
-                        const startDate = picker.startDate;
-                        const today = moment().startOf('day');
-                        const diffDays = startDate.diff(today, 'days');
-                        $('#days_until_visit').val(diffDays >= 0 ? diffDays : 0).trigger("change");
-                    }).on('cancel.daterangepicker', function(ev, picker) {
-                        $(this).val('');
-                        $('#days_until_visit').val(0).trigger("change");
-                    });
-                    if(context.is($(document))) { // Очищаем поле только при первой загрузке
-                        visitDatesInput.val('');
-                    }
                 }
             }
 

@@ -181,11 +181,7 @@ render_switch('agent_name', 'Агент', true, false);
 render_switch('client_cities_list', 'Города', true, false);
 render_switch('client_categories_list', 'Категории', true, false);
 render_switch('c.sale_price', 'Стоимость', true, false);
-if (in_array('visit_dates', $visible_fields)) {
-    render_switch('c.visit_date_start', 'Дата визита (начало)', true, false);
-    render_switch('c.visit_date_end', 'Дата визита (конец)', true, false);
-}
-if (in_array('days_until_visit', $visible_fields)) render_switch('c.days_until_visit', 'Дней до визита', true, false);
+if (in_array('days_until_visit', $visible_fields)) render_switch('c.days_until_visit', 'Дни на дорогу до визита', true, false);
 if (in_array('notes', $visible_fields)) render_switch('c.notes', 'Ваши пометки', true, false);
 
 if (!empty($additional_inputs)) {

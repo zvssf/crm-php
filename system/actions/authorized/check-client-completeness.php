@@ -34,9 +34,6 @@ try {
         if ($field === 'phone' && (empty($client['phone_code']) || empty($client['phone_number']))) {
             echo json_encode(['is_complete' => false]); exit;
         }
-        if ($field === 'visit_dates' && (empty($client['visit_date_start']) || empty($client['visit_date_end']))) {
-            echo json_encode(['is_complete' => false]); exit;
-        }
         if (!isset($client[$field]) || $client[$field] === '' || $client[$field] === null) {
             echo json_encode(['is_complete' => false]); exit;
         }
