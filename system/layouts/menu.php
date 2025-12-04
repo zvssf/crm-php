@@ -133,7 +133,8 @@
                             </div>
                         </li>
 
-                        <!-- <li class="dropdown notification-list">
+                        <!-- Notification Menu -->
+                        <li class="dropdown notification-list">
                             <a class="nav-link dropdown-toggle arrow-none" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
                                 <i class="ri-notification-3-line font-22"></i>
                                 <span class="noti-icon-badge"></span>
@@ -144,65 +145,48 @@
                                         <div class="col">
                                             <h6 class="m-0 font-16 fw-semibold"> Уведомления</h6>
                                         </div>
+                                        <div class="col-auto">
+                                            <a href="javascript: void(0);" class="text-dark text-decoration-underline">
+                                                <small>Очистить все</small>
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
 
                                 <div class="px-3" style="max-height: 300px;" data-simplebar>
-                                    
+                                    <!-- Здесь будут выводиться уведомления -->
+                                    <h5 class="text-muted font-13 fw-normal mt-0">Сегодня</h5>
 
-                                <a href="javascript:void(0);" class="dropdown-item p-0 notify-item card unread-noti shadow-none mb-2">
-                                        <div class="card-body">
-                                            <div class="d-flex align-items-center">
-                                                <div class="flex-grow-1 text-truncate ms-2">
-                                                    <h5 class="noti-item-title fw-semibold font-14">Анкеты <small class="fw-normal text-muted ms-1">01.02.2025</small> <span class="badge bg-success">Новое</span></h5>
-                                                    <small class="noti-item-subtitle text-muted">Новые анкеты в ВЦ Болгарию</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </a>
-
+                                    <!-- Пример уведомления -->
                                     <a href="javascript:void(0);" class="dropdown-item p-0 notify-item card unread-noti shadow-none mb-2">
                                         <div class="card-body">
+                                            <span class="float-end noti-close-btn text-muted"><i class="mdi mdi-close"></i></span>
                                             <div class="d-flex align-items-center">
+                                                <div class="flex-shrink-0">
+                                                    <div class="notify-icon bg-primary">
+                                                        <i class="mdi mdi-comment-account-outline"></i>
+                                                    </div>
+                                                </div>
                                                 <div class="flex-grow-1 text-truncate ms-2">
-                                                    <h5 class="noti-item-title fw-semibold font-14">Финансы</h5>
-                                                    <small class="noti-item-subtitle text-muted">Проплачены анкеты</small>
+                                                    <h5 class="noti-item-title fw-semibold font-14">Новая заявка <small class="fw-normal text-muted ms-1">1 мин назад</small></h5>
+                                                    <small class="noti-item-subtitle text-muted">От пользователя Иван Иванов</small>
                                                 </div>
                                             </div>
                                         </div>
                                     </a>
-                                    
+                                     <!-- Конец примера -->
 
-                                <a href="javascript:void(0);" class="dropdown-item p-0 notify-item card unread-noti shadow-none mb-2">
-                                        <div class="card-body">
-                                            <div class="d-flex align-items-center">
-                                                <div class="flex-grow-1 text-truncate ms-2">
-                                                    <h5 class="noti-item-title fw-semibold font-14">Анкеты</h5>
-                                                    <small class="noti-item-subtitle text-muted">Новые анкеты в ВЦ Болгарию</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </a>
-
-                                    <a href="javascript:void(0);" class="dropdown-item p-0 notify-item card unread-noti shadow-none mb-2">
-                                        <div class="card-body">
-                                            <div class="d-flex align-items-center">
-                                                <div class="flex-grow-1 text-truncate ms-2">
-                                                    <h5 class="noti-item-title fw-semibold font-14">Финансы</h5>
-                                                    <small class="noti-item-subtitle text-muted">Проплачены анкеты</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </a>
-
-                                    
                                 </div>
 
-                                
-
+                                <!-- Ссылка "Смотреть все" -->
+                                <a href="javascript:void(0);" class="dropdown-item text-center text-primary notify-item border-top border-light py-2">
+                                    Смотреть все
+                                </a>
 
                             </div>
-                        </li> -->
+                        </li>
+                        <!-- End Notification Menu -->
+
 
                         <li class="d-sm-inline-block">
                             <div class="nav-link" id="light-dark-mode" data-bs-toggle="tooltip" data-bs-placement="left" title="Переключить тему">
