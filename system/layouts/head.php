@@ -210,4 +210,53 @@
     }
 </style>
 
+<style>
+    /* --- ГЛОБАЛЬНАЯ СТИЛИЗАЦИЯ СКРОЛЛБАРА --- */
+
+    /* Webkit (Chrome, Edge, Safari) */
+    ::-webkit-scrollbar {
+        width: 8px;  /* Ширина вертикального скролла */
+        height: 8px; /* Высота горизонтального скролла */
+        background-color: transparent;
+    }
+
+    /* ДЛЯ СВЕТЛОЙ ТЕМЫ (По умолчанию) */
+    ::-webkit-scrollbar-track {
+        background-color: #f1f1f1;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background-color: #c1c1c1;
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background-color: #a8a8a8;
+    }
+
+    /* ДЛЯ ТЁМНОЙ ТЕМЫ */
+    html[data-theme="dark"] ::-webkit-scrollbar-track {
+        background-color: #313a46; /* Цвет левого сайдбара */
+    }
+
+    html[data-theme="dark"] ::-webkit-scrollbar-thumb {
+        background-color: #5d6d7e; /* Приглушенный сине-серый */
+        border: 1px solid #313a46; /* Обводка под цвет фона для визуального отступа */
+    }
+
+    html[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+        background-color: #727cf5; /* Подсветка основным цветом при наведении */
+    }
+
+    /* Firefox (поддерживает только цвет и ширину) */
+    html {
+        scrollbar-width: thin;
+        scrollbar-color: #c1c1c1 #f1f1f1;
+    }
+
+    html[data-theme="dark"] {
+        scrollbar-color: #5d6d7e #313a46;
+    }
+</style>
+
 </head>

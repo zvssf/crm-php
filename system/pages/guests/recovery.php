@@ -23,7 +23,7 @@ require_once SYSTEM . '/layouts/head.php';
                 <div class="my-auto">
                     <!-- title-->
                     <h4>Восстановление пароля</h4>
-                    <p class="text-muted mb-4">Введите свой email, и мы вышлем вам электронное письмо с инструкциями по сбросу пароля.</p>
+                    <p class="text-muted mb-4">Введите свой email (логин) для отправки заявки на восстановление пароля.</p>
 
                     <!-- form -->
                     <form onsubmit="sendRecoveryForm('#form-recovery button[type=submit]')" id="form-recovery" class="needs-validation" novalidate>

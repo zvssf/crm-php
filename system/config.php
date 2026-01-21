@@ -7,6 +7,10 @@ define('DB_NAME',           'crm');
 
 define('ENCRYPTION_KEY',    hash('sha256', 'Od7Vsl*7ry8h(#z($7c2e43', true));
 
+// Языковые настройки
+define('DEFAULT_LANGUAGE', 'ru');
+define('AVAILABLE_LANGUAGES', ['ru', 'en', 'pt', 'tr']);
+
 // $userGoupPrivatPagesDirector = [
 //     'notfound',
 //     'profile',

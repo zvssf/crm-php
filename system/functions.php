@@ -276,3 +276,57 @@ function process_agent_repayments($pdo, $agent_id, $transaction_amount) {
 
     return $affected_log;
 }
+
+function send_notification($pdo, $user_id, $title, $message, $type = 'info', $link = null) {
+    try {
+        $stmt = $pdo->prepare("
+            INSERT INTO `notifications` (`user_id`, `title`, `message`, `type`, `link`) 
+            VALUES (:user_id, :title, :message, :type, :link)
+        ");
+        $stmt->execute([
+            ':user_id' => $user_id,
+            ':title'   => $title,
+            ':message' => $message,
+            ':type'    => $type,
+            ':link'    => $link
+        ]);
+    } catch (PDOException $e) {
+        error_log('Notification Error: ' . $e->getMessage());
+    }
+}
+
+/**
+ * Получение перевода по ключу
+ */
+function lang($key) {
+    global $app_translations;
+    return $app_translations[$key] ?? $key;
+}
+
+function init_language() {
+    global $app_translations;
+    
+    $lang = DEFAULT_LANGUAGE;
+
+    // 1. Проверяем GET параметр (смена языка)
+    if (isset($_GET['lang']) && in_array($_GET['lang'], AVAILABLE_LANGUAGES)) {
+        $lang = $_GET['lang'];
+        // Устанавливаем куки на 30 дней
+        setcookie('crm_lang', $lang, time() + (86400 * 30), "/"); 
+    } 
+    // 2. Проверяем Куки
+    elseif (isset($_COOKIE['crm_lang']) && in_array($_COOKIE['crm_lang'], AVAILABLE_LANGUAGES)) {
+        $lang = $_COOKIE['crm_lang'];
+    }
+
+    // 3. Загружаем файл
+    $lang_file = SYSTEM . "/languages/{$lang}.php";
+    if (file_exists($lang_file)) {
+        $app_translations = require $lang_file;
+    } else {
+        // Фолбэк на дефолтный, если файл не найден
+        $app_translations = require SYSTEM . "/languages/" . DEFAULT_LANGUAGE . ".php";
+    }
+
+    return $lang;
+}

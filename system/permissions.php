@@ -6,7 +6,7 @@ return [
         'pages' => [
             'notfound', 'profile', 'dashboard', 'customers', 'finance', 'new-customer', 'edit-customer',
             'settings-centers', 'settings-countries', 'settings-cities', 'new-city', 'edit-city',
-            'settings-inputs', 'clients', 'new-client', 'edit-client', 'settings-pdf-rules', 'pdf-upload',
+            'settings-inputs', 'clients', 'new-client', 'edit-client', 'settings-pdf-rules', 'pdf-upload', 'notifications',
         ],
         'forms' => [
             'profile-edit', 'profile-new-password', 'new-customer', 'edit-info-customer', 'edit-customer-new-password',
@@ -19,39 +19,43 @@ return [
             'check-client-completeness', 'get-client-categories', 'get-additional-fields',
             'get-min-sale-price', 'pay_client_credit', 'revert-recorded-client', 'get-center-fields', 'get_export_fields', 'export_clients_excel', 
             'mass-client-action', 'mass-center-action', 'mass-country-action', 'mass-city-action', 'mass-input-action', 'mass-customer-action',
-            'edit-pdf-rule', 'upload-client-pdfs', 'delete-pdf-rule', 'manual-attach-pdf', 'download-client-pdf', 'import-clients-excel',
+            'edit-pdf-rule', 'upload-client-pdfs', 'delete-pdf-rule', 'manual-attach-pdf', 'download-client-pdf', 'import-clients-excel', 'read-notification', 'delete-notification', 'create-notification',
+            'check-unread-notifications', 'get-notifications',
         ],
     ],
     'supervisor' => [
         'text'  => 'Руководитель',
         'pages' => [
-            'notfound', 'profile', 'dashboard', 'finance', 'clients', 'customers', 'edit-client',
+            'notfound', 'profile', 'dashboard', 'finance', 'clients', 'customers', 'edit-client', 'notifications',
         ],
         'forms' => [
             'profile-edit', 'profile-new-password', 'get-additional-fields', 'get_export_fields', 'export_clients_excel',
-            'new-transaction', 'new-cash', 'edit-cash', 'del-cash', 'restore-cash', 'new-supplier', 'edit-supplier', 'del-supplier', 'restore-supplier',
+            'new-transaction', 'new-cash', 'edit-cash', 'del-cash', 'restore-cash', 'new-supplier', 'edit-supplier', 'del-supplier', 'restore-supplier', 'read-notification', 'delete-notification',
+            'check-unread-notifications', 'get-notifications',
         ],
     ],
     'manager' => [
         'text'  => 'Менеджер',
         'pages' => [
-            'notfound', 'profile', 'dashboard', 'clients', 'new-client', 'edit-client', 'customers',
+            'notfound', 'profile', 'dashboard', 'clients', 'new-client', 'edit-client', 'customers', 'notifications',
         ],
         'forms' => [
             'profile-edit', 'profile-new-password', 'new-client', 'edit-client', 'del-client', 'restore-client',
             'review-client', 'approve-client-manager', 'decline-client', 'check-client-completeness', 
-            'get-additional-fields', 'get-min-sale-price', 'pay_client_credit', 'get_export_fields', 'export_clients_excel', 'mass-client-action',
+            'get-additional-fields', 'get-min-sale-price', 'pay_client_credit', 'get_export_fields', 'export_clients_excel', 'mass-client-action', 'read-notification', 'delete-notification',
+            'check-unread-notifications', 'get-notifications',
         ],
     ],
     'agent' => [
         'text'  => 'Агент',
         'pages' => [
-            'notfound', 'profile', 'dashboard', 'clients', 'new-client', 'edit-client',
+            'notfound', 'profile', 'dashboard', 'clients', 'new-client', 'edit-client', 'notifications',
         ],
         'forms' => [
             'profile-edit', 'profile-new-password', 'new-client', 'edit-client', 'del-client', 'restore-client',
             'review-client', 'revert-rejection-client', 'check-client-completeness', 
-            'get-additional-fields', 'get-min-sale-price', 'get_export_fields', 'export_clients_excel', 'mass-client-action', 'download-client-pdf',
+            'get-additional-fields', 'get-min-sale-price', 'get_export_fields', 'export_clients_excel', 'mass-client-action', 'download-client-pdf', 'read-notification', 'delete-notification',
+            'check-unread-notifications', 'get-notifications',
         ],
     ],
 ];

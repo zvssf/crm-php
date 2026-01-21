@@ -62,6 +62,41 @@ try {
     $stmt_update = $pdo->prepare("UPDATE `clients` SET `client_status` = :next_status WHERE `client_id` = :client_id AND `client_status` = 3");
     $stmt_update->execute([':next_status' => $next_status, ':client_id' => $client_id]);
 
+    // --- ЛОГИКА УВЕДОМЛЕНИЙ ---
+    // Если Агент (4) отправляет Менеджеру (статус 6)
+    if ($user_data['user_group'] == 4 && $next_status == 6) {
+        // Находим менеджера этого агента
+        $stmt_manager = $pdo->prepare("SELECT user_supervisor FROM users WHERE user_id = :agent_id");
+        $stmt_manager->execute([':agent_id' => $user_data['user_id']]);
+        $manager_id = $stmt_manager->fetchColumn();
+
+        if ($manager_id) {
+            send_notification(
+                $pdo, 
+                $manager_id, 
+                'Новая анкета на проверку', 
+                "Агент {$user_data['user_firstname']} {$user_data['user_lastname']} отправил анкету №{$client_id} на проверку.", 
+                'info', 
+                "/?page=clients&center={$client['center_id']}&status=6"
+            );
+        }
+    }
+
+    elseif ($user_data['user_group'] == 3 && $next_status == 5) {
+        // Находим всех директоров
+        $stmt_directors = $pdo->query("SELECT user_id FROM users WHERE user_group = 1 AND user_status = 1");
+        while ($dir_id = $stmt_directors->fetchColumn()) {
+            send_notification(
+                $pdo, 
+                $dir_id, 
+                'Акета на рассмотрении', 
+                "Менеджер {$user_data['user_firstname']} {$user_data['user_lastname']} отправил анкету №{$client_id} на проверку.", 
+                'info', 
+                "/?page=clients&center={$client['center_id']}&status=5"
+            );
+        }
+    }
+
     message('Уведомление', 'Анкета отправлена на рассмотрение!', 'success', '');
 
 } catch (PDOException $e) {

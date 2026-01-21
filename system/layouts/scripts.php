@@ -191,3 +191,40 @@ function loaderBTN(btn, status) {
     });
 })();
 </script>
+
+<script>
+    $(document).ready(function() {
+        // --- ГЛОБАЛЬНЫЙ СЧЕТЧИК УВЕДОМЛЕНИЙ ---
+        
+        function checkUnreadNotifications() {
+            $.ajax({
+                url: '/?form=check-unread-notifications',
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    if (response.status === 'success') {
+                        const badge = $('#global-noti-badge');
+                        
+                        if (response.count > 0) {
+                            // Если есть непрочитанные - показываем точку
+                            badge.removeClass('d-none');
+                        } else {
+                            // Если нет - скрываем
+                            badge.addClass('d-none');
+                        }
+                    }
+                }
+            });
+        }
+
+        // Первый запуск сразу при загрузке страницы
+        checkUnreadNotifications();
+
+        // Периодический опрос (раз в 60 секунд), если вкладка активна
+        setInterval(function() {
+            if (!document.hidden) {
+                checkUnreadNotifications();
+            }
+        }, 10000); // 60 секунд - достаточная частота для фоновой проверки
+    });
+</script>

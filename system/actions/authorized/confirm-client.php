@@ -36,8 +36,8 @@ try {
     $stmt_insert = $pdo->prepare("INSERT INTO `client_cities` (`client_id`, `city_id`) VALUES (:client_id, :city_id)");
     $stmt_insert->execute([':client_id' => $client_id, ':city_id' => $final_city_id]);
 
-    // 3. Получаем данные анкеты (агент, стоимость и номер паспорта)
-    $stmt_client = $pdo->prepare("SELECT `agent_id`, `sale_price`, `passport_number` FROM `clients` WHERE `client_id` = :client_id FOR UPDATE");
+    // 3. Получаем данные анкеты (агент, стоимость, паспорт, имя, центр)
+    $stmt_client = $pdo->prepare("SELECT `agent_id`, `sale_price`, `passport_number`, `client_name`, `center_id` FROM `clients` WHERE `client_id` = :client_id FOR UPDATE");
     $stmt_client->execute([':client_id' => $client_id]);
     $client_info = $stmt_client->fetch(PDO::FETCH_ASSOC);
 
@@ -103,8 +103,23 @@ try {
         }
     }
 
-    // 7. Отменяем остальные анкеты-дубликаты (статус "В работе")
+    // 7. Отменяем остальные анкеты-дубликаты (статус "В работе") и уведомляем агентов
     if ($client_info && !empty($client_info['passport_number'])) {
+        // Сначала находим ID дубликатов и их агентов, чтобы отправить уведомления
+        $stmt_find_dups = $pdo->prepare("
+            SELECT client_id, agent_id, center_id, client_name 
+            FROM `clients` 
+            WHERE `passport_number` = :passport_number 
+              AND `client_id` != :client_id 
+              AND `client_status` = 1
+        ");
+        $stmt_find_dups->execute([
+            ':passport_number' => $client_info['passport_number'],
+            ':client_id'       => $client_id
+        ]);
+        $duplicates = $stmt_find_dups->fetchAll(PDO::FETCH_ASSOC);
+
+        // Выполняем отмену
         $stmt_cancel_duplicates = $pdo->prepare(
             "UPDATE `clients` 
              SET `client_status` = 7 
@@ -116,6 +131,32 @@ try {
             ':passport_number' => $client_info['passport_number'],
             ':client_id'       => $client_id
         ]);
+
+        // Рассылаем уведомления
+        foreach ($duplicates as $dup) {
+            if ($dup['agent_id']) {
+                send_notification(
+                    $pdo,
+                    $dup['agent_id'],
+                    'Заявка отменена (Дубликат)',
+                    "Анкета '{$dup['client_name']}' (ID: {$dup['client_id']}) отменена, так как была выбрана другая заявка с этим паспортом.",
+                    'warning',
+                    "/?page=clients&center={$dup['center_id']}&status=7"
+                );
+            }
+        }
+    }
+
+    // 8. Уведомляем агента об успешной записи
+    if ($client_info && !empty($client_info['agent_id'])) {
+        send_notification(
+            $pdo,
+            $client_info['agent_id'],
+            'Анкета записана',
+            "Ваша анкета '{$client_info['client_name']}' (ID: {$client_id}) успешно переведена в статус 'Записанные'.",
+            'success',
+            "/?page=clients&center={$client_info['center_id']}&status=2"
+        );
     }
 
     $pdo->commit();

@@ -229,8 +229,25 @@ if (isset($_POST['action']) && $_POST['action'] === 'resolve_duplicate') {
                 ':id' => $client_id
             ]);
 
-            // 3.4 ОТМЕНА ДУБЛИКАТОВ (Статус 1 -> 7)
+            // 3.4 ОТМЕНА ДУБЛИКАТОВ (Статус 1 -> 7) и уведомления
             if (!empty($passport)) {
+                // Ищем дубликаты для уведомлений
+                $stmt_dups = $pdo->prepare("
+                    SELECT client_id, agent_id, client_name 
+                    FROM `clients` 
+                    WHERE passport_number = :passport 
+                      AND client_id != :current_id 
+                      AND client_status = 1
+                      AND center_id = :center_id
+                ");
+                $stmt_dups->execute([
+                    ':passport' => $passport,
+                    ':current_id' => $client_id,
+                    ':center_id' => $center_id
+                ]);
+                $dups = $stmt_dups->fetchAll(PDO::FETCH_ASSOC);
+
+                // Отменяем
                 $pdo->prepare("
                     UPDATE `clients` 
                     SET client_status = 7 
@@ -243,6 +260,20 @@ if (isset($_POST['action']) && $_POST['action'] === 'resolve_duplicate') {
                     ':current_id' => $client_id,
                     ':center_id' => $center_id
                 ]);
+
+                // Уведомляем
+                foreach ($dups as $dup) {
+                    if ($dup['agent_id']) {
+                        send_notification(
+                            $pdo,
+                            $dup['agent_id'],
+                            'Заявка отменена (PDF)',
+                            "Анкета '{$dup['client_name']}' (ID: {$dup['client_id']}) отменена, так как к дубликату был прикреплен PDF.",
+                            'warning',
+                            "/?page=clients&center={$center_id}&status=7"
+                        );
+                    }
+                }
             }
         }
 
